@@ -8,6 +8,9 @@
 
 <!-- MarkdownTOC -->
 
+- [quickstart](#quickstart)
+    - [install](#install)
+    - [collection](#collection)
 - [package outline](#package-outline)
     - [src](#src)
         - [generation](#generation)
@@ -15,16 +18,36 @@
             - [scene](#scene)
             - [behavior](#behavior)
         - [evaluation](#evaluation)
-        - [collection](#collection)
+        - [collection](#collection-1)
         - [analysis](#analysis)
     - [scripts](#scripts)
     - [test](#test)
     - [data](#data)
     - [tests](#tests)
-- [quickstart](#quickstart)
-    - [not particularly quick start](#not-particularly-quick-start)
 
 <!-- /MarkdownTOC -->
+
+# quickstart
+
+## install
+- First install the julia components of AutoRisk
+```julia
+Pkg.clone("https://github.com/wulfebw/AutoRisk.jl.git")
+Pkg.build("AutoRisk")
+
+# check that AutoRisk can be imported
+using AutoRisk
+
+# check that all the tests pass
+Pkg.test("AutoRisk")
+```
+
+## collection
+- cd scripts/collection and run:
+```bash
+julia run_collect_heuristic_dataset.jl --num_scenarios 1 --num_monte_carlo_runs 1
+```
+- This should generate a dataset from a single scenario (i.e., a roadway, scene, behavior model tuple), output some information about that dataset, and save it to a file in the data directory.
 
 # package outline
 The goal of this package, "AutoRisk", is to make it easy to collect datasets focused on automotive risk. It builds on AutomotiveDrivingModels.jl
@@ -73,17 +96,3 @@ julia runtests.jl
 ```bash
 python run_tests.py
 ```
-
-# quickstart
-- Still working on this
-
-## not particularly quick start
-- Add the julia package to your ~/.juliarc file
-```
-push!(LOAD_PATH, "/path/to/auto/risk/src")
-```
-- Go to the scripts/collection directory and run:
-```
-julia run_collect_heuristic_dataset.jl --num_scenarios 1 --num_monte_carlo_runs 1
-```
-- This should generate a dataset from a single scenario (i.e., a roadway, scene, behavior model tuple), output some information about that dataset, and save it to a file in the data directory.
