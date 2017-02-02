@@ -58,3 +58,5 @@ catch e
     println("Exception encountered in AutoRisk while trying to import display
         libraries and functionality: $(e)")
 end
+
+end # module
