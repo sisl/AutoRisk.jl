@@ -1,14 +1,12 @@
-__precompile__()
+__precompile__(true)
 module AutoRisk
 
 using Reexport
 
 @reexport using AutomotiveDrivingModels
-@reexport using AutoViz
 @reexport using DataStructures
 @reexport using Distributions
 @reexport using HDF5
-@reexport using Interact
 
 import AutomotiveDrivingModels: simulate!, update!, reset!
 import Base: display, show, rand, ==
@@ -48,7 +46,15 @@ include("evaluation/bootstrapping_monte_carlo_evaluator.jl")
 include("collection/dataset.jl")
 include("collection/dataset_collector.jl")
 
-# analysis
-include("analysis/display.jl")
 
+# Display portion of AutoRisk may be unnecessary or unavailable in some 
+# environments, so optionally include that here if possible
+try
+    @reexport using AutoViz
+    @reexport using Interact
+    # analysis
+    include("analysis/display.jl")
+catch e
+    println("Exception encountered in AutoRisk while trying to import display
+        libraries and functionality: $(e)")
 end
