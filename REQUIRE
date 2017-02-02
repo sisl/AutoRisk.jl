@@ -1,7 +1,7 @@
 julia 0.5
 
-https://github.com/tawheeler/AutomotiveDrivingModels.jl.git
-https://github.com/tawheeler/AutoViz.jl.git
+AutomotiveDrivingModels
+AutoViz
 Compat 0.8
 DataArrays
 DataFrames
