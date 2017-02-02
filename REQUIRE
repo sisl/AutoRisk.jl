@@ -1,6 +1,4 @@
 julia 0.5
-
-AutomotiveDrivingModels
 Compat 0.8
 DataArrays
 DataFrames
@@ -9,7 +7,3 @@ Distributions
 GaussianMixtures
 HDF5
 Reexport
-
-# AutoViz and Interact are optional
-# AutoViz
-# Interact
