@@ -4,6 +4,5 @@ DataArrays
 DataFrames
 Discretizers
 Distributions
-GaussianMixtures
 HDF5
 Reexport
