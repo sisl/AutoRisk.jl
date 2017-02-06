@@ -1,8 +1,6 @@
 # using Base.Test
 # using AutoRisk
 
-# push!(LOAD_PATH, "../../src/utils/")
-# include("../../src/utils/automotive.jl")
 
 function test_inverse_ttc_to_ttc()
     # missing
@@ -25,4 +23,22 @@ function test_inverse_ttc_to_ttc()
     @test ttc.v == 1. / value
 end
 
+function test_push_forward_records_scene_record()
+    max_n_scenes = 3
+    rec = SceneRecord(max_n_scenes, 1., 1)
+    carcount = 0
+    for i in max_n_scenes:-1:1
+        scene = Scene(1)
+        push!(scene, Vehicle(VehicleState(), VehicleDef(i)))
+        update!(rec, scene)
+    end
+    pastframe = -1
+    push_forward_records!(rec, pastframe)
+
+    @test rec.scenes[1].vehicles[1].def.id == 2
+    @test rec.scenes[2].vehicles[1].def.id == 3
+    @test rec.nscenes == 2
+end
+
 @time test_inverse_ttc_to_ttc()
+@time test_push_forward_records_scene_record()

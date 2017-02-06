@@ -120,17 +120,19 @@ function evaluate!(eval::Evaluator, scene::Scene,
     
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.vehicles))
+    pastframe = 0 # first iteration, don't alter record
     for idx in 1:eval.num_runs
         # reset
         copy!(temp_scene, scene)
-        empty!(eval.rec)
+        push_forward_records!(eval.rec, -pastframe)
 
         # simulate starting from the final burn-in scene
         simulate!(temp_scene, models, roadway, eval.rec, eval.sampling_time)
+        pastframe = Int(eval.sampling_time / eval.rec.timestep)
 
         # extract target values from every frame in the record for every vehicle
         extract_targets!(eval.rec, roadway, eval.targets, eval.veh_id_to_idx,
-            eval.veh_idx_can_change, done = eval.done)
+            eval.veh_idx_can_change, pastframe - 1, done = eval.done)
 
         # optionally bootstrap target values
         bootstrap_targets!(eval, models, roadway)

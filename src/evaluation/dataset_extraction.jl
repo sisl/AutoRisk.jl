@@ -89,6 +89,7 @@ end
 function extract_frame_targets!(rec::SceneRecord, roadway::Roadway, 
         targets::Array{Float64}, veh_id_to_idx::Dict{Int,Int}, 
         veh_idx_can_change::Bool, done::Set{Int}, pastframe::Int64)
+
     scene = get_scene(rec, pastframe)
     for (veh_id, orig_veh_idx) in veh_id_to_idx
         # track which vehicles have left the scene or have already 

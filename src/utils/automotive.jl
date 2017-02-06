@@ -5,7 +5,8 @@ export
     stadium_roadway_area,
     straight_roadway_area,
     get_total_roadway_area,
-    inverse_ttc_to_ttc
+    inverse_ttc_to_ttc,
+    push_forward_records!
 
 """
 AutomotiveDrivingModels Core additional functionality
@@ -163,6 +164,31 @@ function Base.show(io::IO, scene::Scene)
     for (i, veh) in enumerate(scene.vehicles)
         println(io, "vehicle $(i):\n$(veh)")
     end
+end
+
+### SceneRecord
+"""
+Description:
+    - Empty a scene record beginning at a pastframe (i.e., all subsequent frames
+        removed).
+
+Args:
+    - rec: scene record to partially empty
+    - pastframe: nonpositive interger indicating the frame in the past after 
+        which frames should be removed (this value begins counting after the 
+        first frame in the record).
+"""
+function push_forward_records!(rec::SceneRecord, pastframe::Int)
+    # calling with pastframe of 0 does not change the record, return immediately
+    if pastframe == 0
+        return rec
+    end
+    s, e = 1 - pastframe, rec.nscenes
+    for (i, past_index) in enumerate(s:e)
+        copy!(rec.scenes[i], rec.scenes[past_index])
+    end
+    rec.nscenes = e - s + 1
+    return rec
 end
 
 # get_neighbor_rear_along_lane in ADM.jl has a bug, and this is here to fix it

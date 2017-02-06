@@ -1,11 +1,8 @@
 # using Base.Test
-# using AutomotiveDrivingModels
+# using AutoRisk
 
-# push!(LOAD_PATH, "../../src")
-# include("../../src/evaluation/simulation.jl")
-# include("../../src/utils/automotive.jl")
-# include("../../src/evaluation/dataset_extraction.jl")
-# include("../../src/evaluation/monte_carlo_evaluator.jl")
+# NUM_FEATURES = 165
+# NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
@@ -135,5 +132,5 @@ function test_monte_carlo_evaluator()
 
 end
 
-@time test_monte_carlo_evaluator_debug()
+# @time test_monte_carlo_evaluator_debug()
 @time test_monte_carlo_evaluator()
