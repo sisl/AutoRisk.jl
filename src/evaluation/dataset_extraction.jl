@@ -51,10 +51,10 @@ function extract_vehicle_frame_targets!(rec::SceneRecord, roadway::Roadway,
 
     ### behavioral targets
     # hard brake
-    accel = convert(Float64, get(
-        ACC, rec, roadway, veh_idx, pastframe))
+    hard_brake = executed_hard_brake(rec, roadway, veh_idx, pastframe, 
+        hard_brake_threshold = -4, n_past_frames = 3)
 
-    if accel < -4.
+    if hard_brake
         targets[4, target_idx] = 1.
     end
 

@@ -6,7 +6,8 @@ export
     straight_roadway_area,
     get_total_roadway_area,
     inverse_ttc_to_ttc,
-    push_forward_records!
+    push_forward_records!,
+    executed_hard_brake
 
 """
 AutomotiveDrivingModels Core additional functionality
@@ -351,5 +352,40 @@ function get_collision_type(rec::SceneRecord, roadway::Roadway,
     end
 
     return collision_type
+end
+
+"""
+Description:
+    - Returns whether a given vehicle index executed a hard brake, as defined 
+        as decelerating at a given rate for a number of frames. The function 
+        assumes that the vehicle index does not change.
+
+Args:
+    - rec: scene record with scenes to evaluate
+    - roadway: roadway on which scenes take place
+    - vehicle_index: of the vehicle in the scenes (assumed constant)
+    - pastframe: frame in the past at which to begin eval
+    - hard_brake_threshold: decel defining a hard brake
+    - n_past_frames: number of past frames over which decel must have occurred
+
+Returns:
+    - boolean indicating if hard brake occurred
+"""
+function executed_hard_brake(rec::SceneRecord, roadway::Roadway, 
+        vehicle_index::Int, pastframe::Int = 0; hard_brake_threshold = -4.,
+        n_past_frames = 3)
+    # check whether decelerating at suffcient rate for n_past_frames frames
+    hard_brake = true
+    for dt in 0:(n_past_frames - 1)
+        if pastframe_inbounds(rec, pastframe - dt)
+            frame_accel = convert(Float64, get(
+                ACC, rec, roadway, vehicle_index, pastframe - dt))
+            if frame_accel > hard_brake_threshold
+                hard_brake = false
+                break
+            end
+        end
+    end
+    return hard_brake
 end
 

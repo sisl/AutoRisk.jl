@@ -40,5 +40,39 @@ function test_push_forward_records_scene_record()
     @test rec.nscenes == 2
 end
 
+function test_executed_hard_brake()
+    roadway = gen_straight_roadway(1, 500.)
+    max_n_scenes = 3
+    rec = SceneRecord(max_n_scenes, .1, 1)
+    scene = Scene()
+    state = VehicleState(VecSE2(), 10.)
+    push!(scene, Vehicle(state, VehicleDef(1)))
+    update!(rec, scene)
+    scene = Scene()
+    state = VehicleState(VecSE2(), 9.)
+    push!(scene, Vehicle(state, VehicleDef(1)))
+    update!(rec, scene)
+    scene = Scene()
+    state = VehicleState(VecSE2(), 8.)
+    push!(scene, Vehicle(state, VehicleDef(1)))
+    update!(rec, scene)
+
+    # did execute hard brake
+    executed = executed_hard_brake(
+        rec, roadway, 1, hard_brake_threshold = -4., n_past_frames = 2)
+    @test executed == true
+
+    # did not
+    scene = Scene()
+    state = VehicleState(VecSE2(), 8.)
+    push!(scene, Vehicle(state, VehicleDef(1)))
+    update!(rec, scene)
+    executed = executed_hard_brake(
+        rec, roadway, 1, hard_brake_threshold = -4., n_past_frames = 2)
+    @test executed == false
+
+end
+
 @time test_inverse_ttc_to_ttc()
 @time test_push_forward_records_scene_record()
+@time test_executed_hard_brake()
