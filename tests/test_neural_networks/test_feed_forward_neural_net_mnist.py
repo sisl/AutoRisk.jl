@@ -55,7 +55,6 @@ class TestFeedForwardNeuralNetworkMNIST(unittest.TestCase):
             acc = len(np.where(y_pred == y)[0]) / float(len(y_pred))
 
             # check that validation accuracy is above 90%
-            print(acc)
             self.assertTrue(acc > .9)
 
             # if run solo, then display some images and predictions
