@@ -100,9 +100,19 @@ class FeedForwardNeuralNetwork(object):
         Returns:
             - returns probability values for each output.
         """
-        return self.session.run(
-            self._probs, feed_dict={self._input_ph: inputs, 
-            self._dropout_ph: 1.})
+        num_samples = len(inputs)
+        outputs = np.empty((num_samples, self.flags.output_dim))
+        num_batches = int(num_samples / self.flags.batch_size)
+        if num_batches * self.flags.batch_size < num_samples:
+            num_batches += 1
+        for bidx in range(num_batches):
+            s = bidx * self.flags.batch_size
+            e = s + self.flags.batch_size
+            batch = inputs[s:e]
+            outputs[s:e, :] = self.session.run(
+                self._probs, feed_dict={self._input_ph: inputs[s:e],
+                self._dropout_ph: 1.})
+        return outputs
 
     def save(self, epoch):
         """
