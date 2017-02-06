@@ -53,6 +53,7 @@ function extract_vehicle_frame_targets!(rec::SceneRecord, roadway::Roadway,
     # hard brake
     accel = convert(Float64, get(
         ACC, rec, roadway, veh_idx, pastframe))
+
     if accel < -4.
         targets[4, target_idx] = 1.
     end
@@ -340,6 +341,7 @@ function extract_vehicle_features!(rec::SceneRecord, roadway::Roadway,
     # infront's back bumper
     set_dual_feature!(features, 23, 
         get(TIMEGAP, rec, roadway, veh_idx, censor_hi = 30.0), veh_idx)
+
     # inverse time to collision is the time until a collision 
     # assuming that no actions are taken
     # inverse is taken so as to avoid infinite value, so flip here to get back
@@ -347,6 +349,10 @@ function extract_vehicle_features!(rec::SceneRecord, roadway::Roadway,
     inv_ttc = get(INV_TTC, rec, roadway, veh_idx)
     ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
     set_dual_feature!(features, 25, ttc, veh_idx)
+
+    # feature for whether a collision has already occurred
+    features[27, veh_idx] = convert(Float64, 
+        get_collision_type(rec, roadway, veh_idx))
 
     # neighbor features
     F = VehicleTargetPointFront()
@@ -370,13 +376,21 @@ function extract_vehicle_features!(rec::SceneRecord, roadway::Roadway,
         fore_fore_M = NeighborLongitudinalResult(0, 0.)
     end
 
-    set_neighbor_features!(features, 27, fore_M, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 32, fore_L, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 37, fore_R, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 42, rear_M, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 47, rear_L, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 52, rear_R, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(features, 57, fore_fore_M, scene, rec, roadway, veh_idx)
+    next_feature_idx = 28
+    set_neighbor_features!(
+        features, next_feature_idx, fore_M, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, fore_L, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, fore_R, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, rear_M, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, rear_L, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, rear_R, scene, rec, roadway, veh_idx)
+    set_neighbor_features!(
+        features, next_feature_idx += 5, fore_fore_M, scene, rec, roadway, veh_idx)
 
     # extract driver behavior features for ego and surrounding vehicles
     idxs::Vector{Int64} = [veh_idx, fore_M.ind, fore_L.ind, fore_R.ind, 

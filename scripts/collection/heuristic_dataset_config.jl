@@ -111,7 +111,7 @@ add_entry!(FLAGS,
     "dataset_type", "heuristic", String, 
     "Type of dataset to generate.")
 add_entry!(FLAGS, 
-    "feature_dim", 165, Int64, 
+    "feature_dim", 166, Int64, 
     "Number of features (e.g., dist to car in front).")
 add_entry!(FLAGS, 
     "target_dim", 5, Int64, 

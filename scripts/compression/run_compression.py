@@ -94,7 +94,7 @@ tf.app.flags.DEFINE_string('dataset_filepath',
                             '../../data/datasets/risk.jld',
                             'Filepath of dataset.')
 tf.app.flags.DEFINE_integer('input_dim', 
-                            165,
+                            166,
                             """Dimension of input.""")
 tf.app.flags.DEFINE_integer('output_dim', 
                             5,
