@@ -2,7 +2,7 @@ using Base.Test
 using AutoRisk
 
 # testing constants
-const NUM_FEATURES = 165
+const NUM_FEATURES = 166
 const NUM_TARGETS = 5
 
 function runtests()
