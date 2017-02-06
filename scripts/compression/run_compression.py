@@ -147,7 +147,7 @@ def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
     # also threshold values to prevent log exception (throws off loss value)
     y_pred[y_pred < eps] = eps
     y_pred[y_pred > 1 - eps] = 1 - eps
-
+    
     np.sum(y * np.log(y_pred))
     np.sum((1 - y) * np.log(1 - y_pred)) 
     ll = np.sum(y * np.log(y_pred)) + np.sum((1 - y) * np.log(1 - y_pred)) 
@@ -186,6 +186,10 @@ def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
 
     # psuedo r^2 and other metrics
     if y_null is not None:
+        if len(np.shape(y_null)) > 0:
+            y_null[y_null < eps] = eps
+            y_null[y_null > 1 - eps] = 1 - eps
+
         null_ll = np.sum(y * np.log(y_null)) + -np.sum((1 - y) * np.log(1 - y_null))
         mcfadden_r2 = 1 - ll / null_ll
         tjur_r2 = np.mean(y_pred[y>=.5], axis=0) - np.mean(y_pred[y<.5], axis=0)
