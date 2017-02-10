@@ -174,14 +174,15 @@ def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
 
     # convert to julia format the worst indices
     if data is not None:
+        num_report = 5
         print('\noverall poorly predicted')
-        idxs = np.argsort(np.sum(-(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred)), axis=1))[-2:]
+        idxs = np.argsort(np.sum(-(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred)), axis=1))[-num_report:]
         report_poorly_performing_indices_features(idxs, data, unnorm_data)
         print('\nrear end collisions poorly predicted')
-        idxs = np.argsort(np.sum(-(y[:,1:3] * np.log(y_pred[:,1:3]) + (1 - y[:,1:3]) * np.log(1 - y_pred[:,1:3])), axis=1))[-2:]
+        idxs = np.argsort(np.sum(-(y[:,1:3] * np.log(y_pred[:,1:3]) + (1 - y[:,1:3]) * np.log(1 - y_pred[:,1:3])), axis=1))[-num_report:]
         report_poorly_performing_indices_features(idxs, data, unnorm_data)
         print('\nhard brakes poorly predicted')
-        idxs = np.argsort(-(y[:,3] * np.log(y_pred[:,3]) + (1 - y[:,3]) * np.log(1 - y_pred[:,3])))[-2:]
+        idxs = np.argsort(-(y[:,3] * np.log(y_pred[:,3]) + (1 - y[:,3]) * np.log(1 - y_pred[:,3])))[-num_report:]
         report_poorly_performing_indices_features(idxs, data, unnorm_data)
 
     # psuedo r^2 and other metrics
@@ -201,8 +202,12 @@ def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
         acc = len(np.where(y_class == y_pred_class)[0]) / np.prod(y_class.shape)
         prec_idxs = np.where(y_pred_class == 1)[0]
         prec = recall = len(np.where(y_class[prec_idxs] == 1)[0])
-        prec /= len(prec_idxs)
-        recall /= len(np.where(y_class == 1)[0])
+        if len(prec_idxs) > 0:
+            prec /= len(prec_idxs)
+            recall /= len(np.where(y_class == 1)[0])
+        else:
+            prec = 0
+            recall = 0
 
         print("mcfadden r^2: {}\tll: {}\tnull ll: {}".format(mcfadden_r2, ll, null_ll))
         print("tjur_r2: {}".format(tjur_r2))
