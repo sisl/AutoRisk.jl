@@ -6,9 +6,10 @@ using Reexport
 @reexport using AutomotiveDrivingModels
 @reexport using DataStructures
 @reexport using Distributions
+@reexport using ForwardNets
 @reexport using HDF5
 
-import AutomotiveDrivingModels: simulate!, update!, reset!, observe!
+import AutomotiveDrivingModels: simulate!, update!, reset!, observe!, pull_features!
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 
@@ -38,6 +39,9 @@ include("generation/behavior/behavior_generator.jl")
 include("generation/behavior/heuristic_behavior_generators.jl")
 include("generation/behavior/delayed_intelligent_driver_model.jl")
 include("generation/behavior/delayed_driver_model.jl")
+include("generation/behavior/load_policy.jl")
+include("generation/behavior/learned_behavior_generators.jl")
+include("generation/behavior/gaussian_mlp_driver.jl")
 
 # prediction
 include("prediction/neural_network.jl")

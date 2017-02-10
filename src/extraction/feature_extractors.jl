@@ -10,6 +10,7 @@ export
     NeighborFeatureExtractor,
     CarLidarFeatureExtractor,
     RoadLidarFeatureExtractor,
+    NormalizingExtractor,
     pull_features!,
     length
 
@@ -128,6 +129,7 @@ function set_behavioral_features(scene::Scene, models::Dict{Int, DriverModel},
 end
 
 ##################### Specific Feature Extractors #####################
+
 type CoreFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::CoreFeatureExtractor) = 8
@@ -334,4 +336,31 @@ function AutomotiveDrivingModels.pull_features!(
             length(ext.roadlidar.ranges))
         fidx += length(ext.roadlidar.ranges) - 1
     end
+end
+
+##################### Feature Extractor Wrappers #####################
+
+type NormalizingExtractor <: AbstractFeatureExtractor
+    μ::Vector{Float64}
+    σ::Vector{Float64}
+    extractor::AbstractFeatureExtractor
+end
+Base.length(ext::NormalizingExtractor) = length(ext.extractor)
+function AutomotiveDrivingModels.pull_features!(
+        ext::NormalizingExtractor, 
+        features::Array{Float64}, 
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int,
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        fidx::Int = 0,
+        pastframe::Int = 0)
+
+    # extract base feature values
+    pull_features!(ext.extractor, features, rec, roadway, veh_idx, models, 
+        fidx, pastframe)
+
+    # normalize those values
+    features[:] = (features .- ext.μ) ./ ext.σ
+    return features
 end

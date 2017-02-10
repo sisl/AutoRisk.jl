@@ -46,14 +46,20 @@ add_entry!(FLAGS,
 
 # behavior
 add_entry!(FLAGS, 
-    "behavior_type", "", String, 
-    "Only use this behavior {aggressive, passive, normal} if given.")
+    "behavior_type", "heuristic", String, 
+    "Driver type {heuristic, learned}.")
+add_entry!(FLAGS, 
+    "heuristic_behavior_type", "", String, 
+    "Only use this behavior {aggressive, passive, normal} if given and using heuristic driver.")
 add_entry!(FLAGS, 
     "behavior_noise", true, Bool, 
     "Whether or not driving behaviors should have noise applied to actions.")
 add_entry!(FLAGS, 
     "delayed_response", true, Bool, 
     "Whether or not longitudinal acceleration is delayed.")
+add_entry!(FLAGS, 
+    "driver_network_filepath", "../../data/policies/gail_mlp.h5", String, 
+    "Filepath to policy network to use with learned drivers.")
 
 # simulation constants
 add_entry!(FLAGS, 
@@ -113,13 +119,13 @@ add_entry!(FLAGS,
     "extract_core", true, Bool, 
     "When using multi extractor, extract core features.")
 add_entry!(FLAGS, 
-    "extract_temporal", true, Bool, 
+    "extract_temporal", false, Bool, 
     "When using multi extractor, extract temporal features.")
 add_entry!(FLAGS, 
     "extract_well_behaved", true, Bool, 
     "When using multi extractor, extract well behaved features.")
 add_entry!(FLAGS, 
-    "extract_neighbor", true, Bool, 
+    "extract_neighbor", false, Bool, 
     "When using multi extractor, extract neighbor features.")
 add_entry!(FLAGS, 
     "extract_car_lidar", true, Bool, 
@@ -128,7 +134,7 @@ add_entry!(FLAGS,
     "extract_car_lidar_range_rate", true, Bool, 
     "When using multi extractor, extract car lidar range rate features.")
 add_entry!(FLAGS, 
-    "extract_road_lidar", true, Bool, 
+    "extract_road_lidar", false, Bool, 
     "When using multi extractor, extract road lidar features.")
 
 # dataset constants
@@ -139,7 +145,7 @@ add_entry!(FLAGS,
     "target_dim", 5, Int64, 
     "Number of target values (e.g., p(collision).")
 add_entry!(FLAGS, 
-    "chunk_dim", 10, Int64, 
+    "chunk_dim", 1, Int64, 
     "Dimension of dataset chunking.")
 add_entry!(FLAGS, 
     "output_filepath", "../../data/datasets/risk.h5", String, 

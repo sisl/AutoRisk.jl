@@ -22,11 +22,13 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     veh_idx_can_change = false
     max_num_samples = flags["num_scenarios"] * max_num_veh
     behavior_type = flags["behavior_type"]
+    heuristic_behavior_type = flags["heuristic_behavior_type"]
     behavior_noise = flags["behavior_noise"]
     delayed_response = flags["delayed_response"]
     evaluator_type = flags["evaluator_type"]
     prediction_model_type = flags["prediction_model_type"]
     network_filepath = flags["network_filepath"]
+    driver_network_filepath = flags["driver_network_filepath"]
     extractor_type = flags["extractor_type"]
 
     # feature_dim depends on extractor_type, so build extractor first
@@ -65,8 +67,12 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     seeds = Vector{Int}()
 
     # roadway gen
-    roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 
-        radius = roadway_radius)
+    if behavior_type == "learned"
+        roadway = gen_straight_roadway(num_lanes, roadway_length)
+    else
+        roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 
+            radius = roadway_radius)
+    end
     roadway_gen = StaticRoadwayGenerator(roadway)
 
     # scene gen
@@ -82,36 +88,45 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
         max_vehicle_width,
         min_init_dist)
 
-    if behavior_type == "aggressive"
-        params = [get_aggressive_behavior_params(
-            deterministic = !behavior_noise,
-            delayed_response = delayed_response)]
-        weights = WeightVec([1.])
-    elseif behavior_type == "passive"
-        params = [get_passive_behavior_params(
-            deterministic = !behavior_noise,
-            delayed_response = delayed_response)]
-        weights = WeightVec([1.])
-    elseif behavior_type == "normal"
-        params = [get_normal_behavior_params(
-            deterministic = !behavior_noise,
-            delayed_response = delayed_response)]
-        weights = WeightVec([1.])
-    else
-        params = [get_aggressive_behavior_params(
-                    deterministic = !behavior_noise,
-                    delayed_response = delayed_response), 
-                get_passive_behavior_params(
-                    deterministic = !behavior_noise,
-                    delayed_response = delayed_response),
-                get_normal_behavior_params(
-                    deterministic = !behavior_noise,
-                    delayed_response = delayed_response)]
-        weights = WeightVec([.2,.3,.5])
-    end
-
+    # context 
     context = IntegratedContinuous(sampling_period, 1)
-    behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
+
+    if behavior_type == "heuristic"
+        if heuristic_behavior_type == "aggressive"
+            params = [get_aggressive_behavior_params(
+                deterministic = !behavior_noise,
+                delayed_response = delayed_response)]
+            weights = WeightVec([1.])
+        elseif heuristic_behavior_type == "passive"
+            params = [get_passive_behavior_params(
+                deterministic = !behavior_noise,
+                delayed_response = delayed_response)]
+            weights = WeightVec([1.])
+        elseif heuristic_behavior_type == "normal"
+            params = [get_normal_behavior_params(
+                deterministic = !behavior_noise,
+                delayed_response = delayed_response)]
+            weights = WeightVec([1.])
+        else
+            params = [get_aggressive_behavior_params(
+                        deterministic = !behavior_noise,
+                        delayed_response = delayed_response), 
+                    get_passive_behavior_params(
+                        deterministic = !behavior_noise,
+                        delayed_response = delayed_response),
+                    get_normal_behavior_params(
+                        deterministic = !behavior_noise,
+                        delayed_response = delayed_response)]
+            weights = WeightVec([.2,.3,.5])
+        end
+        behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
+    elseif behavior_type == "learned"
+        behavior_gen = LearnedBehaviorGenerator(driver_network_filepath)
+    else
+        throw(ArgumentError(
+                "invalid behavior type $(behavior_type)"))
+    end
+    
     models = Dict{Int, DriverModel}()
 
     # evaluator

@@ -49,9 +49,8 @@ function test_extract_vehicle_features()
 
     # simulate here because some features need priming
     simulate!(scene, models, roadway, rec, T)
-    features = Array{Float64}(NUM_FEATURES, num_veh)
-
     ext = HeuristicFeatureExtractor()
+    features = Array{Float64}(length(ext), num_veh)
 
     pull_features!(ext, features, rec, roadway, 1, models)
 

@@ -12,7 +12,8 @@ function AutomotiveDrivingModels.pull_features!(
         rec::SceneRecord,
         roadway::Roadway,
         veh_idx::Int,
-        models::Dict{Int, DriverModel})
+        models::Dict{Int, DriverModel},
+        pastframe::Int = 0)
     # extract scene features
     scene = get_scene(rec, 0)
     veh_ego = scene[veh_idx]
