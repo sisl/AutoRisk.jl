@@ -19,6 +19,7 @@ end
         targets from the results.
 """
 type MonteCarloEvaluator <: Evaluator
+    ext::AbstractFeatureExtractor
     num_runs::Int64
     context::IntegratedContinuous
     prime_time::Float64
@@ -37,6 +38,7 @@ type MonteCarloEvaluator <: Evaluator
 
     """
     # Args:
+        - ext: feature and target extractor
         - num_runs: how many monte carlo runs to run
         - context: context in which to run
         - prime_time: "burn-in" time for the scene
@@ -51,7 +53,8 @@ type MonteCarloEvaluator <: Evaluator
         - agg_targets: aggregate target values accumulated across runs
         - rng: random number generator to use
     """
-    function MonteCarloEvaluator(num_runs::Int64, 
+    function MonteCarloEvaluator(ext::AbstractFeatureExtractor,
+            num_runs::Int64, 
             context::IntegratedContinuous,
             prime_time::Float64, 
             sampling_time::Float64, 
@@ -61,7 +64,7 @@ type MonteCarloEvaluator <: Evaluator
             targets::Array{Float64},
             agg_targets::Array{Float64}, 
             rng::MersenneTwister = MersenneTwister(1))
-        return new(num_runs, context, prime_time, sampling_time, 
+        return new(ext, num_runs, context, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, targets, agg_targets, 
             rng, 0, Dict{Int64, Int64}(), Set{Int}())
     end
@@ -116,7 +119,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     get_veh_id_to_idx(scene, eval.veh_id_to_idx)
 
     # extract features for all vehicles using scenes simulated so far
-    extract_features!(eval.rec, roadway, models, eval.features)
+    extract_features!(eval.ext, eval.rec, roadway, models, eval.features)
     
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.vehicles))

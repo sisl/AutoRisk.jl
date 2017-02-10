@@ -8,7 +8,7 @@ using Reexport
 @reexport using Distributions
 @reexport using HDF5
 
-import AutomotiveDrivingModels: simulate!, update!, reset!
+import AutomotiveDrivingModels: simulate!, update!, reset!, observe!
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 
@@ -16,6 +16,12 @@ import Distributions: rand, pdf, logpdf
 include("utils/automotive.jl")
 include("utils/flags.jl")
 include("utils/utils.jl")
+
+# extraction
+include("extraction/lidar_sensors.jl")
+include("extraction/feature_extractors.jl")
+include("extraction/heuristic_feature_extractor.jl")
+include("extraction/multi_feature_extractor.jl")
 
 # generation
 ## roadway

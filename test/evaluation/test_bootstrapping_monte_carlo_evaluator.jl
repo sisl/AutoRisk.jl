@@ -1,8 +1,8 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 141
-# const NUM_TARGETS = 10
+# const NUM_FEATURES = 166
+# const NUM_TARGETS = 5
 
 function test_bootstrapping_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
@@ -60,7 +60,8 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     push!(prediction_model.weights, ones(Float64, (NUM_FEATURES, NUM_TARGETS)))
     push!(prediction_model.biases, zeros(Float64, (1, NUM_TARGETS)))
 
-    eval = BootstrappingMonteCarloEvaluator(num_runs, context, prime_time,
+    ext = HeuristicFeatureExtractor()
+    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, context, prime_time,
         sampling_time, veh_idx_can_change, rec, features, targets, agg_targets,
         prediction_model, rng)
 
@@ -75,5 +76,4 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     @test eval.agg_targets[1:NUM_TARGETS, 3] == [1.0, 1.0, 1.0, 1.0, 1.0]
 end
 
-
-@time test_bootstrapping_monte_carlo_evaluator_debug()
+# @time test_bootstrapping_monte_carlo_evaluator_debug()

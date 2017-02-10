@@ -105,14 +105,36 @@ add_entry!(FLAGS,
 add_entry!(FLAGS, 
     "network_filepath", "../../data/networks/network.weights", String, 
     "Filepath to network weights file, generally for bootstrapping.")
+## extractor 
+add_entry!(FLAGS, 
+    "extractor_type", "heuristic", String, 
+    "Type of extractor to use {heuristic, multi}.")
+add_entry!(FLAGS, 
+    "extract_core", true, Bool, 
+    "When using multi extractor, extract core features.")
+add_entry!(FLAGS, 
+    "extract_temporal", true, Bool, 
+    "When using multi extractor, extract temporal features.")
+add_entry!(FLAGS, 
+    "extract_well_behaved", true, Bool, 
+    "When using multi extractor, extract well behaved features.")
+add_entry!(FLAGS, 
+    "extract_neighbor", true, Bool, 
+    "When using multi extractor, extract neighbor features.")
+add_entry!(FLAGS, 
+    "extract_car_lidar", true, Bool, 
+    "When using multi extractor, extract car lidar features.")
+add_entry!(FLAGS, 
+    "extract_car_lidar_range_rate", true, Bool, 
+    "When using multi extractor, extract car lidar range rate features.")
+add_entry!(FLAGS, 
+    "extract_road_lidar", true, Bool, 
+    "When using multi extractor, extract road lidar features.")
 
 # dataset constants
 add_entry!(FLAGS, 
     "dataset_type", "heuristic", String, 
     "Type of dataset to generate.")
-add_entry!(FLAGS, 
-    "feature_dim", 166, Int64, 
-    "Number of features (e.g., dist to car in front).")
 add_entry!(FLAGS, 
     "target_dim", 5, Int64, 
     "Number of target values (e.g., p(collision).")
