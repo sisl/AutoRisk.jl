@@ -1,7 +1,6 @@
 using AutoRisk
 
 function build_dataset_collector(output_filepath, flags, col_id = 0)
-    feature_dim = flags["feature_dim"]
     target_dim = flags["target_dim"]
     chunk_dim = flags["chunk_dim"]
     roadway_length = flags["roadway_length"]
@@ -29,6 +28,38 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     prediction_model_type = flags["prediction_model_type"]
     network_filepath = flags["network_filepath"]
     extractor_type = flags["extractor_type"]
+
+    # feature_dim depends on extractor_type, so build extractor first
+    if extractor_type == "heuristic"
+        ext = HeuristicFeatureExtractor()
+    elseif extractor_type == "multi"
+        subexts = []
+        if flags["extract_core"] == true
+            push!(subexts, CoreFeatureExtractor())
+        end
+        if flags["extract_temporal"] == true
+            push!(subexts, TemporalFeatureExtractor())
+        end
+        if flags["extract_well_behaved"] == true
+            push!(subexts, WellBehavedFeatureExtractor())
+        end
+        if flags["extract_neighbor"] == true
+            push!(subexts, NeighborFeatureExtractor())
+        end
+        if flags["extract_car_lidar"] == true
+            push!(subexts, 
+                CarLidarFeatureExtractor(extract_carlidar_rangerate = 
+                    flags["extract_car_lidar_range_rate"]))
+        end
+        if flags["extract_road_lidar"] == true
+            push!(subexts, RoadLidarFeatureExtractor())
+        end
+        ext = MultiFeatureExtractor(subexts)
+    else
+        throw(ArgumentError(
+            "invalid extractor_type $(extractor_type)"))
+    end
+    feature_dim = length(ext)
 
     # seeds are replaced by parallel collector
     seeds = Vector{Int}()
@@ -89,13 +120,6 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     features = Array{Float64}(feature_dim, max_num_veh)
     targets = Array{Float64}(target_dim, max_num_veh)
     agg_targets = Array{Float64}(target_dim, max_num_veh)
-
-    if extractor_type == "heuristic"
-        ext = HeuristicFeatureExtractor()
-    else
-        throw(ArgumentError(
-            "invalid extractor_type $(extractor_type)"))
-    end
 
     if evaluator_type == "bootstrap"
         if prediction_model_type == "neural_network"

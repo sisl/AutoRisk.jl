@@ -17,6 +17,10 @@ function runtests()
     println("\n### extraction ###")
     println("test_heuristic_feature_extractor.jl")
     include("extraction/test_heuristic_feature_extractor.jl")
+    println("test_feature_extractors.jl")
+    include("extraction/test_feature_extractors.jl")
+    println("test_multi_feature_extractor.jl")
+    include("extraction/test_multi_feature_extractor.jl")
 
     # generation
     println("\n### generation ###")
