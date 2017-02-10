@@ -17,6 +17,10 @@ include("utils/automotive.jl")
 include("utils/flags.jl")
 include("utils/utils.jl")
 
+# extraction
+include("extraction/feature_extractors.jl")
+include("extraction/heuristic_feature_extractor.jl")
+
 # generation
 ## roadway
 include("generation/roadway/roadway_generator.jl")

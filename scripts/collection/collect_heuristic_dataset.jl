@@ -28,6 +28,7 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     evaluator_type = flags["evaluator_type"]
     prediction_model_type = flags["prediction_model_type"]
     network_filepath = flags["network_filepath"]
+    extractor_type = flags["extractor_type"]
 
     # seeds are replaced by parallel collector
     seeds = Vector{Int}()
@@ -89,6 +90,13 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     targets = Array{Float64}(target_dim, max_num_veh)
     agg_targets = Array{Float64}(target_dim, max_num_veh)
 
+    if extractor_type == "heuristic"
+        ext = HeuristicFeatureExtractor()
+    else
+        throw(ArgumentError(
+            "invalid extractor_type $(extractor_type)"))
+    end
+
     if evaluator_type == "bootstrap"
         if prediction_model_type == "neural_network"
             prediction_model = Network(network_filepath)
@@ -97,11 +105,11 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
                 "invalid prediction model type $(prediction_model_type)"))
         end
 
-        eval = BootstrappingMonteCarloEvaluator(num_runs, context, prime_time,
+        eval = BootstrappingMonteCarloEvaluator(ext, num_runs, context, prime_time,
             sampling_time, veh_idx_can_change, rec, features, targets, 
             agg_targets, prediction_model)
     else
-        eval = MonteCarloEvaluator(num_runs, context, prime_time, sampling_time,
+        eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
             veh_idx_can_change, rec, features, targets, agg_targets)
     end
 

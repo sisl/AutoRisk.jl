@@ -100,6 +100,9 @@ add_entry!(FLAGS,
     "evaluator_type", "base", String, 
     "Type of evaluator to use {base, bootstrap}.")
 add_entry!(FLAGS, 
+    "extractor_type", "heuristic", String, 
+    "Type of extractor to use {heuristic}.")
+add_entry!(FLAGS, 
     "prediction_model_type", "neural_network", String, 
     "Type of prediction model to use {neural_network}.")
 add_entry!(FLAGS, 

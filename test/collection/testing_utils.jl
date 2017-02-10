@@ -49,6 +49,7 @@ function build_debug_dataset_collector(;
     models = Dict{Int, DriverModel}()
 
     # evaluator
+    ext = HeuristicFeatureExtractor()
     num_runs::Int64 = 50
     prime_time::Float64 = 2.
     sampling_time::Float64 = 3.
@@ -59,7 +60,7 @@ function build_debug_dataset_collector(;
     targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
-    eval = MonteCarloEvaluator(num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset

@@ -9,6 +9,7 @@ export
         targets from the results.
 """
 type BootstrappingMonteCarloEvaluator <: Evaluator
+    ext::AbstractFeatureExtractor
     num_runs::Int64
     context::IntegratedContinuous
     prime_time::Float64
@@ -44,7 +45,8 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
         - agg_targets: aggregate target values accumulated across runs
         - rng: random number generator to use
     """
-    function BootstrappingMonteCarloEvaluator(num_runs::Int64, 
+    function BootstrappingMonteCarloEvaluator(ext::AbstractFeatureExtractor,
+            num_runs::Int64, 
             context::IntegratedContinuous,
             prime_time::Float64, 
             sampling_time::Float64, 
@@ -56,7 +58,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
             prediction_model::PredictionModel,
             rng::MersenneTwister = MersenneTwister(1))
         prediction_features = Array{Float64}(size(features))
-        return new(num_runs, context, prime_time, sampling_time, 
+        return new(ext, num_runs, context, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, targets, agg_targets, 
             prediction_features, prediction_model, rng, 0, Dict{Int64, Int64}(),
             Set{Int}())
@@ -65,13 +67,16 @@ end
 
 function bootstrap_targets!(eval::BootstrappingMonteCarloEvaluator, 
         models::Dict{Int, DriverModel}, roadway::Roadway)
-    extract_features!(eval.rec, roadway, models, eval.prediction_features, 
-        done = eval.done)
     input_dim = size(eval.prediction_features, 1)
+    fill!(eval.prediction_features, 0)
     for (veh_id, veh_idx) in eval.veh_id_to_idx
+
         if !in(veh_id, eval.done) && !any(eval.targets[1:3, veh_idx] .== 1)
+
+            pull_features!(eval.ext, eval.prediction_features, eval.rec, roadway, veh_idx, models)
             bootstrap_values = predict(eval.prediction_model, reshape(
                 eval.prediction_features[:, veh_idx], (1, input_dim)))
+
             eval.targets[:, veh_idx] += bootstrap_values[:]
             eval.targets[:, veh_idx] = min(max(
                 eval.targets[:, veh_idx], 0.0), 1.0)
