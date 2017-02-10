@@ -124,8 +124,8 @@ Standard parameter sets
 
 function get_aggressive_behavior_params(;deterministic = true,
         delayed_response = true)
-    lonσ = deterministic ? 0 : 2.
-    latσ = deterministic ? 0 : .2
+    lonσ = deterministic ? 0 : 1.
+    latσ = deterministic ? 0 : .1
     t_d = delayed_response ? .3 : 0.0
     return BehaviorParams(
         IDMParams(lonσ, 1.5, 4.0, 0.5, 35., 4.0, 4.0, 2.5, t_d),
@@ -135,8 +135,8 @@ end
 
 function get_passive_behavior_params(;deterministic = true,
         delayed_response = true)
-    lonσ = deterministic ? 0 : 2.
-    latσ = deterministic ? 0 : .2
+    lonσ = deterministic ? 0 : 1.
+    latσ = deterministic ? 0 : .1
     t_d = delayed_response ? .3 : 0.0
     return BehaviorParams(
         IDMParams(lonσ, 1.0, 4.0, 1.75, 25., 5.0, 1.0, 1.0, t_d),
@@ -146,8 +146,8 @@ end
 
 function get_normal_behavior_params(;deterministic = true,
         delayed_response = true)
-    lonσ = deterministic ? 0 : 2.
-    latσ = deterministic ? 0 : .2
+    lonσ = deterministic ? 0 : 1.
+    latσ = deterministic ? 0 : .1
     t_d = delayed_response ? .3 : 0.0
     return BehaviorParams(
         IDMParams(lonσ, 1.25, 4.0, 1.25, 30., 4.5, 2.5, 1.75, t_d),
