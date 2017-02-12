@@ -52,13 +52,14 @@ add_entry!(FLAGS,
     "heuristic_behavior_type", "", String, 
     "Only use this behavior {aggressive, passive, normal} if given and using heuristic driver.")
 add_entry!(FLAGS, 
+    "lon_accel_std_dev", 1., Float64, 
+    "Standard deviation of normal distribution from which longitudinal 
+    acceleration is sampled.")
+add_entry!(FLAGS, 
     "lat_accel_std_dev", .1, Float64, 
     "Standard deviation of normal distribution from which latitudinal 
     acceleration is sampled.")
-add_entry!(FLAGS, 
-    "lon_accel_std_dev", .1, Float64, 
-    "Standard deviation of normal distribution from which longitudinal 
-    acceleration is sampled.")
+
 add_entry!(FLAGS, 
     "response_time", .3, Float64, 
     "Response time for heursitic, delayed driver models.")

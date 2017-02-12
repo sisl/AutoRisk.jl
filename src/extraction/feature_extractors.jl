@@ -11,9 +11,9 @@ export
     CarLidarFeatureExtractor,
     RoadLidarFeatureExtractor,
     NormalizingExtractor,
+    EmptyExtractor,
     pull_features!,
     length
-
 
 ##################### Helper methods #####################
 
@@ -362,5 +362,20 @@ function AutomotiveDrivingModels.pull_features!(
 
     # normalize those values
     features[:] = (features .- ext.μ) ./ ext.σ
+    return features
+end
+
+type EmptyExtractor <: AbstractFeatureExtractor
+end
+Base.length(ext::EmptyExtractor) = 0
+function AutomotiveDrivingModels.pull_features!(
+        ext::EmptyExtractor, 
+        features::Array{Float64}, 
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int,
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        fidx::Int = 0,
+        pastframe::Int = 0)
     return features
 end

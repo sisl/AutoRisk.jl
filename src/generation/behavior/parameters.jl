@@ -14,7 +14,7 @@ function uniform(rng::MersenneTwister, low::Float64, high::Float64)
     return low + rand(rng) * (high - low)
 end
 
-immutable IDMParams
+type IDMParams
     σ::Float64 # standard deviation of action
     k_spd::Float64 # proportional speed tracking constant
     δ::Float64 # acceleration exponent [-]
@@ -51,7 +51,7 @@ function Base.:(==)(p1::IDMParams, p2::IDMParams)
             && p1.t_d == p2.t_d)
 end
 
-immutable MOBILParams
+type MOBILParams
     politeness::Float64 # politeness factor
     safe_decel::Float64 # safe braking value
     advantage_threshold::Float64 # minimum accel
@@ -70,7 +70,7 @@ function Base.:(==)(p1::MOBILParams, p2::MOBILParams)
             && p1.advantage_threshold == p2.advantage_threshold)
 end
 
-immutable LateralParams
+type LateralParams
     σ::Float64 # standard deviation of action
     kp::Float64 # proportional constant for lane tracking
     kd::Float64 # derivative constant for lane tracking
@@ -88,7 +88,7 @@ function Base.:(==)(p1::LateralParams, p2::LateralParams)
     return p1.σ == p2.σ && p1.kp == p2.kp && p1.kd == p2.kd
 end
 
-immutable BehaviorParams
+type BehaviorParams
     idm::IDMParams
     mobil::MOBILParams
     lat::LateralParams

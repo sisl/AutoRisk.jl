@@ -1,15 +1,17 @@
-try
-    Pkg.clone("https://github.com/tawheeler/Vec.jl.git")
-catch e
-    println("Exception when cloning Vec.jl while building AutoRisk: $(e)")
+urls = [
+    "https://github.com/tawheeler/Vec.jl.git",
+    "https://github.com/tawheeler/AutomotiveDrivingModels.jl.git",
+    "https://github.com/tawheeler/AutoViz.jl.git"
+    "https://github.com/tawheeler/ForwardNets.jl.git"
+]
+
+for url in urls
+    try
+        Pkg.clone(url)
+    catch e
+        println("Exception when cloning $(url): $(e)")  
+    end
 end
-try
-    Pkg.clone("https://github.com/tawheeler/AutomotiveDrivingModels.jl.git")
-catch e
-    println("Exception when cloning AutomotiveDrivingModels.jl while building AutoRisk: $(e)")	
-end
-try
-    Pkg.clone("https://github.com/tawheeler/AutoViz.jl.git")
-catch e
-    println("Exception when cloning AutoViz.jl while building AutoRisk: $(e)")	
-end
+
+Pkg.build("AutomotiveDrivingModels")
+Pkg.build("AutoRisk")
