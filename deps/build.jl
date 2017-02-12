@@ -14,4 +14,4 @@ for url in urls
 end
 
 Pkg.build("AutomotiveDrivingModels")
-Pkg.build("AutoRisk")
+
