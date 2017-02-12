@@ -389,3 +389,58 @@ function executed_hard_brake(rec::SceneRecord, roadway::Roadway,
     return hard_brake
 end
 
+"""
+Overriding IDM track_longitudinal! in order to clamp accel in negative velocity
+situations. 
+"""
+function AutomotiveDrivingModels.track_longitudinal!(
+        model::IntelligentDriverModel, scene::Scene, roadway::Roadway, 
+        ego_index::Int, target_index::Int)
+    veh_ego = scene[ego_index]
+    v = veh_ego.state.v
+
+    if target_index > 0
+        veh_target = scene[target_index]
+
+        s_gap = get_frenet_relative_position(get_rear_center(veh_target),
+                                             veh_ego.state.posF.roadind, roadway).Δs
+
+        if s_gap > 0.0
+            Δv = veh_target.state.v - v
+            s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
+            v_ratio = model.v_des > 0.0 ? (v/model.v_des) : 1.0
+            model.a = model.a_max * (1.0 - v_ratio^model.δ - (s_des/s_gap)^2)
+        elseif s_gap > -veh_ego.def.length
+            model.a = -model.d_max
+        else
+            Δv = model.v_des - v
+            model.a = Δv*model.k_spd
+        end
+
+        if isnan(model.a)
+
+            warn("IDM acceleration was NaN!")
+            if s_gap > 0.0
+                Δv = veh_target.state.v - v
+                s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
+                println("\tΔv: ", Δv)
+                println("\ts_des: ", s_des)
+                println("\tv_des: ", model.v_des)
+                println("\tδ: ", model.δ)
+                println("\ts_gap: ", s_gap)
+            elseif s_gap > -veh_ego.def.length
+                println("\td_max: ", model.d_max)
+            end
+
+            model.a = 0.0
+        end
+    else
+        # no lead vehicle, just drive to match desired speed
+        Δv = model.v_des - v
+        model.a = Δv*model.k_spd # predicted accel to match target speed
+    end
+
+    low = v < 0. ? 0. : -model.d_max
+    model.a = clamp(model.a, low, model.a_max)
+    model
+end

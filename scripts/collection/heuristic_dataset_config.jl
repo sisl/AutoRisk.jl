@@ -111,6 +111,9 @@ add_entry!(FLAGS,
 add_entry!(FLAGS, 
     "network_filepath", "../../data/networks/network.weights", String, 
     "Filepath to network weights file, generally for bootstrapping.")
+add_entry!(FLAGS, 
+    "veh_idx_can_change", false, Bool, 
+    "Whether or not vehicles can change index in the scene during eval.")
 ## extractor 
 add_entry!(FLAGS, 
     "extractor_type", "heuristic", String, 

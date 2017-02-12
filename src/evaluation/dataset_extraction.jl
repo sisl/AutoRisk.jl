@@ -52,7 +52,7 @@ function extract_vehicle_frame_targets!(rec::SceneRecord, roadway::Roadway,
     ### behavioral targets
     # hard brake
     hard_brake = executed_hard_brake(rec, roadway, veh_idx, pastframe, 
-        hard_brake_threshold = -4, n_past_frames = 2)
+        hard_brake_threshold = -3., n_past_frames = 2)
 
     if hard_brake
         targets[4, target_idx] = 1.
@@ -167,166 +167,166 @@ end
 
 ##################### Feature Extraction #####################
 
-"""
-# Description:
-    - Extract features for a single vehicle
+# """
+# # Description:
+#     - Extract features for a single vehicle
 
-# Args:
-    - rec: scene rec from which to derive features
-    - roadway: roadway in state
-    - models: models for all drivers in the rec (id => model)
-    - features: array in which to insert features
-        shape = (feature_dim, num_vehicles)
-    - veh_id: id of the vehicle for which to derive features
-    - veh_idx: index in the _most recent_ scene of the vehicle 
-        with id veh_id. Note that if features need to be derived 
-        from scenes earlier than the current, this must be recomputed.
-"""
-function extract_vehicle_features!(rec::SceneRecord, roadway::Roadway, 
-        models::Dict{Int64, DriverModel}, features::Array{Float64},
-        veh_id::Int64, veh_idx::Int64)
+# # Args:
+#     - rec: scene rec from which to derive features
+#     - roadway: roadway in state
+#     - models: models for all drivers in the rec (id => model)
+#     - features: array in which to insert features
+#         shape = (feature_dim, num_vehicles)
+#     - veh_id: id of the vehicle for which to derive features
+#     - veh_idx: index in the _most recent_ scene of the vehicle 
+#         with id veh_id. Note that if features need to be derived 
+#         from scenes earlier than the current, this must be recomputed.
+# """
+# function extract_vehicle_features!(rec::SceneRecord, roadway::Roadway, 
+#         models::Dict{Int64, DriverModel}, features::Array{Float64},
+#         veh_id::Int64, veh_idx::Int64)
 
-    # extract scene features
-    scene = get_scene(rec, 0)
+#     # extract scene features
+#     scene = get_scene(rec, 0)
 
-    # ego vehicle features
-    veh_ego = scene[veh_idx]
-    features[1, veh_idx] = veh_ego.state.posF.t
-    features[2, veh_idx] = veh_ego.state.posF.ϕ
-    features[3, veh_idx] = veh_ego.state.v
-    features[4, veh_idx] = veh_ego.def.length
-    features[5, veh_idx] = veh_ego.def.width
-    features[6, veh_idx] = convert(Float64, 
-        get(ACC, rec, roadway, veh_idx))
-    features[7, veh_idx] = convert(Float64, 
-        get(JERK, rec, roadway, veh_idx))
-    features[8, veh_idx] = convert(Float64, 
-        get(TURNRATEG, rec, roadway, veh_idx))
-    features[9, veh_idx] = convert(Float64, 
-        get(ANGULARRATEG, rec, roadway, veh_idx))
-    features[10, veh_idx] = convert(Float64, 
-        get(TURNRATEF, rec, roadway, veh_idx))
-    features[11, veh_idx] = convert(Float64, 
-        get(ANGULARRATEF, rec, roadway, veh_idx))
-    features[12, veh_idx] = convert(Float64, 
-        get(LANECURVATURE, rec, roadway, veh_idx))
-    features[13, veh_idx] = convert(Float64, 
-        get(MARKERDIST_LEFT, rec, roadway, veh_idx))
-    features[14, veh_idx] = convert(Float64, 
-        get(MARKERDIST_RIGHT, rec, roadway, veh_idx))
-    features[15, veh_idx] = convert(Float64, 
-        features[13, veh_idx] < -1.0 || features[14] < -1.0)
-    features[16, veh_idx] = convert(Float64, 
-        veh_ego.state.v < 0.0)
-    set_dual_feature!(features, 17, 
-        get(LANEOFFSETLEFT, rec, roadway, veh_idx), veh_idx)
-    set_dual_feature!(features, 19, 
-        get(LANEOFFSETRIGHT, rec, roadway, veh_idx), veh_idx)
+#     # ego vehicle features
+#     veh_ego = scene[veh_idx]
+#     features[1, veh_idx] = veh_ego.state.posF.t
+#     features[2, veh_idx] = veh_ego.state.posF.ϕ
+#     features[3, veh_idx] = veh_ego.state.v
+#     features[4, veh_idx] = veh_ego.def.length
+#     features[5, veh_idx] = veh_ego.def.width
+#     features[6, veh_idx] = convert(Float64, 
+#         get(ACC, rec, roadway, veh_idx))
+#     features[7, veh_idx] = convert(Float64, 
+#         get(JERK, rec, roadway, veh_idx))
+#     features[8, veh_idx] = convert(Float64, 
+#         get(TURNRATEG, rec, roadway, veh_idx))
+#     features[9, veh_idx] = convert(Float64, 
+#         get(ANGULARRATEG, rec, roadway, veh_idx))
+#     features[10, veh_idx] = convert(Float64, 
+#         get(TURNRATEF, rec, roadway, veh_idx))
+#     features[11, veh_idx] = convert(Float64, 
+#         get(ANGULARRATEF, rec, roadway, veh_idx))
+#     features[12, veh_idx] = convert(Float64, 
+#         get(LANECURVATURE, rec, roadway, veh_idx))
+#     features[13, veh_idx] = convert(Float64, 
+#         get(MARKERDIST_LEFT, rec, roadway, veh_idx))
+#     features[14, veh_idx] = convert(Float64, 
+#         get(MARKERDIST_RIGHT, rec, roadway, veh_idx))
+#     features[15, veh_idx] = convert(Float64, 
+#         features[13, veh_idx] < -1.0 || features[14] < -1.0)
+#     features[16, veh_idx] = convert(Float64, 
+#         veh_ego.state.v < 0.0)
+#     set_dual_feature!(features, 17, 
+#         get(LANEOFFSETLEFT, rec, roadway, veh_idx), veh_idx)
+#     set_dual_feature!(features, 19, 
+#         get(LANEOFFSETRIGHT, rec, roadway, veh_idx), veh_idx)
 
-    # lane features
-    features[21, veh_idx] = convert(Float64, 
-        get(HAS_LANE_LEFT, rec, roadway, veh_idx))
-    features[22, veh_idx] = convert(Float64, 
-        get(HAS_LANE_RIGHT, rec, roadway, veh_idx))
+#     # lane features
+#     features[21, veh_idx] = convert(Float64, 
+#         get(HAS_LANE_LEFT, rec, roadway, veh_idx))
+#     features[22, veh_idx] = convert(Float64, 
+#         get(HAS_LANE_RIGHT, rec, roadway, veh_idx))
 
-    # do not pass the later-calculated neighbor to these functions 
-    # because they assume that the NeighborLongitudinalResult
-    # has not yet had the lengths of the vehicles substracted from
-    # the distance between the vehicles
+#     # do not pass the later-calculated neighbor to these functions 
+#     # because they assume that the NeighborLongitudinalResult
+#     # has not yet had the lengths of the vehicles substracted from
+#     # the distance between the vehicles
 
-    # timegap is the time between when this vehicle's front bumper
-    # will be in the position currently occupied by the vehicle 
-    # infront's back bumper
-    set_dual_feature!(features, 23, 
-        get(TIMEGAP, rec, roadway, veh_idx, censor_hi = 30.0), veh_idx)
+#     # timegap is the time between when this vehicle's front bumper
+#     # will be in the position currently occupied by the vehicle 
+#     # infront's back bumper
+#     set_dual_feature!(features, 23, 
+#         get(TIMEGAP, rec, roadway, veh_idx, censor_hi = 30.0), veh_idx)
 
-    # inverse time to collision is the time until a collision 
-    # assuming that no actions are taken
-    # inverse is taken so as to avoid infinite value, so flip here to get back
-    # to TTC
-    inv_ttc = get(INV_TTC, rec, roadway, veh_idx)
-    ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
-    set_dual_feature!(features, 25, ttc, veh_idx)
+#     # inverse time to collision is the time until a collision 
+#     # assuming that no actions are taken
+#     # inverse is taken so as to avoid infinite value, so flip here to get back
+#     # to TTC
+#     inv_ttc = get(INV_TTC, rec, roadway, veh_idx)
+#     ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
+#     set_dual_feature!(features, 25, ttc, veh_idx)
 
-    # feature for whether a collision has already occurred
-    features[27, veh_idx] = convert(Float64, 
-        get_collision_type(rec, roadway, veh_idx))
+#     # feature for whether a collision has already occurred
+#     features[27, veh_idx] = convert(Float64, 
+#         get_collision_type(rec, roadway, veh_idx))
 
-    # neighbor features
-    F = VehicleTargetPointFront()
-    R = VehicleTargetPointRear()
-    fore_M = get_neighbor_fore_along_lane(
-        scene, veh_idx, roadway, F, R, F)
-    fore_L = get_neighbor_fore_along_left_lane(
-        scene, veh_idx, roadway, F, R, F)
-    fore_R = get_neighbor_fore_along_right_lane(
-        scene, veh_idx, roadway, F, R, F)
-    rear_M = get_neighbor_rear_along_lane(
-        scene, veh_idx, roadway, R, F, R)
-    rear_L = get_neighbor_rear_along_left_lane(
-        scene, veh_idx, roadway, R, F, R)
-    rear_R = get_neighbor_rear_along_right_lane(
-        scene, veh_idx, roadway, R, F, R)
-    if fore_M.ind != 0
-        fore_fore_M = get_neighbor_fore_along_lane(
-            scene, fore_M.ind, roadway, F, R, F)
-    else
-        fore_fore_M = NeighborLongitudinalResult(0, 0.)
-    end
+#     # neighbor features
+#     F = VehicleTargetPointFront()
+#     R = VehicleTargetPointRear()
+#     fore_M = get_neighbor_fore_along_lane(
+#         scene, veh_idx, roadway, F, R, F)
+#     fore_L = get_neighbor_fore_along_left_lane(
+#         scene, veh_idx, roadway, F, R, F)
+#     fore_R = get_neighbor_fore_along_right_lane(
+#         scene, veh_idx, roadway, F, R, F)
+#     rear_M = get_neighbor_rear_along_lane(
+#         scene, veh_idx, roadway, R, F, R)
+#     rear_L = get_neighbor_rear_along_left_lane(
+#         scene, veh_idx, roadway, R, F, R)
+#     rear_R = get_neighbor_rear_along_right_lane(
+#         scene, veh_idx, roadway, R, F, R)
+#     if fore_M.ind != 0
+#         fore_fore_M = get_neighbor_fore_along_lane(
+#             scene, fore_M.ind, roadway, F, R, F)
+#     else
+#         fore_fore_M = NeighborLongitudinalResult(0, 0.)
+#     end
 
-    next_feature_idx = 28
-    set_neighbor_features!(
-        features, next_feature_idx, fore_M, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, fore_L, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, fore_R, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, rear_M, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, rear_L, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, rear_R, scene, rec, roadway, veh_idx)
-    set_neighbor_features!(
-        features, next_feature_idx += 5, fore_fore_M, scene, rec, roadway, veh_idx)
+#     next_feature_idx = 28
+#     set_neighbor_features!(
+#         features, next_feature_idx, fore_M, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, fore_L, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, fore_R, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, rear_M, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, rear_L, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, rear_R, scene, rec, roadway, veh_idx)
+#     set_neighbor_features!(
+#         features, next_feature_idx += 5, fore_fore_M, scene, rec, roadway, veh_idx)
 
-    # extract driver behavior features for ego and surrounding vehicles
-    idxs::Vector{Int64} = [veh_idx, fore_M.ind, fore_L.ind, fore_R.ind, 
-        rear_M.ind, rear_L.ind, rear_R.ind, fore_fore_M.ind]
-    next_feature_idx = 62
-    for veh_index in idxs
-        next_feature_idx = set_behavioral_features(scene, models, features, 
-            veh_index, next_feature_idx)
-    end 
-end
+#     # extract driver behavior features for ego and surrounding vehicles
+#     idxs::Vector{Int64} = [veh_idx, fore_M.ind, fore_L.ind, fore_R.ind, 
+#         rear_M.ind, rear_L.ind, rear_R.ind, fore_fore_M.ind]
+#     next_feature_idx = 62
+#     for veh_index in idxs
+#         next_feature_idx = set_behavioral_features(scene, models, features, 
+#             veh_index, next_feature_idx)
+#     end 
+# end
 
-"""
-# Description:
-    - Extract features for all vehicles in the scene record.
+# """
+# # Description:
+#     - Extract features for all vehicles in the scene record.
 
-# Args:
-    - rec: scene rec from which to derive features
-    - roadway: roadway in state
-    - models: models for all drivers in the rec (id => model)
-    - features: array in which to insert features
-        shape = (feature_dim, num_vehicles)
-    - done: a set of vehicle ids for which features should not be extracted
-"""
-function extract_features!(rec::SceneRecord, roadway::Roadway, 
-        models::Dict{Int, DriverModel}, features::Array{Float64}; 
-        done::Set{Int} = Set{Int}())
+# # Args:
+#     - rec: scene rec from which to derive features
+#     - roadway: roadway in state
+#     - models: models for all drivers in the rec (id => model)
+#     - features: array in which to insert features
+#         shape = (feature_dim, num_vehicles)
+#     - done: a set of vehicle ids for which features should not be extracted
+# """
+# function extract_features!(rec::SceneRecord, roadway::Roadway, 
+#         models::Dict{Int, DriverModel}, features::Array{Float64}; 
+#         done::Set{Int} = Set{Int}())
 
-    # reset features container
-    fill!(features, 0)
+#     # reset features container
+#     fill!(features, 0)
 
-    # extract features for each vehicle in the scene
-    for (vidx, veh) in enumerate(get_scene(rec, 0))
-        if !in(veh.def.id, done)
-            extract_vehicle_features!(rec, roadway, models, features, 
-                veh.def.id, vidx)
-        end
-    end
-end
+#     # extract features for each vehicle in the scene
+#     for (vidx, veh) in enumerate(get_scene(rec, 0))
+#         if !in(veh.def.id, done)
+#             extract_vehicle_features!(rec, roadway, models, features, 
+#                 veh.def.id, vidx)
+#         end
+#     end
+# end
 
 function extract_features!(ext::AbstractFeatureExtractor, rec::SceneRecord, 
         roadway::Roadway, models::Dict{Int, DriverModel}, features::Array{Float64})
