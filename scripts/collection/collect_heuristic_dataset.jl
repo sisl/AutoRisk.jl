@@ -23,8 +23,9 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     max_num_samples = flags["num_scenarios"] * max_num_veh
     behavior_type = flags["behavior_type"]
     heuristic_behavior_type = flags["heuristic_behavior_type"]
-    behavior_noise = flags["behavior_noise"]
-    delayed_response = flags["delayed_response"]
+    lon_accel_std_dev = flags["lon_accel_std_dev"]
+    lat_accel_std_dev = flags["lat_accel_std_dev"]
+    response_time = flags["response_time"]
     evaluator_type = flags["evaluator_type"]
     prediction_model_type = flags["prediction_model_type"]
     network_filepath = flags["network_filepath"]
@@ -36,24 +37,24 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
         ext = HeuristicFeatureExtractor()
     elseif extractor_type == "multi"
         subexts = []
-        if flags["extract_core"] == true
+        if flags["extract_core"]
             push!(subexts, CoreFeatureExtractor())
         end
-        if flags["extract_temporal"] == true
+        if flags["extract_temporal"]
             push!(subexts, TemporalFeatureExtractor())
         end
-        if flags["extract_well_behaved"] == true
+        if flags["extract_well_behaved"]
             push!(subexts, WellBehavedFeatureExtractor())
         end
-        if flags["extract_neighbor"] == true
+        if flags["extract_neighbor"]
             push!(subexts, NeighborFeatureExtractor())
         end
-        if flags["extract_car_lidar"] == true
+        if flags["extract_car_lidar"]
             push!(subexts, 
                 CarLidarFeatureExtractor(extract_carlidar_rangerate = 
                     flags["extract_car_lidar_range_rate"]))
         end
-        if flags["extract_road_lidar"] == true
+        if flags["extract_road_lidar"]
             push!(subexts, RoadLidarFeatureExtractor())
         end
         ext = MultiFeatureExtractor(subexts)
@@ -94,29 +95,35 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     if behavior_type == "heuristic"
         if heuristic_behavior_type == "aggressive"
             params = [get_aggressive_behavior_params(
-                deterministic = !behavior_noise,
-                delayed_response = delayed_response)]
+                lon_σ = lon_accel_std_dev, 
+                lat_σ = lat_accel_std_dev, 
+                response_time = response_time)]
             weights = WeightVec([1.])
         elseif heuristic_behavior_type == "passive"
             params = [get_passive_behavior_params(
-                deterministic = !behavior_noise,
-                delayed_response = delayed_response)]
+                lon_σ = lon_accel_std_dev, 
+                lat_σ = lat_accel_std_dev, 
+                response_time = response_time)]
             weights = WeightVec([1.])
         elseif heuristic_behavior_type == "normal"
             params = [get_normal_behavior_params(
-                deterministic = !behavior_noise,
-                delayed_response = delayed_response)]
+                lon_σ = lon_accel_std_dev, 
+                lat_σ = lat_accel_std_dev, 
+                response_time = response_time)]
             weights = WeightVec([1.])
         else
             params = [get_aggressive_behavior_params(
-                        deterministic = !behavior_noise,
-                        delayed_response = delayed_response), 
+                        lon_σ = lon_accel_std_dev, 
+                        lat_σ = lat_accel_std_dev, 
+                        response_time = response_time), 
                     get_passive_behavior_params(
-                        deterministic = !behavior_noise,
-                        delayed_response = delayed_response),
+                        lon_σ = lon_accel_std_dev, 
+                        lat_σ = lat_accel_std_dev, 
+                        response_time = response_time),
                     get_normal_behavior_params(
-                        deterministic = !behavior_noise,
-                        delayed_response = delayed_response)]
+                        lon_σ = lon_accel_std_dev, 
+                        lat_σ = lat_accel_std_dev, 
+                        response_time = response_time)]
             weights = WeightVec([.2,.3,.5])
         end
         behavior_gen = PredefinedBehaviorGenerator(context, params, weights)

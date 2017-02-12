@@ -52,11 +52,16 @@ add_entry!(FLAGS,
     "heuristic_behavior_type", "", String, 
     "Only use this behavior {aggressive, passive, normal} if given and using heuristic driver.")
 add_entry!(FLAGS, 
-    "behavior_noise", true, Bool, 
-    "Whether or not driving behaviors should have noise applied to actions.")
+    "lat_accel_std_dev", .1, Float64, 
+    "Standard deviation of normal distribution from which latitudinal 
+    acceleration is sampled.")
 add_entry!(FLAGS, 
-    "delayed_response", true, Bool, 
-    "Whether or not longitudinal acceleration is delayed.")
+    "lon_accel_std_dev", .1, Float64, 
+    "Standard deviation of normal distribution from which longitudinal 
+    acceleration is sampled.")
+add_entry!(FLAGS, 
+    "response_time", .3, Float64, 
+    "Response time for heursitic, delayed driver models.")
 add_entry!(FLAGS, 
     "driver_network_filepath", "../../data/policies/gail_mlp.h5", String, 
     "Filepath to policy network to use with learned drivers.")

@@ -122,37 +122,34 @@ end
 Standard parameter sets
 """
 
-function get_aggressive_behavior_params(;deterministic = true,
-        delayed_response = true)
-    lonσ = deterministic ? 0 : 1.
-    latσ = deterministic ? 0 : .1
-    t_d = delayed_response ? .3 : 0.0
+function get_aggressive_behavior_params(;
+        lon_σ = 0.0, 
+        lat_σ = 0.0, 
+        response_time = 0.0)
     return BehaviorParams(
-        IDMParams(lonσ, 1.5, 4.0, 0.5, 35., 4.0, 4.0, 2.5, t_d),
+        IDMParams(lon_σ, 1.5, 4.0, 0.5, 35., 4.0, 4.0, 2.5, response_time),
         MOBILParams(0.1, 2.0, 0.01),
-        LateralParams(latσ, 3.5, 2.5))
+        LateralParams(lat_σ, 3.5, 2.5))
 end
 
-function get_passive_behavior_params(;deterministic = true,
-        delayed_response = true)
-    lonσ = deterministic ? 0 : 1.
-    latσ = deterministic ? 0 : .1
-    t_d = delayed_response ? .3 : 0.0
+function get_passive_behavior_params(;
+        lon_σ = 0.0, 
+        lat_σ = 0.0, 
+        response_time = 0.0)
     return BehaviorParams(
-        IDMParams(lonσ, 1.0, 4.0, 1.75, 25., 5.0, 1.0, 1.0, t_d),
+        IDMParams(lon_σ, 1.0, 4.0, 1.75, 25., 5.0, 1.0, 1.0, response_time),
         MOBILParams(0.5, 2.0, 0.7),
-        LateralParams(latσ, 3.0, 2.0))
+        LateralParams(lat_σ, 3.0, 2.0))
 end
 
-function get_normal_behavior_params(;deterministic = true,
-        delayed_response = true)
-    lonσ = deterministic ? 0 : 1.
-    latσ = deterministic ? 0 : .1
-    t_d = delayed_response ? .3 : 0.0
+function get_normal_behavior_params(;
+        lon_σ = 0.0, 
+        lat_σ = 0.0, 
+        response_time = 0.0)
     return BehaviorParams(
-        IDMParams(lonσ, 1.25, 4.0, 1.25, 30., 4.5, 2.5, 1.75, t_d),
+        IDMParams(lon_σ, 1.25, 4.0, 1.25, 30., 4.5, 2.5, 1.75, response_time),
         MOBILParams(0.3, 2.0, 0.2),
-        LateralParams(latσ, 3.25, 2.25))
+        LateralParams(lat_σ, 3.25, 2.25))
 end
 
 # function get_politeness_covariance_matrix(;σ = 1.0, ρ = 0.5, 

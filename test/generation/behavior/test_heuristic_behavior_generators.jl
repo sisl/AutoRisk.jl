@@ -31,7 +31,7 @@ end
 function test_predefined_behavior_generator_non_determinism()
     
     # nondeterministic case
-    params = get_normal_behavior_params(deterministic = false)
+    params = get_normal_behavior_params(lon_σ = 1., lat_σ = .1)
     context = IntegratedContinuous(.1, 1)
     num_vehicles = 1 
     driver = build_driver(params, context, num_vehicles)
@@ -65,7 +65,7 @@ function test_predefined_behavior_generator_non_determinism()
     @test act_1 != act_3
 
     # deterministic case
-    params = get_normal_behavior_params(deterministic = true)
+    params = get_normal_behavior_params()
     driver = build_driver(params, context, num_vehicles)
     observe!(driver, scene, roadway, 1)
 

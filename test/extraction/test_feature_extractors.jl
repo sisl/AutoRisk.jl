@@ -117,7 +117,6 @@ function test_normalizing_feature_extractor()
 
     features = zeros(length(ext), num_veh)
     pull_features!(ext, features, rec, roadway, 1, models)
-    println(features[:,1])
 end
 
 @time test_car_lidar_feature_extractor()
