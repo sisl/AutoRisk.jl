@@ -256,10 +256,18 @@ class FeedForwardNeuralNetwork(object):
             self.flags.l2_reg)
 
         # build hidden layers
+        # if layer dims not set individually, then assume all the same dim
+        hidden_layer_dims = self.flags.hidden_layer_dims
+        if len(hidden_layer_dims) == 0:
+            hidden_layer_dims = [self.flags.hidden_dim 
+                for _ in range(self.flags.num_hidden_layers)]
+
         hidden = input_ph
-        for lidx in range(self.flags.num_hidden_layers):
+        for (lidx, hidden_dim) in enumerate(hidden_layer_dims):
+        # for lidx in range(self.flags.num_hidden_layers):
             hidden = tf.contrib.layers.fully_connected(hidden, 
-                self.flags.hidden_dim, 
+                # self.flags.hidden_dim, 
+                hidden_dim, 
                 activation_fn=tf.nn.relu,
                 weights_initializer=weights_initializer,
                 weights_regularizer=weights_regularizer,

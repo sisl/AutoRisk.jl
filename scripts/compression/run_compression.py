@@ -65,6 +65,9 @@ tf.app.flags.DEFINE_integer('hidden_dim',
 tf.app.flags.DEFINE_integer('num_hidden_layers', 
                             2,
                             """Number of hidden layers.""")
+tf.app.flags.DEFINE_string('hidden_layer_dims', 
+                            '',
+                            """Hidden layer sizes, empty list means use hidden_dim.""")
 tf.app.flags.DEFINE_float('learning_rate', 
                             0.0005,
                             """Initial learning rate to use.""")
@@ -124,6 +127,17 @@ tf.app.flags.DEFINE_integer('num_scenarios',
 tf.app.flags.DEFINE_string('initial_network_filepath',
                             'none',
                             'Filepath of initial network or none.')
+
+def custom_parse_flags(flags):
+    if flags.hidden_layer_dims != '':
+        dims = flags.hidden_layer_dims.split(' ')
+        dims = [int(dim) for dim in dims]
+    else:
+        dims = [flags.hidden_dim for _ in range(flags.num_hidden_layers)]
+
+    flags.hidden_layer_dims = dims
+    print('Building network with hidden dimensions: {}'.format(
+            flags.hidden_layer_dims))
 
 def report_poorly_performing_indices_features(idxs, data, unnorm_data):
     batch_idxs = data['batch_idxs']
@@ -218,6 +232,9 @@ def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
     return ce, mse, r2
 
 def main(argv=None):
+    # custom parse of flags for list input
+    custom_parse_flags(FLAGS)
+
     # set random seeds
     np.random.seed(FLAGS.random_seed)
     tf.set_random_seed(FLAGS.random_seed)
