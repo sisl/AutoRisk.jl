@@ -55,7 +55,6 @@ tf.app.flags.DEFINE_integer('save_weights_every',
                             1,
                             """Number of batches between logging summaries.""")
 
-
 # network constants
 tf.app.flags.DEFINE_integer('max_norm', 
                             100000,
@@ -88,6 +87,9 @@ tf.app.flags.DEFINE_float('dropout_keep_prob',
 tf.app.flags.DEFINE_float('l2_reg', 
                             0.0,
                             """Probability to keep a unit in dropout.""")
+tf.app.flags.DEFINE_float('eps', 
+                            1e-8,
+                            """Minimum probability value.""")
 
 # dataset constants
 tf.app.flags.DEFINE_string('dataset_filepath',

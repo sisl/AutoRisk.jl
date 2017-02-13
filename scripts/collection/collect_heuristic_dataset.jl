@@ -3,6 +3,7 @@ using AutoRisk
 function build_dataset_collector(output_filepath, flags, col_id = 0)
     target_dim = flags["target_dim"]
     chunk_dim = flags["chunk_dim"]
+    roadway_type = flags["roadway_type"]
     roadway_length = flags["roadway_length"]
     roadway_radius = flags["roadway_radius"]
     min_num_veh = flags["min_num_vehicles"]
@@ -68,7 +69,7 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     seeds = Vector{Int}()
 
     # roadway gen
-    if behavior_type == "learned"
+    if roadway_type == "straight"
         roadway = gen_straight_roadway(num_lanes, roadway_length)
     else
         roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 

@@ -14,6 +14,9 @@ add_entry!(FLAGS,
 add_entry!(FLAGS, 
     "lane_width", 3., Float64, 
     "Width of lane in meters.")
+add_entry!(FLAGS, 
+    "roadway_type", "stadium", String, 
+    "Type of roadway (stadium, straight).")
 
 # vehicles
 add_entry!(FLAGS, 

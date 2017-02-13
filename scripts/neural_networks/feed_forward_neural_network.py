@@ -303,9 +303,15 @@ class FeedForwardNeuralNetwork(object):
             losses = tf.reduce_sum(
                 tf.nn.sigmoid_cross_entropy_with_logits(scores, targets),
                 reduction_indices=(0))
-        elif self.flags.loss_type == 'mse':
+        elif self.flags.loss_type == 'mse_probs':
             losses = tf.reduce_sum((probs - targets) ** 2, 
                 reduction_indices=(0))
+        elif self.flags.loss_type == 'mse_log_probs':
+            targets = tf.clip_by_value(targets, self.flags.eps, 1.)
+            targets = tf.log(targets)
+            losses = tf.reduce_sum((scores - targets) ** 2, 
+                reduction_indices=(0))
+            probs = tf.clip_by_value(tf.exp(scores), 0., 1.)
         else:
             raise(ValueError("invalid loss type: {}".format(
                 self.flags.loss_type)))
