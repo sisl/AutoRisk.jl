@@ -264,9 +264,7 @@ class FeedForwardNeuralNetwork(object):
 
         hidden = input_ph
         for (lidx, hidden_dim) in enumerate(hidden_layer_dims):
-        # for lidx in range(self.flags.num_hidden_layers):
             hidden = tf.contrib.layers.fully_connected(hidden, 
-                # self.flags.hidden_dim, 
                 hidden_dim, 
                 activation_fn=tf.nn.relu,
                 weights_initializer=weights_initializer,
