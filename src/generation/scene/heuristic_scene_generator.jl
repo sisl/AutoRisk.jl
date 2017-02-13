@@ -155,14 +155,18 @@ end
     - positions
 """
 function generate_road_positions(gen::HeuristicSceneGenerator, 
-        lanes::Vector{Int64})
+        lanes::Vector{Int64}, roadway_type::String = "stadium")
     # check if valid placement possible
     if !permits_valid_positions(gen, lanes)
         throw(ArgumentError("Too many positions requested: \n$(lanes)"))
     end
 
     # select random position on roadway for ego vehicle
-    ego_x = gen.total_roadway_length * rand(gen.rng)
+    if roadway_type == "stadium"
+        ego_x = gen.total_roadway_length * rand(gen.rng)
+    else # straight roadway
+        ego_x = gen.total_roadway_length * .1
+    end
 
     # randomly generate locations for other vehicles around ego vehicle
     positions = Vector{Float64}()
@@ -248,7 +252,11 @@ function reset!(gen::HeuristicSceneGenerator, scene::Scene,
 
     # heuristic generator assumes stadium roadway
     gen.total_roadway_length = get_total_roadway_length(roadway)
-    gen.max_init_dist = gen.total_roadway_length / 2 - gen.min_init_dist
+    if get_roadway_type(roadway) == "straight"
+        gen.max_init_dist = gen.total_roadway_length / 10.
+    else
+        gen.max_init_dist = gen.total_roadway_length / 2 - gen.min_init_dist
+    end
 
     # remove old contents of scene and models
     empty!(scene)
@@ -257,7 +265,8 @@ function reset!(gen::HeuristicSceneGenerator, scene::Scene,
     num_vehicles = rand(gen.rng, gen.min_num_vehicles:gen.max_num_vehicles)
     init_road_idxs = generate_init_road_idxs(gen, roadway, num_vehicles)
     lanes = [road_idx.tag.lane for road_idx in init_road_idxs]
-    road_positions = generate_road_positions(gen, lanes)
+    road_positions = generate_road_positions(
+        gen, lanes, get_roadway_type(roadway))
 
     # add vehicles to scene
     for (idx, (road_idx, road_pos)) in enumerate(

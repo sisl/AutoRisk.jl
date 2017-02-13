@@ -5,6 +5,7 @@ export
     stadium_roadway_area,
     straight_roadway_area,
     get_total_roadway_area,
+    get_roadway_type,
     inverse_ttc_to_ttc,
     push_forward_records!,
     executed_hard_brake
@@ -69,6 +70,15 @@ function get_total_roadway_area(roadway::Roadway)
     # stadium
     else
         return stadium_roadway_area(roadway)
+    end
+end
+
+function get_roadway_type(roadway::Roadway)
+    # straight
+    if length(roadway.segments) == 1
+        return "straight"
+    else
+        return "stadium"
     end
 end
 

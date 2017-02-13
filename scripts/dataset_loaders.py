@@ -52,17 +52,20 @@ def risk_dataset_loader(input_filepath, normalize=True,
         - data: a dictionary with keys 'x_train', 'y_train', 'x_val', 'y_val'
     """
     infile = h5py.File(input_filepath, 'r')
-    features = infile['risk/features'].value
-    targets = infile['risk/targets'].value
+
+    # if debugging, use fewer samples
+    if debug_size is not None:
+        features = infile['risk/features'][:debug_size]
+        targets = infile['risk/targets'][:debug_size]
+    else:
+        features = infile['risk/features'].value
+        targets = infile['risk/targets'].value
 
     msg = 'features and targets must be same length: features len: {}\ttargets len: {}'.format(
         len(features), len(targets))
     assert len(features) == len(targets), msg
 
-    # if debugging, use fewer samples
-    if debug_size is not None:
-        features = features[:debug_size]
-        targets = targets[:debug_size]
+
 
     # if shuffle then randomly permute order
     if shuffle:
