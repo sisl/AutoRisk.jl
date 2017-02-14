@@ -1,3 +1,4 @@
+# clone
 urls = [
     "https://github.com/tawheeler/Vec.jl.git",
     "https://github.com/tawheeler/AutomotiveDrivingModels.jl.git",
@@ -15,3 +16,11 @@ end
 
 Pkg.build("AutomotiveDrivingModels")
 
+# checkout specific branches
+checkouts = [
+    ("ForwardNets", "nextgen")
+]
+
+for (pkg, branch) in checkouts
+    Pkg.checkout(pkg, branch)
+end
