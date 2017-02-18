@@ -266,7 +266,7 @@ type CarLidarFeatureExtractor <: AbstractFeatureExtractor
     function CarLidarFeatureExtractor(
             carlidar_nbeams::Int = 20; 
             extract_carlidar_rangerate::Bool = true,
-            carlidar_max_range::Float64 = 100.0)
+            carlidar_max_range::Float64 = 50.0)
         carlidar = LidarSensor(carlidar_nbeams, max_range=carlidar_max_range, angle_offset=-π)
         new(carlidar, extract_carlidar_rangerate)
     end
@@ -305,7 +305,7 @@ type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
     function RoadLidarFeatureExtractor(
             roadlidar_nbeams::Int = 20,
             roadlidar_nlanes::Int = 2,
-            roadlidar_max_range::Float64 = 100.0)
+            roadlidar_max_range::Float64 = 50.0)
         roadlidar = RoadlineLidarSensor(roadlidar_nbeams, max_range=roadlidar_max_range, angle_offset=-π, max_depth=roadlidar_nlanes)
         return new(roadlidar, RoadwayLidarCulling())
     end
