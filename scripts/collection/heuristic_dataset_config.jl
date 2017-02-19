@@ -144,6 +144,9 @@ add_entry!(FLAGS,
     "extract_neighbor", false, Bool, 
     "When using multi extractor, extract neighbor features.")
 add_entry!(FLAGS, 
+    "extract_behavioral", true, Bool, 
+    "When using multi extractor, extract behavioral features.")
+add_entry!(FLAGS, 
     "extract_car_lidar", true, Bool, 
     "When using multi extractor, extract car lidar features.")
 add_entry!(FLAGS, 

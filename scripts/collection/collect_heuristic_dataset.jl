@@ -38,7 +38,7 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     if extractor_type == "heuristic"
         ext = MultiFeatureExtractor()
     elseif extractor_type == "multi"
-        subexts = []
+        subexts::Vector{AbstractFeatureExtractor} = []
         if flags["extract_core"]
             push!(subexts, CoreFeatureExtractor())
         end
@@ -51,10 +51,13 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
         if flags["extract_neighbor"]
             push!(subexts, NeighborFeatureExtractor())
         end
+        if flags["extract_behavioral"]
+            push!(subexts, BehavioralFeatureExtractor())
+        end
         if flags["extract_car_lidar"]
-            push!(subexts, 
-                CarLidarFeatureExtractor(extract_carlidar_rangerate = 
-                    flags["extract_car_lidar_range_rate"]))
+            push!(subexts, CarLidarFeatureExtractor(
+                extract_carlidar_rangerate = 
+                flags["extract_car_lidar_range_rate"]))
         end
         if flags["extract_road_lidar"]
             push!(subexts, RoadLidarFeatureExtractor())
