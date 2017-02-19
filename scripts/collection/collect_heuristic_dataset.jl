@@ -32,10 +32,11 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     network_filepath = flags["network_filepath"]
     driver_network_filepath = flags["driver_network_filepath"]
     extractor_type = flags["extractor_type"]
+    feature_timesteps = flags["feature_timesteps"]
 
     # feature_dim depends on extractor_type, so build extractor first
     if extractor_type == "heuristic"
-        ext = HeuristicFeatureExtractor()
+        ext = MultiFeatureExtractor()
     elseif extractor_type == "multi"
         subexts = []
         if flags["extract_core"]
@@ -140,7 +141,12 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     # evaluator
     max_num_scenes = Int(ceil((prime_time + sampling_time) / sampling_period))
     rec = SceneRecord(max_num_scenes, sampling_period, max_num_veh)
-    features = Array{Float64}(feature_dim, max_num_veh)
+
+    # feature_timesteps must be less than the priming steps 
+    # (with buffer for features that require 3 timesteps)
+    @assert feature_timesteps < Int(floor(prime_time / sampling_period)) - 3
+
+    features = Array{Float64}(feature_dim, feature_timesteps, max_num_veh)
     targets = Array{Float64}(target_dim, max_num_veh)
     agg_targets = Array{Float64}(target_dim, max_num_veh)
 
@@ -161,7 +167,7 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
     end
 
     # dataset
-    dataset = Dataset(output_filepath, feature_dim, target_dim,
+    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
         max_num_samples, chunk_dim = chunk_dim, init_file = false)
 
     # collector

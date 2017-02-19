@@ -51,16 +51,16 @@ function test_car_lidar_feature_extractor()
         extract_carlidar_rangerate = extract_carlidar_rangerate)
 
     features = zeros(length(ext), num_veh)
-    pull_features!(ext, features, rec, roadway, 1, models)
-    pull_features!(ext, features, rec, roadway, 2, models)
-    pull_features!(ext, features, rec, roadway, 3, models)
-    @test features[1,1] ≈ 100.
+    features[:,1] = pull_features!(ext, rec, roadway, 1, models)
+    features[:,2] = pull_features!(ext, rec, roadway, 2, models)
+    features[:,3] = pull_features!(ext, rec, roadway, 3, models)
+    @test features[1,1] ≈ 50.
     @test features[10,1] ≈ 6.72
     @test features[30,1] ≈ -1.6
     @test features[10,2] ≈ 6.72
     @test features[20,2] ≈ 6.72
     @test features[30,2] ≈ -1.6
-    @test features[1,3] ≈ 100.
+    @test features[1,3] ≈ 50.
     @test features[20,3] ≈ 6.72
     @test features[30,3] ≈ 0.0
 end
@@ -116,7 +116,9 @@ function test_normalizing_feature_extractor()
     ext = NormalizingExtractor(ones(length(ext)), ones(length(ext)), ext)
 
     features = zeros(length(ext), num_veh)
-    pull_features!(ext, features, rec, roadway, 1, models)
+    features[:, 1] = pull_features!(ext, rec, roadway, 1, models)
+    @test features[1,1] ≈ 49.0
+    @test features[end,1] ≈ -1.0
 end
 
 @time test_car_lidar_feature_extractor()

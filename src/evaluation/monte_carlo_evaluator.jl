@@ -2,7 +2,9 @@ export
     Evaluator,
     MonteCarloEvaluator,
     evaluate!,
-    get_veh_id_to_idx
+    get_veh_id_to_idx,
+    get_features,
+    get_targets
 
 abstract Evaluator
 
@@ -28,6 +30,7 @@ type MonteCarloEvaluator <: Evaluator
 
     rec::SceneRecord
     features::Array{Float64}
+    feature_timesteps::Int64
     targets::Array{Float64}
     agg_targets::Array{Float64}
 
@@ -64,9 +67,13 @@ type MonteCarloEvaluator <: Evaluator
             targets::Array{Float64},
             agg_targets::Array{Float64}, 
             rng::MersenneTwister = MersenneTwister(1))
+        features_size = size(features)
+        @assert length(features_size) == 3
+        feature_timesteps = features_size[2]
+
         return new(ext, num_runs, context, prime_time, sampling_time, 
-            veh_idx_can_change, rec, features, targets, agg_targets, 
-            rng, 0, Dict{Int64, Int64}(), Set{Int}())
+            veh_idx_can_change, rec, features, feature_timesteps, targets, 
+            agg_targets, rng, 0, Dict{Int64, Int64}(), Set{Int}())
     end
 end
 
@@ -119,7 +126,8 @@ function evaluate!(eval::Evaluator, scene::Scene,
     get_veh_id_to_idx(scene, eval.veh_id_to_idx)
 
     # extract features for all vehicles using scenes simulated so far
-    extract_features!(eval.ext, eval.rec, roadway, models, eval.features)
+    pull_features!(eval.ext, eval.rec, roadway, models, eval.features, 
+        eval.feature_timesteps)
     
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.vehicles))
@@ -162,3 +170,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     # divide by num_runs to get average values
     eval.agg_targets[:] /= eval.num_runs
 end
+
+# the indexing here is to ensure that the dimension is not dropped
+get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
+get_targets(eval::Evaluator) = eval.targets[:, :]

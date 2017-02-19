@@ -8,6 +8,7 @@ export
     TemporalFeatureExtractor,
     WellBehavedFeatureExtractor,
     NeighborFeatureExtractor,
+    BehavioralFeatureExtractor,
     CarLidarFeatureExtractor,
     RoadLidarFeatureExtractor,
     NormalizingExtractor,
@@ -17,130 +18,66 @@ export
 
 ##################### Helper methods #####################
 
-function set_feature_missing!(features::Array{Float64}, i::Int, veh_idx::Int64)
-    features[i, veh_idx] = 0.0
-    features[i+1, veh_idx] = 1.0
+function set_feature_missing!(features::Vector{Float64}, i::Int)
+    features[i] = 0.0
+    features[i+1] = 1.0
 end
 
-function set_feature!(features::Array{Float64}, i::Int, v::Float64, 
-        veh_idx::Int64)
-    features[i, veh_idx] = v
-    features[i+1, veh_idx] = 0.0
+function set_feature!(features::Vector{Float64}, i::Int, v::Float64)
+    features[i] = v
+    features[i+1] = 0.0
 end
 
-function set_dual_feature!(features::Array{Float64}, i::Int, 
-        f::FeatureValue, veh_idx::Int64)
+function set_dual_feature!(features::Vector{Float64}, i::Int, 
+        f::FeatureValue)
     if f.i == FeatureState.MISSING
-        set_feature_missing!(features, i, veh_idx)
+        set_feature_missing!(features, i)
     else
-        set_feature!(features, i, f.v, veh_idx)
+        set_feature!(features, i, f.v)
     end
 end
 
-function set_speed_and_distance!(features::Array{Float64}, i::Int, 
-    neigh::NeighborLongitudinalResult, scene::Scene, veh_idx::Int64)
-    neigh.ind != 0 ? set_feature!(features, i, scene[neigh.ind].state.v, veh_idx) :
-                      set_feature_missing!(features, i, veh_idx)
-    neigh.ind != 0 ? set_feature!(features, i+2, neigh.Δs, veh_idx) :
-                      set_feature_missing!(features, i+2, veh_idx)
+function set_speed_and_distance!(features::Vector{Float64}, i::Int, 
+    neigh::NeighborLongitudinalResult, scene::Scene)
+    neigh.ind != 0 ? set_feature!(features, i, scene[neigh.ind].state.v) :
+                      set_feature_missing!(features, i)
+    neigh.ind != 0 ? set_feature!(features, i+2, neigh.Δs) :
+                      set_feature_missing!(features, i+2)
     features
 end
 
-function set_neighbor_features!(features::Array{Float64}, i::Int, 
+function set_neighbor_features!(features::Vector{Float64}, i::Int, 
         neigh::NeighborLongitudinalResult, scene::Scene, rec::SceneRecord, 
-        roadway::Roadway, veh_idx::Int64)
+        roadway::Roadway)
     if neigh.ind != 0
-        features[i, veh_idx] = neigh.Δs
-        features[i+1, veh_idx] = scene[neigh.ind].state.v
-        features[i+2, veh_idx] = convert(Float64, get(ACC, rec, roadway, neigh.ind))
-        features[i+3, veh_idx] = convert(Float64, get(JERK, rec, roadway, neigh.ind))
-        features[i+4, veh_idx] = 0.0
+        features[i] = neigh.Δs
+        features[i+1] = scene[neigh.ind].state.v
+        features[i+2] = convert(Float64, get(ACC, rec, roadway, neigh.ind))
+        features[i+3] = convert(Float64, get(JERK, rec, roadway, neigh.ind))
+        features[i+4] = 0.0
     else
-        features[i:i+3, veh_idx] = 0.0
-        features[i+4, veh_idx] = 1.0 
+        features[i:i+3] = 0.0
+        features[i+4] = 1.0 
     end
-end
-
-function set_behavioral_features(scene::Scene, models::Dict{Int, DriverModel},
-        features::Array{Float64}, veh_idx::Int64, next_idx::Int64)
-    # number of behavioral features set
-    num_behavior_features = 13
-    
-    # if vehicle does not exist then leave features as zeros
-    if veh_idx == 0
-        return next_idx + num_behavior_features
-    end
-
-    # get the vehicle model
-    veh = scene[veh_idx]
-    model = models[veh.def.id]
-    if typeof(model) == DelayedDriver
-        mlon = model.driver.mlon
-        mlat = model.driver.mlat
-        mlane = model.driver.mlane
-    else
-        mlon = model.mlon
-        mlat = model.mlat
-        mlane = model.mlane
-    end
-
-    # set behavioral features
-    # longitudinal model
-    if (typeof(mlon) == IntelligentDriverModel 
-            || typeof(mlon) == DelayedIntelligentDriverModel)
-        features[next_idx, veh_idx] = mlon.k_spd
-        features[next_idx += 1, veh_idx] = mlon.δ
-        features[next_idx += 1, veh_idx] = mlon.T
-        features[next_idx += 1, veh_idx] = mlon.v_des
-        features[next_idx += 1, veh_idx] = mlon.s_min
-        features[next_idx += 1, veh_idx] = mlon.a_max
-        features[next_idx += 1, veh_idx] = mlon.d_cmf
-        if typeof(mlon) == DelayedIntelligentDriverModel
-            features[next_idx += 1, veh_idx] = mlon.t_d
-        elseif typeof(model) == DelayedDriver
-            features[next_idx += 1, veh_idx] = model.reaction_time
-        else
-            next_idx += 1
-        end
-    else
-        # one less then the number of features since the first doesn't increment
-        next_idx += 7
-    end
-
-    # lateral model
-    if typeof(mlat) == ProportionalLaneTracker
-        features[next_idx += 1, veh_idx] = mlat.kp
-        features[next_idx += 1, veh_idx] = mlat.kd
-    else
-        next_idx += 2
-    end
-
-    # lane model
-    if typeof(mlane) == MOBIL
-        features[next_idx += 1, veh_idx] = mlane.politeness
-        features[next_idx += 1, veh_idx] = mlane.advantage_threshold
-        features[next_idx += 1, veh_idx] = mlane.safe_decel
-    else
-        next_idx += 3
-    end
-
-    # return next_idx + 1 to know where to start setting feature values
-    return next_idx + 1
 end
 
 ##################### Specific Feature Extractors #####################
 
 type CoreFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function CoreFeatureExtractor()
+        num_features = 8
+        return new(zeros(Float64, num_features), num_features)
+    end
 end
-Base.length(ext::CoreFeatureExtractor) = 8
+Base.length(ext::CoreFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::CoreFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int,  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     veh_ego = scene[veh_idx]
@@ -148,55 +85,82 @@ function AutomotiveDrivingModels.pull_features!(
         MARKERDIST_LEFT, rec, roadway, veh_idx, pastframe))
     d_mr = convert(Float64, get(
         MARKERDIST_RIGHT, rec, roadway, veh_idx, pastframe))
-
-    features[fidx+=1, veh_idx] = veh_ego.state.posF.t
-    features[fidx+=1, veh_idx] = veh_ego.state.posF.ϕ
-    features[fidx+=1, veh_idx] = veh_ego.state.v
-    features[fidx+=1, veh_idx] = veh_ego.def.length
-    features[fidx+=1, veh_idx] = veh_ego.def.width
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    idx = 0
+    ext.features[idx+=1] = veh_ego.state.posF.t
+    ext.features[idx+=1] = veh_ego.state.posF.ϕ
+    ext.features[idx+=1] = veh_ego.state.v
+    ext.features[idx+=1] = veh_ego.def.length
+    ext.features[idx+=1] = veh_ego.def.width
+    ext.features[idx+=1] = convert(Float64, get(
         LANECURVATURE, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = d_ml
-    features[fidx+=1, veh_idx] = d_mr
+    ext.features[idx+=1] = d_ml
+    ext.features[idx+=1] = d_mr
+    return ext.features
 end
     
 type TemporalFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function TemporalFeatureExtractor()
+        num_features = 10
+        return new(zeros(Float64, num_features), num_features)
+    end
 end
-Base.length(ext::TemporalFeatureExtractor) = 6
+Base.length(ext::TemporalFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::TemporalFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    idx = 0
+    ext.features[idx+=1] = convert(Float64, get(
         ACC, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    ext.features[idx+=1] = convert(Float64, get(
         JERK, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    ext.features[idx+=1] = convert(Float64, get(
         TURNRATEG, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    ext.features[idx+=1] = convert(Float64, get(
         ANGULARRATEG, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    ext.features[idx+=1] = convert(Float64, get(
         TURNRATEF, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    ext.features[idx+=1] = convert(Float64, get(
         ANGULARRATEF, rec, roadway, veh_idx, pastframe))
+
+    # timegap is the time between when this vehicle's front bumper
+    # will be in the position currently occupied by the vehicle 
+    # infront's back bumper
+    set_dual_feature!(ext.features, idx+=1, 
+        get(TIMEGAP, rec, roadway, veh_idx, censor_hi = 30.0))
+    idx+=1
+
+    # inverse time to collision is the time until a collision 
+    # assuming that no actions are taken
+    # inverse is taken so as to avoid infinite value, so flip here to get back
+    # to TTC
+    inv_ttc = get(INV_TTC, rec, roadway, veh_idx)
+    ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
+    set_dual_feature!(ext.features, idx+=1, ttc)
+    idx+=1
+    return ext.features
 end
 
 type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function WellBehavedFeatureExtractor()
+        num_features = 3
+        return new(zeros(Float64, num_features), num_features)
+    end
 end
-Base.length(ext::WellBehavedFeatureExtractor) = 3
+Base.length(ext::WellBehavedFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::WellBehavedFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     veh_ego = scene[veh_idx]
@@ -204,23 +168,29 @@ function AutomotiveDrivingModels.pull_features!(
         MARKERDIST_LEFT, rec, roadway, veh_idx, pastframe))
     d_mr = convert(Float64, get(
         MARKERDIST_RIGHT, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, get(
+    idx = 0
+    ext.features[idx+=1] = convert(Float64, get(
         IS_COLLIDING, rec, roadway, veh_idx, pastframe))
-    features[fidx+=1, veh_idx] = convert(Float64, d_ml < -1.0 || d_mr < -1.0)
-    features[fidx+=1, veh_idx] = convert(Float64, veh_ego.state.v < 0.0)
+    ext.features[idx+=1] = convert(Float64, d_ml < -1.0 || d_mr < -1.0)
+    ext.features[idx+=1] = convert(Float64, veh_ego.state.v < 0.0)
+    return ext.features
 end
 
 type NeighborFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function NeighborFeatureExtractor()
+        num_features = 28
+        return new(zeros(Float64, num_features), num_features)
+    end
 end
-Base.length(ext::NeighborFeatureExtractor) = 28
+Base.length(ext::NeighborFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::NeighborFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
 
@@ -239,28 +209,116 @@ function AutomotiveDrivingModels.pull_features!(
     rear_R = get_neighbor_rear_along_right_lane(
         scene, veh_idx, roadway, vtpr, vtpf, vtpr)
 
-    set_dual_feature!(features, fidx+=1, get(
-        LANEOFFSETLEFT, rec, roadway, veh_idx, pastframe), veh_idx)
-    fidx+=1
-    set_dual_feature!(features, fidx+=1, get(
-        LANEOFFSETRIGHT, rec, roadway, veh_idx, pastframe), veh_idx)
-    fidx+=1
+    idx = 0
+    set_dual_feature!(ext.features, idx+=1, get(
+        LANEOFFSETLEFT, rec, roadway, veh_idx, pastframe))
+    idx+=1
+    set_dual_feature!(ext.features, idx+=1, get(
+        LANEOFFSETRIGHT, rec, roadway, veh_idx, pastframe))
+    idx+=1
 
-    set_speed_and_distance!(features, fidx+=1, fore_M, scene, veh_idx)
-    fidx+=3
-    set_speed_and_distance!(features, fidx+=1, fore_L, scene, veh_idx)
-    fidx+=3
-    set_speed_and_distance!(features, fidx+=1, fore_R, scene, veh_idx)
-    fidx+=3
-    set_speed_and_distance!(features, fidx+=1, rear_M, scene, veh_idx)
-    fidx+=3
-    set_speed_and_distance!(features, fidx+=1, rear_L, scene, veh_idx)
-    fidx+=3
-    set_speed_and_distance!(features, fidx+=1, rear_R, scene, veh_idx)
-    fidx+=3
+    set_speed_and_distance!(ext.features, idx+=1, fore_M, scene)
+    idx+=3
+    set_speed_and_distance!(ext.features, idx+=1, fore_L, scene)
+    idx+=3
+    set_speed_and_distance!(ext.features, idx+=1, fore_R, scene)
+    idx+=3
+    set_speed_and_distance!(ext.features, idx+=1, rear_M, scene)
+    idx+=3
+    set_speed_and_distance!(ext.features, idx+=1, rear_L, scene)
+    idx+=3
+    set_speed_and_distance!(ext.features, idx+=1, rear_R, scene)
+    idx+=3
+
+    return ext.features
+end
+
+type BehavioralFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function BehavioralFeatureExtractor()
+        num_features = 13
+        return new(zeros(Float64, num_features), num_features)
+    end
+end
+Base.length(ext::BehavioralFeatureExtractor) = ext.num_features
+function AutomotiveDrivingModels.pull_features!(
+        ext::BehavioralFeatureExtractor,  
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int,  
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        pastframe::Int = 0)
+    # if vehicle does not exist then leave features as zeros
+    if veh_idx == 0
+        return ext.features
+    end
+
+    # get the vehicle model
+    scene = get_scene(rec, pastframe)
+    veh = scene[veh_idx]
+    model = models[veh.def.id]
+
+    # unpack the underlying driver models
+    # if the primary driver model is invalid for this extractor, then skip
+    if typeof(model) == DelayedDriver
+        mlon = model.driver.mlon
+        mlat = model.driver.mlat
+        mlane = model.driver.mlane
+    elseif typeof(model) == Tim2DDriver
+        mlon = model.mlon
+        mlat = model.mlat
+        mlane = model.mlane
+    else # skip this extractor
+        return ext.features
+    end
+
+    next_idx = 0
+
+    # longitudinal model
+    if (typeof(mlon) == IntelligentDriverModel 
+            || typeof(mlon) == DelayedIntelligentDriverModel)
+        ext.features[next_idx+=1] = mlon.k_spd
+        ext.features[next_idx+=1] = mlon.δ
+        ext.features[next_idx+=1] = mlon.T
+        ext.features[next_idx+=1] = mlon.v_des
+        ext.features[next_idx+=1] = mlon.s_min
+        ext.features[next_idx+=1] = mlon.a_max
+        ext.features[next_idx+=1] = mlon.d_cmf
+        if typeof(mlon) == DelayedIntelligentDriverModel
+            ext.features[next_idx+=1] = mlon.t_d
+        elseif typeof(model) == DelayedDriver
+            ext.features[next_idx+=1] = model.reaction_time
+        else
+            next_idx += 1
+        end
+    else
+        next_idx += 8
+    end
+
+    # lateral model
+    if typeof(mlat) == ProportionalLaneTracker
+        ext.features[next_idx+=1] = mlat.kp
+        ext.features[next_idx+=1] = mlat.kd
+    else
+        next_idx += 2
+    end
+
+    # lane model
+    if typeof(mlane) == MOBIL
+        ext.features[next_idx+=1] = mlane.politeness
+        ext.features[next_idx+=1] = mlane.advantage_threshold
+        ext.features[next_idx+=1] = mlane.safe_decel
+    else
+        next_idx += 3
+    end
+
+    return ext.features
 end
 
 type CarLidarFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
     carlidar::LidarSensor
     extract_carlidar_rangerate::Bool
     function CarLidarFeatureExtractor(
@@ -268,58 +326,62 @@ type CarLidarFeatureExtractor <: AbstractFeatureExtractor
             extract_carlidar_rangerate::Bool = true,
             carlidar_max_range::Float64 = 50.0)
         carlidar = LidarSensor(carlidar_nbeams, max_range=carlidar_max_range, angle_offset=-π)
-        new(carlidar, extract_carlidar_rangerate)
+        num_features = nbeams(carlidar) * (1 + extract_carlidar_rangerate)
+        return new(zeros(Float64, num_features), num_features, carlidar,
+            extract_carlidar_rangerate)
     end
 end
-Base.length(ext::CarLidarFeatureExtractor) = nbeams(ext.carlidar) * (
-    1 + ext.extract_carlidar_rangerate)
+Base.length(ext::CarLidarFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::CarLidarFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     nbeams_carlidar = nbeams(ext.carlidar)
+    idx = 0
     if nbeams_carlidar > 0
         observe!(ext.carlidar, scene, roadway, veh_idx)
-        stop = length(ext.carlidar.ranges) + fidx
-        fidx += 1
-        features[fidx:stop, veh_idx] = ext.carlidar.ranges
-        fidx += nbeams_carlidar - 1
+        stop = length(ext.carlidar.ranges) + idx
+        idx += 1
+        ext.features[idx:stop] = ext.carlidar.ranges
+        idx += nbeams_carlidar - 1
         if ext.extract_carlidar_rangerate
-            stop = length(ext.carlidar.range_rates) + fidx
-            fidx += 1
-            features[fidx:stop, veh_idx] = ext.carlidar.range_rates
-            fidx += nbeams_carlidar - 1
+            stop = length(ext.carlidar.range_rates) + idx
+            idx += 1
+            ext.features[idx:stop] = ext.carlidar.range_rates
+            idx += nbeams_carlidar - 1
         end
     end
+    return ext.features
 end
 
 type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
     roadlidar::RoadlineLidarSensor
     road_lidar_culling::RoadwayLidarCulling
     function RoadLidarFeatureExtractor(
             roadlidar_nbeams::Int = 20,
             roadlidar_nlanes::Int = 2,
             roadlidar_max_range::Float64 = 50.0)
-        roadlidar = RoadlineLidarSensor(roadlidar_nbeams, max_range=roadlidar_max_range, angle_offset=-π, max_depth=roadlidar_nlanes)
-        return new(roadlidar, RoadwayLidarCulling())
+        roadlidar = RoadlineLidarSensor(roadlidar_nbeams, 
+            max_range=roadlidar_max_range, angle_offset=-π, 
+            max_depth=roadlidar_nlanes)
+        num_features = nbeams(roadlidar) * nlanes(roadlidar)
+        return new(zeros(Float64, num_features), num_features, roadlidar,
+            RoadwayLidarCulling())
     end
 end
-Base.length(ext::RoadLidarFeatureExtractor) = nbeams(ext.roadlidar) * nlanes(
-    ext.roadlidar)
+Base.length(ext::RoadLidarFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::RoadLidarFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int,  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     nbeams_roadlidar = nbeams(ext.roadlidar)
@@ -329,13 +391,14 @@ function AutomotiveDrivingModels.pull_features!(
         else
             observe!(ext.roadlidar, scene, roadway, veh_idx, ext.road_lidar_culling)
         end
-        
-        stop = length(ext.roadlidar.ranges) + fidx
-        fidx += 1
-        features[fidx:stop, veh_idx] = reshape(ext.roadlidar.ranges, 
+        idx = 0
+        stop = length(ext.roadlidar.ranges) + idx
+        idx += 1
+        ext.features[idx:stop] = reshape(ext.roadlidar.ranges, 
             length(ext.roadlidar.ranges))
-        fidx += length(ext.roadlidar.ranges) - 1
+        idx += length(ext.roadlidar.ranges) - 1
     end
+    return ext.features
 end
 
 ##################### Feature Extractor Wrappers #####################
@@ -348,34 +411,25 @@ end
 Base.length(ext::NormalizingExtractor) = length(ext.extractor)
 function AutomotiveDrivingModels.pull_features!(
         ext::NormalizingExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int,
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
 
     # extract base feature values
-    pull_features!(ext.extractor, features, rec, roadway, veh_idx, models, 
-        fidx, pastframe)
-
-    # normalize those values
-    features[:] = (features .- ext.μ) ./ ext.σ
-    return features
+    return ((pull_features!(ext.extractor, rec, roadway, veh_idx, models, 
+        pastframe) .- ext.μ) ./ ext.σ)
 end
 
 type EmptyExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::EmptyExtractor) = 0
 function AutomotiveDrivingModels.pull_features!(
-        ext::EmptyExtractor, 
-        features::Array{Float64}, 
+        ext::EmptyExtractor,  
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int,
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
-        fidx::Int = 0,
         pastframe::Int = 0)
-    return features
 end

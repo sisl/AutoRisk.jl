@@ -123,6 +123,10 @@ add_entry!(FLAGS,
 add_entry!(FLAGS, 
     "veh_idx_can_change", false, Bool, 
     "Whether or not vehicles can change index in the scene during eval.")
+add_entry!(FLAGS, 
+    "feature_timesteps", 1, Int64, 
+    "Number of timesteps over which to collect features.")
+
 ## extractor 
 add_entry!(FLAGS, 
     "extractor_type", "heuristic", String, 

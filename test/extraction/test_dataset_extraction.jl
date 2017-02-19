@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 166
+# const NUM_FEATURES = 142
 # const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
@@ -174,7 +174,7 @@ function test_extract_targets()
     @test abs(targets[4,2]) < 1e-8
 end
 
-function test_extract_features()
+function test_pull_features()
     # add three vehicles and specifically check neighbor features
     context = IntegratedContinuous(.1, 1)
     num_veh = 3
@@ -219,34 +219,34 @@ function test_extract_features()
 
     # simulate here because some features need priming
     simulate!(scene, models, roadway, rec, T)
-    features = Array{Float64}(NUM_FEATURES, num_veh)
+    features = Array{Float64}(NUM_FEATURES, 1, num_veh)
 
 
-    ext = HeuristicFeatureExtractor()
-    extract_features!(ext, rec, roadway, models, features)
+    ext = MultiFeatureExtractor()
+    pull_features!(ext, rec, roadway, models, features)
 
     @test features[3,1] ≈ 4.
     @test features[4,1] == 5.
-    @test features[6,1] ≈ 2.
+    @test features[9,1] ≈ 2.
     @test features[21,1] == 0.
     @test features[22,1] == 0.
-    @test features[23,1] ≈ 3.5 / 4.
-    @test features[25,1] ≈ 3.5 / 2.
+    @test features[15,1] ≈ 3.5 / 4.
+    @test features[17,1] ≈ 3.5 / 2.
 
     @test features[3,2] ≈ 2.
     @test features[4,2] == 5.
-    @test features[6,2] ≈ 1.
-    @test features[23,2] ≈ 3.5 / 2.
-    @test features[25,2] ≈ 3.5 / 2.
+    @test features[9,2] ≈ 1.
+    @test features[15,2] ≈ 3.5 / 2.
+    @test features[17,2] ≈ 3.5 / 2.
 
     @test features[3,3] ≈ 0.
     @test features[4,3] == 5.
-    @test features[6,3] ≈ 0.
-    @test features[23,3] ≈ 30.0
-    @test features[25,3] ≈ 0.0 
+    @test features[9,3] ≈ 0.
+    @test features[15,3] ≈ 30.0
+    @test features[17,3] ≈ 0.0 
 end
 
 @time test_extract_vehicle_frame_targets()
 @time test_extract_frame_targets()
 @time test_extract_targets()
-@time test_extract_features()
+@time test_pull_features()

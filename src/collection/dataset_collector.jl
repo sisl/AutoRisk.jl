@@ -57,8 +57,7 @@ function generate_dataset(col::DatasetCollector)
     for seed in col.seeds
         reset!(col, seed)
         evaluate!(col.eval, col.scene, col.models, col.roadway, seed)
-        update!(col.dataset, col.eval.features[:, 1:col.eval.num_veh], 
-            col.eval.agg_targets[:, 1:col.eval.num_veh], seed)
+        update!(col.dataset, get_features(col.eval), get_targets(col.eval), seed)
     end
     finalize!(col.dataset)
 end

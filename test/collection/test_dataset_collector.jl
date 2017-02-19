@@ -1,6 +1,11 @@
 # using Base.Test
 # using AutoRisk
 
+# const NUM_FEATURES = 142
+# const NUM_TARGETS = 5
+
+# include("testing_utils.jl")
+
 function test_reset_determinism()
     col_1 = build_debug_dataset_collector(
         output_filepath = "../data/test_dataset_collector_1.h5")
@@ -73,7 +78,31 @@ function test_generate_dataset()
     rm(filepath)
 end
 
+function test_generate_multi_timestep_dataset()
+    filepath = "../data/test_dataset_collector.h5"
+    col = build_debug_dataset_collector(
+        output_filepath = filepath,
+        num_samples = 2,
+        min_num_veh = 4,
+        max_num_veh = 4,
+        chunk_dim = 1,
+        feature_timesteps = 2
+    )
+    generate_dataset(col)
+    file = h5open(filepath, "r")
+    features = read(file["risk/features"])
+    targets = read(file["risk/targets"])
+    
+    @test size(features) == (NUM_FEATURES, 2, 8)
+    @test size(targets) == (NUM_TARGETS, 8)
+    @test !any(isnan(features))
+    @test !any(isnan(targets))
+
+    rm(filepath)
+end
+
 
 @time test_reset_determinism()
 @time test_generate_dataset_determinism()
 @time test_generate_dataset()
+@time test_generate_multi_timestep_dataset()

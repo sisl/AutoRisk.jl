@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 166
+# const NUM_FEATURES = 142
 # const NUM_TARGETS = 5
 
 function test_bootstrapping_monte_carlo_evaluator_debug()
@@ -49,7 +49,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, num_veh)
+    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1,num_veh)
     targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
     agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
 
@@ -60,7 +60,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     push!(prediction_model.weights, ones(Float64, (NUM_FEATURES, NUM_TARGETS)))
     push!(prediction_model.biases, zeros(Float64, (1, NUM_TARGETS)))
 
-    ext = HeuristicFeatureExtractor()
+    ext = MultiFeatureExtractor()
     eval = BootstrappingMonteCarloEvaluator(ext, num_runs, context, prime_time,
         sampling_time, veh_idx_can_change, rec, features, targets, agg_targets,
         prediction_model, rng)
@@ -76,4 +76,4 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     @test eval.agg_targets[1:NUM_TARGETS, 3] == [1.0, 1.0, 1.0, 1.0, 1.0]
 end
 
-# @time test_bootstrapping_monte_carlo_evaluator_debug()
+@time test_bootstrapping_monte_carlo_evaluator_debug()

@@ -1,8 +1,8 @@
-using Base.Test
-using AutoRisk
+# using Base.Test
+# using AutoRisk
 
-NUM_FEATURES = 166
-NUM_TARGETS = 5
+# NUM_FEATURES = 142
+# NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
@@ -49,12 +49,12 @@ function test_monte_carlo_evaluator_debug()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, num_veh)
+    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1,num_veh)
     targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
     agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
-    ext = HeuristicFeatureExtractor()
+    ext = MultiFeatureExtractor()
     eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
@@ -104,13 +104,13 @@ function test_monte_carlo_evaluator()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, num_veh)
+    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1, num_veh)
     targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
     agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
 
-    ext = HeuristicFeatureExtractor()
+    ext = MultiFeatureExtractor()
     eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
@@ -119,19 +119,94 @@ function test_monte_carlo_evaluator()
     @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 1.0, 1.0]
     @test eval.agg_targets[1:NUM_TARGETS, 2] == [0.0, 1.0, 0.0, 0.0, 0.0]
 
-    @test eval.features[23, 1] ≈ 0.151219512195122
-    @test eval.features[23, 2] ≈ 30.
+    @test eval.features[15, 1] ≈ 0.151219512195122
+    @test eval.features[15, 2] ≈ 30.
 
-    @test eval.features[25, 1] ≈ 1. / 6.12903225806451
-    @test eval.features[25, 2] ≈ 0.0
+    @test eval.features[17, 1] ≈ 1. / 6.12903225806451
+    @test eval.features[17, 2] ≈ 0.0
 
-    @test eval.features[62, 1] == k_spd
-    @test eval.features[62, 2] == k_spd
+    @test eval.features[49, 1] == k_spd
+    @test eval.features[49, 2] == k_spd
 
-    @test eval.features[72, 1] == politeness
-    @test eval.features[72, 2] == politeness
+    @test eval.features[60, 1] == politeness
+    @test eval.features[60, 2] == politeness
 
+end
+
+function test_multi_timestep_monte_carlo_evaluator()
+    context = IntegratedContinuous(.1, 1)
+    num_veh = 2
+
+    # one lane roadway
+    roadway = gen_straight_roadway(1, 500.)
+    scene = Scene(num_veh)
+    models = Dict{Int, DriverModel}()
+
+    # 1: first vehicle, accelerating the fastest
+    mlon = StaticLongitudinalDriver(2.)
+    models[1] = Tim2DDriver(context, mlon = mlon)
+    road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
+    base_speed = 0.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def))
+
+    # 2: second vehicle, in the middle, accelerating at intermediate speed
+    mlon = StaticLongitudinalDriver(1.)
+    models[2] = Tim2DDriver(context, mlon = mlon)
+    base_speed = 0.
+    road_pos = 10.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_state = move_along(veh_state, roadway, road_pos)
+    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def))
+
+    num_runs::Int64 = 2
+    prime_time::Float64 = .5
+    sampling_time::Float64 = 1.
+    veh_idx_can_change::Bool = false
+    feature_timesteps = 5
+
+    rec::SceneRecord = SceneRecord(500, .1, num_veh)
+    features::Array{Float64} = Array{Float64}(NUM_FEATURES, feature_timesteps,
+        num_veh)
+    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
+
+    rng::MersenneTwister = MersenneTwister(1)
+
+    ext = MultiFeatureExtractor()
+    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+        veh_idx_can_change, rec, features, targets, agg_targets, rng)
+
+    evaluate!(eval, scene, models, roadway, 1)
+
+    @test size(eval.features) == (NUM_FEATURES, feature_timesteps, 2)
+    @test size(eval.targets) == (NUM_TARGETS, 2)
+
+    # check velocity over time
+    @test eval.features[3,1,1] ≈ .2
+    @test eval.features[3,2,1] ≈ .4
+    @test eval.features[3,3,1] ≈ .6
+    @test eval.features[3,4,1] ≈ .8
+    @test eval.features[3,5,1] ≈ 1.
+    @test eval.features[3,1,2] ≈ .1
+    @test eval.features[3,2,2] ≈ .2
+    @test eval.features[3,3,2] ≈ .3
+    @test eval.features[3,4,2] ≈ .4
+    @test eval.features[3,5,2] ≈ .5
+
+    # check accel over time
+    @test eval.features[9,1,1] ≈ 0.
+    @test eval.features[9,2,1] ≈ 2.
+    @test eval.features[9,3,1] ≈ 2.
+    @test eval.features[9,1,2] ≈ 0.
+    @test eval.features[9,2,2] ≈ 1.
+    @test eval.features[9,3,2] ≈ 1.
+
+    # println(eval.features[:,3,1])
 end
 
 @time test_monte_carlo_evaluator_debug()
 @time test_monte_carlo_evaluator()
+@time test_multi_timestep_monte_carlo_evaluator()

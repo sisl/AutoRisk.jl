@@ -1,3 +1,10 @@
+# using Base.Test
+# using AutoRisk
+
+# const NUM_FEATURES = 142
+# const NUM_TARGETS = 5
+
+# include("testing_utils.jl")
 
 function test_generate_dataset_parallel()
     num_col = 2
@@ -21,11 +28,11 @@ function test_generate_dataset_parallel()
 
     h5open(output_filepath, "r") do file
         features = file["risk/features"]
-        @test !any(isnan(mean(read(features), 2)))
-        @test size(features, 2) == 12
+        @test !any(isnan(mean(read(features), 3)))
+        @test size(features, 3) == 12
 
         targets = file["risk/targets"]
-        @test !any(isnan(mean(read(targets), 2)))
+        @test !any(isnan(mean(read(targets), 3)))
         @test size(targets, 2) == 12
 
         seeds = read(file["risk/seeds"])

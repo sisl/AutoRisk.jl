@@ -5,28 +5,47 @@ export
 
 type MultiFeatureExtractor <: AbstractFeatureExtractor
     extractors::Vector{AbstractFeatureExtractor}
+    lengths::Vector{Int64}
+    features::Vector{Float64}
+    num_features::Int64
+    function MultiFeatureExtractor(extractors::Vector{AbstractFeatureExtractor})
+        lengths = [length(subext) for subext in extractors]
+        num_features = sum(lengths)
+        features = zeros(Float64, num_features)
+        new(extractors, lengths, features, num_features)
+    end
 end
-
-function Base.length(ext::MultiFeatureExtractor)
-    return sum(length(subext) for subext in ext.extractors)
-end
+Base.length(ext::MultiFeatureExtractor) = ext.num_features
 function AutomotiveDrivingModels.pull_features!(
         ext::MultiFeatureExtractor, 
-        features::Array{Float64}, 
         rec::SceneRecord,
         roadway::Roadway, 
         vehicle_index::Int,  
         models = Dict{Int, DriverModel},
-        fidx::Int = 0,
         pastframe::Int = 0)
-    # each sub extractor is passed the index prior to where it should begin 
-    # inserting values
-    feature_index = 0
-    for subext in ext.extractors
-        pull_features!(subext, features, rec, roadway, vehicle_index, models, feature_index, pastframe)
-        feature_index += length(subext)
+    feature_index = 1
+    for (subext, len) in zip(ext.extractors, ext.lengths)
+        stop = feature_index + len - 1
+        ext.features[feature_index:stop] = pull_features!(
+            subext, rec, roadway, vehicle_index, models, pastframe)
+        feature_index += len
     end
-    return features
+    return ext.features
+end
+
+# alternate constructor containing all sub-extractors
+function MultiFeatureExtractor()
+    subexts = [
+        CoreFeatureExtractor(),
+        TemporalFeatureExtractor(),
+        WellBehavedFeatureExtractor(),
+        NeighborFeatureExtractor(),
+        BehavioralFeatureExtractor(),
+        CarLidarFeatureExtractor(),
+        RoadLidarFeatureExtractor()
+    ]
+
+   return MultiFeatureExtractor(subexts)
 end
 
 # alternate constructor from h5 file with attributes

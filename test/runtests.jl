@@ -1,8 +1,10 @@
 using Base.Test
 using AutoRisk
 
+include("collection/testing_utils.jl")
+
 # testing constants
-const NUM_FEATURES = 166
+const NUM_FEATURES = 142
 const NUM_TARGETS = 5
 
 function runtests()
@@ -15,12 +17,12 @@ function runtests()
 
     # extraction
     println("\n### extraction ###")
-    println("test_heuristic_feature_extractor.jl")
-    include("extraction/test_heuristic_feature_extractor.jl")
     println("test_feature_extractors.jl")
     include("extraction/test_feature_extractors.jl")
     println("test_multi_feature_extractor.jl")
     include("extraction/test_multi_feature_extractor.jl")
+    println("test_dataset_extraction.jl")
+    include("extraction/test_dataset_extraction.jl")
 
     # generation
     println("\n### generation ###")
@@ -41,8 +43,6 @@ function runtests()
     println("\n### evaluation ###")
     println("test_simulation.jl")
     include("evaluation/test_simulation.jl")
-    println("test_dataset_extraction.jl")
-    include("evaluation/test_dataset_extraction.jl")
     println("test_monte_carlo_evaluator.jl")
     include("evaluation/test_monte_carlo_evaluator.jl")
     println("test_bootstrapping_monte_carlo_evaluator.jl")
@@ -50,7 +50,6 @@ function runtests()
 
     # collection
     println("\n### collection ###")
-    include("collection/testing_utils.jl")
     println("test_dataset.jl")
     include("collection/test_dataset.jl")
     println("test_dataset_collector.jl")

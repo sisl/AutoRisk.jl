@@ -18,7 +18,8 @@ function build_debug_dataset_collector(;
         num_lanes = 3,
         prime_time = 10.,
         sampling_time = 5.,
-        init_file = true)
+        init_file = true,
+        feature_timesteps = 1)
 
     seeds = collect(1:num_samples)
     max_num_samples = num_samples * max_num_veh
@@ -49,14 +50,15 @@ function build_debug_dataset_collector(;
     models = Dict{Int, DriverModel}()
 
     # evaluator
-    ext = HeuristicFeatureExtractor()
+    ext = MultiFeatureExtractor()
     num_runs::Int64 = 50
     prime_time::Float64 = 2.
     sampling_time::Float64 = 3.
     veh_idx_can_change::Bool = false
     max_num_scenes = Int((prime_time + sampling_time) / .1)
     rec::SceneRecord = SceneRecord(max_num_scenes, .1, max_num_veh)
-    features::Array{Float64} = Array{Float64}(feature_dim, max_num_veh)
+    features::Array{Float64} = Array{Float64}(feature_dim, feature_timesteps,
+        max_num_veh)
     targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
@@ -64,7 +66,7 @@ function build_debug_dataset_collector(;
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset
-    dataset = Dataset(output_filepath, feature_dim, target_dim,
+    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
         max_num_samples, chunk_dim = chunk_dim, init_file = init_file)
 
     # collector

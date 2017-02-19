@@ -18,6 +18,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
 
     rec::SceneRecord
     features::Array{Float64}
+    feature_timesteps::Int64
     targets::Array{Float64}
     agg_targets::Array{Float64}
 
@@ -57,11 +58,14 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
             agg_targets::Array{Float64}, 
             prediction_model::PredictionModel,
             rng::MersenneTwister = MersenneTwister(1))
-        prediction_features = Array{Float64}(size(features))
+        features_size = size(features)
+        @assert length(features_size) == 3
+        feature_timesteps = features_size[2]
+        prediction_features = Array{Float64}(features_size)
         return new(ext, num_runs, context, prime_time, sampling_time, 
-            veh_idx_can_change, rec, features, targets, agg_targets, 
-            prediction_features, prediction_model, rng, 0, Dict{Int64, Int64}(),
-            Set{Int}())
+            veh_idx_can_change, rec, features, feature_timesteps,
+            targets, agg_targets, prediction_features, prediction_model, 
+            rng, 0, Dict{Int64, Int64}(), Set{Int}())
     end
 end
 
@@ -73,7 +77,7 @@ function bootstrap_targets!(eval::BootstrappingMonteCarloEvaluator,
 
         if !in(veh_id, eval.done) && !any(eval.targets[1:3, veh_idx] .== 1)
 
-            pull_features!(eval.ext, eval.prediction_features, eval.rec, roadway, veh_idx, models)
+            eval.prediction_features[:, veh_idx] = pull_features!(eval.ext, eval.rec, roadway, veh_idx, models)
             bootstrap_values = predict(eval.prediction_model, reshape(
                 eval.prediction_features[:, veh_idx], (1, input_dim)))
 

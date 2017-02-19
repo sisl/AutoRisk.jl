@@ -21,8 +21,8 @@ include("utils/utils.jl")
 # extraction
 include("extraction/lidar_sensors.jl")
 include("extraction/feature_extractors.jl")
-include("extraction/heuristic_feature_extractor.jl")
 include("extraction/multi_feature_extractor.jl")
+include("extraction/dataset_extraction.jl")
 
 # generation
 ## roadway
@@ -48,7 +48,6 @@ include("prediction/neural_network.jl")
 
 # evaluation
 include("evaluation/simulation.jl")
-include("evaluation/dataset_extraction.jl")
 include("evaluation/monte_carlo_evaluator.jl")
 include("evaluation/bootstrapping_monte_carlo_evaluator.jl")
 
