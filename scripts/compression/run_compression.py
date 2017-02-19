@@ -12,6 +12,7 @@ sys.path.append(os.path.abspath(path))
 import dataset
 import dataset_loaders
 import neural_networks.feed_forward_neural_network as ffnn
+import neural_networks.recurrent_neural_network as rnn
 import neural_networks.utils
 import priority_dataset
 
@@ -101,6 +102,9 @@ tf.app.flags.DEFINE_string('dataset_filepath',
 tf.app.flags.DEFINE_integer('input_dim', 
                             166,
                             """Dimension of input.""")
+tf.app.flags.DEFINE_integer('timesteps', 
+                            1,
+                            """Number of input timesteps.""")
 tf.app.flags.DEFINE_integer('output_dim', 
                             5,
                             """Dimension of output.""")
@@ -270,8 +274,9 @@ def main(argv=None):
     print("hard brake cross entropy from outputting correct values: {}".format(ce / num_samples))
     # fit the model
     with tf.Session(config=tf.ConfigProto(log_device_placement=False)) as session:
-        if FLAGS.use_priority:
-            network = ffnn.WeightedFeedForwardNeuralNetwork(session, FLAGS)
+        # if the timestep dimension is > 1, use recurrent network
+        if data['x_train'].shape[1] > 1:
+            network = rnn.RecurrentNeuralNetwork(session, FLAGS)
         else:
             network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
         network.fit(d)

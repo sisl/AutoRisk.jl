@@ -12,6 +12,15 @@ from . import initializers
 class NeuralNetwork(object):
 
     def __init__(self, session, flags):
+        """
+        Description:
+            - Initializes this network by storing the tf flags and 
+                building the model.
+
+        Args:
+            - session: the session with which to execute model operations
+            - flags: tensorflow flags object containing network options
+        """
         self.session = session
         self.flags = flags
         self._build_model()
@@ -160,6 +169,39 @@ class NeuralNetwork(object):
                 self.flags.learning_rate = max(
                     self.flags.learning_rate, self.flags.min_lr)
 
+    def _build_model(self):
+        """
+        Description:
+            - Builds the model, which entails defining placeholders, 
+                a network, loss function, and train op. 
+
+                Class variables created during this call all are assigned 
+                to self in the body of this function, so everything that is 
+                stored should be apparent from looking at this function.
+
+                The results of these methods are passed in / out explicitly.
+        """
+        # placeholders
+        (self._input_ph, self._target_ph, 
+            self._dropout_ph, self._lr_ph) = self._build_placeholders()
+
+        # network
+        self._scores = self._build_network(
+            self._input_ph, self._dropout_ph)
+
+        # loss
+        self._loss, self._probs = self._build_loss(
+            self._scores, self._target_ph)
+
+        # train operation
+        self._train_op = self._build_train_op(self._loss, self._lr_ph)
+
+        # summaries
+        self._summary_op = tf.summary.merge_all()
+
+        # intialize the model
+        self.session.run(tf.global_variables_initializer())
+
     def _build_loss(self, scores, targets):
         """
         Description:
@@ -249,7 +291,6 @@ class NeuralNetwork(object):
 
         return train_op
 
-
 class FeedForwardNeuralNetwork(NeuralNetwork):
     def __init__(self, session, flags):
         """
@@ -262,39 +303,6 @@ class FeedForwardNeuralNetwork(NeuralNetwork):
             - flags: tensorflow flags object containing network options
         """
         super(FeedForwardNeuralNetwork, self).__init__(session, flags)
-
-    def _build_model(self):
-        """
-        Description:
-            - Builds the model, which entails defining placeholders, 
-                a network, loss function, and train op. 
-
-                Class variables created during this call all are assigned 
-                to self in the body of this function, so everything that is 
-                stored should be apparent from looking at this function.
-
-                The results of these methods are passed in / out explicitly.
-        """
-        # placeholders
-        (self._input_ph, self._target_ph, 
-            self._dropout_ph, self._lr_ph) = self._build_placeholders()
-
-        # network
-        self._scores = self._build_network(
-            self._input_ph, self._dropout_ph)
-
-        # loss
-        self._loss, self._probs = self._build_loss(
-            self._scores, self._target_ph)
-
-        # train operation
-        self._train_op = self._build_train_op(self._loss, self._lr_ph)
-
-        # summaries
-        self._summary_op = tf.summary.merge_all()
-
-        # intialize the model
-        self.session.run(tf.global_variables_initializer())
 
     def _build_placeholders(self):
         """
