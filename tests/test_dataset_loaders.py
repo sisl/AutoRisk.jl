@@ -40,5 +40,20 @@ class TestRiskDatasetLoader(unittest.TestCase):
         actual = data_norm['x_train']
         np.testing.assert_array_equal(expected, actual)
 
+    def test_sequence_normalization(self):
+        x_train = np.ones(8).reshape(2,2,2)
+        x_train[:,:,1] *= 2
+        x_val = np.ones(8).reshape(2,2,2)
+        data = {'x_train': x_train, 'x_val': x_val}
+
+        dataset_loaders.normalize_features(data)
+
+        self.assertEquals(data['means'].shape, (2,))
+        self.assertEquals(data['stds'].shape, (2,))
+        np.testing.assert_array_equal(data['means'], [1,2])
+        np.testing.assert_array_equal(data['stds'], [1,1])
+        self.assertEquals(data['x_train'].shape, (2,2,2))
+        self.assertEquals(data['x_val'].shape, (2,2,2))
+
 if __name__ == '__main__':
     unittest.main()

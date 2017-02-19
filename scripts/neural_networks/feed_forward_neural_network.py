@@ -9,17 +9,9 @@ import time
 
 from . import initializers
 
-class FeedForwardNeuralNetwork(object):
-    def __init__(self, session, flags):
-        """
-        Description:
-            - Initializes this network by storing the tf flags and 
-                building the model.
+class NeuralNetwork(object):
 
-        Args:
-            - session: the session with which to execute model operations
-            - flags: tensorflow flags object containing network options
-        """
+    def __init__(self, session, flags):
         self.session = session
         self.flags = flags
         self._build_model()
@@ -168,6 +160,109 @@ class FeedForwardNeuralNetwork(object):
                 self.flags.learning_rate = max(
                     self.flags.learning_rate, self.flags.min_lr)
 
+    def _build_loss(self, scores, targets):
+        """
+        Description:
+            - Build a loss function to optimize using the 
+                scores of the network (unnormalized) and 
+                the target values
+
+        Args:
+            - scores: unnormalized scores output from the network
+                shape = (batch_size, output_dim)
+            - targets: the target values
+                shape = (batch_size, output_dim)
+
+        Returns:
+            - symbolic loss value
+        """
+
+        # create op for probability to use in 'predict'
+        probs = tf.sigmoid(scores)
+
+        # create loss separately
+        if self.flags.loss_type == 'ce':
+            losses = tf.reduce_sum(
+                tf.nn.sigmoid_cross_entropy_with_logits(scores, targets),
+                reduction_indices=(0))
+        elif self.flags.loss_type == 'mse':
+            losses = tf.reduce_sum((scores - targets) ** 2, 
+                reduction_indices=(0))
+            probs = tf.clip_by_value(scores, 0., 1.)
+        elif self.flags.loss_type == 'mse_probs':
+            losses = tf.reduce_sum((probs - targets) ** 2, 
+                reduction_indices=(0))
+        elif self.flags.loss_type == 'mse_log_probs':
+            targets = tf.clip_by_value(targets, self.flags.eps, 1.)
+            targets = tf.log(targets)
+            losses = tf.reduce_sum((scores - targets) ** 2, 
+                reduction_indices=(0))
+            probs = tf.clip_by_value(tf.exp(scores), 0., 1.)
+        else:
+            raise(ValueError("invalid loss type: {}".format(
+                self.flags.loss_type)))
+
+        # summarize losses individually
+        for tidx, target_loss in enumerate(tf.unpack(losses)):
+                tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
+
+        # overall loss is sum of individual target losses
+        loss = tf.reduce_sum(losses)
+
+        # collect regularization losses
+        reg_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+        loss += reg_loss
+
+        # summaries
+        tf.summary.histogram('probs', probs)
+        tf.summary.scalar('loss', loss)
+        tf.summary.scalar('l2 reg loss', reg_loss)
+
+        return loss, probs
+
+    def _build_train_op(self, loss, learning_rate):
+        """
+        Description:
+            - Build a training operation minimizing the loss
+
+        Args:
+            - loss: symbolic loss
+
+        Returns:
+            - training operation
+        """
+        # adaptive learning rate
+        opt = tf.train.AdamOptimizer(learning_rate)   
+
+        # clip gradients by norm
+        grads_params = opt.compute_gradients(loss) 
+        clipped_grads_params = [(tf.clip_by_norm(
+            g, self.flags.max_norm), p) 
+            for (g, p) in grads_params]
+        global_step = tf.Variable(0, trainable=False)
+        train_op = opt.apply_gradients(
+            clipped_grads_params, global_step=global_step)  
+
+        # summaries
+        # for (g, p) in clipped_grads_params:
+        #     tf.histogram_summary('grads for {}'.format(p.name), g)
+
+        return train_op
+
+
+class FeedForwardNeuralNetwork(NeuralNetwork):
+    def __init__(self, session, flags):
+        """
+        Description:
+            - Initializes this network by storing the tf flags and 
+                building the model.
+
+        Args:
+            - session: the session with which to execute model operations
+            - flags: tensorflow flags object containing network options
+        """
+        super(FeedForwardNeuralNetwork, self).__init__(session, flags)
+
     def _build_model(self):
         """
         Description:
@@ -283,95 +378,6 @@ class FeedForwardNeuralNetwork(object):
         # tf.histogram_summary('scores', scores)
 
         return scores
-
-    def _build_loss(self, scores, targets):
-        """
-        Description:
-            - Build a loss function to optimize using the 
-                scores of the network (unnormalized) and 
-                the target values
-
-        Args:
-            - scores: unnormalized scores output from the network
-                shape = (batch_size, output_dim)
-            - targets: the target values
-                shape = (batch_size, output_dim)
-
-        Returns:
-            - symbolic loss value
-        """
-
-        # create op for probability to use in 'predict'
-        probs = tf.sigmoid(scores)
-
-        # create loss separately
-        if self.flags.loss_type == 'ce':
-            losses = tf.reduce_sum(
-                tf.nn.sigmoid_cross_entropy_with_logits(scores, targets),
-                reduction_indices=(0))
-        elif self.flags.loss_type == 'mse':
-            losses = tf.reduce_sum((scores - targets) ** 2, 
-                reduction_indices=(0))
-            probs = tf.clip_by_value(scores, 0., 1.)
-        elif self.flags.loss_type == 'mse_probs':
-            losses = tf.reduce_sum((probs - targets) ** 2, 
-                reduction_indices=(0))
-        elif self.flags.loss_type == 'mse_log_probs':
-            targets = tf.clip_by_value(targets, self.flags.eps, 1.)
-            targets = tf.log(targets)
-            losses = tf.reduce_sum((scores - targets) ** 2, 
-                reduction_indices=(0))
-            probs = tf.clip_by_value(tf.exp(scores), 0., 1.)
-        else:
-            raise(ValueError("invalid loss type: {}".format(
-                self.flags.loss_type)))
-
-        # summarize losses individually
-        for tidx, target_loss in enumerate(tf.unpack(losses)):
-                tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
-
-        # overall loss is sum of individual target losses
-        loss = tf.reduce_sum(losses)
-
-        # collect regularization losses
-        reg_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        loss += reg_loss
-
-        # summaries
-        tf.summary.histogram('probs', probs)
-        tf.summary.scalar('loss', loss)
-        tf.summary.scalar('l2 reg loss', reg_loss)
-
-        return loss, probs
-
-    def _build_train_op(self, loss, learning_rate):
-        """
-        Description:
-            - Build a training operation minimizing the loss
-
-        Args:
-            - loss: symbolic loss
-
-        Returns:
-            - training operation
-        """
-        # adaptive learning rate
-        opt = tf.train.AdamOptimizer(learning_rate)   
-
-        # clip gradients by norm
-        grads_params = opt.compute_gradients(loss) 
-        clipped_grads_params = [(tf.clip_by_norm(
-            g, self.flags.max_norm), p) 
-            for (g, p) in grads_params]
-        global_step = tf.Variable(0, trainable=False)
-        train_op = opt.apply_gradients(
-            clipped_grads_params, global_step=global_step)  
-
-        # summaries
-        # for (g, p) in clipped_grads_params:
-        #     tf.histogram_summary('grads for {}'.format(p.name), g)
-
-        return train_op
 
 class WeightedFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
 

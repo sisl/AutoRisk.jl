@@ -15,11 +15,16 @@ def normalize_features(data, threshold=1e-8):
     Returns:
         - normalized dataset
     """
-    mean = np.mean(data['x_train'], axis=0)
+    if len(data['x_train'].shape) == 2:
+        axes = 0
+    else:
+        axes = (0,1)
+
+    mean = np.mean(data['x_train'], axis=axes)
     data['x_train'] = (data['x_train'] - mean)
 
     # compute the standard deviation after mean subtraction
-    std = np.std(data['x_train'], axis=0)
+    std = np.std(data['x_train'], axis=axes)
 
     # if the standard deviation is sufficiently low
     # then just divide by 1
@@ -64,8 +69,6 @@ def risk_dataset_loader(input_filepath, normalize=True,
     msg = 'features and targets must be same length: features len: {}\ttargets len: {}'.format(
         len(features), len(targets))
     assert len(features) == len(targets), msg
-
-
 
     # if shuffle then randomly permute order
     if shuffle:
