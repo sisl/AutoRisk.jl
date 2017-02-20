@@ -41,7 +41,7 @@ def normalize_features(data, threshold=1e-8):
     return data
 
 def risk_dataset_loader(input_filepath, normalize=True, 
-        debug_size=None, train_split=.8, shuffle=False):
+        debug_size=None, train_split=.8, shuffle=False, timesteps=None):
     """
     Description:
         - Load a risk dataset from file, optionally normalizing it.
@@ -65,6 +65,12 @@ def risk_dataset_loader(input_filepath, normalize=True,
     else:
         features = infile['risk/features'].value
         targets = infile['risk/targets'].value
+
+    # downselect timesteps
+    if len(features.shape) > 2 and timesteps is not None:
+        features = features[:, -timesteps:,:]
+        if features.shape[1] == 1:
+            features = np.squeeze(features, axis=1)
 
     msg = 'features and targets must be same length: features len: {}\ttargets len: {}'.format(
         len(features), len(targets))

@@ -247,7 +247,7 @@ def main(argv=None):
     input_filepath = FLAGS.dataset_filepath
     data = dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=True, train_split=.9, 
-        debug_size=FLAGS.debug_size)
+        debug_size=FLAGS.debug_size, timesteps=FLAGS.timesteps)
 
     if FLAGS.use_priority:
         d = priority_dataset.PrioritizedDataset(data, FLAGS)
@@ -275,9 +275,10 @@ def main(argv=None):
     # fit the model
     with tf.Session(config=tf.ConfigProto(log_device_placement=False)) as session:
         # if the timestep dimension is > 1, use recurrent network
-        if data['x_train'].shape[1] > 1:
+        if FLAGS.timesteps > 1:
             network = rnn.RecurrentNeuralNetwork(session, FLAGS)
         else:
+            
             network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
         network.fit(d)
 
