@@ -181,7 +181,8 @@ type NeighborFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function NeighborFeatureExtractor()
-        num_features = 28
+        num_neighbors = 7
+        num_features = 7 * 5 + 4
         return new(zeros(Float64, num_features), num_features)
     end
 end
@@ -210,6 +211,13 @@ function AutomotiveDrivingModels.pull_features!(
     rear_R = get_neighbor_rear_along_right_lane(
         scene, veh_idx, roadway, vtpr, vtpf, vtpr)
 
+    if fore_M.ind != 0
+        fore_fore_M = get_neighbor_fore_along_lane(     
+            scene, fore_M.ind, roadway, vtpr, vtpf, vtpr)        
+    else        
+        fore_fore_M = NeighborLongitudinalResult(0, 0.)     
+    end
+
     idx = 0
     set_dual_feature!(ext.features, idx+=1, get(
         LANEOFFSETLEFT, rec, roadway, veh_idx, pastframe))
@@ -218,19 +226,20 @@ function AutomotiveDrivingModels.pull_features!(
         LANEOFFSETRIGHT, rec, roadway, veh_idx, pastframe))
     idx+=1
 
-    set_speed_and_distance!(ext.features, idx+=1, fore_M, scene)
-    idx+=3
-    set_speed_and_distance!(ext.features, idx+=1, fore_L, scene)
-    idx+=3
-    set_speed_and_distance!(ext.features, idx+=1, fore_R, scene)
-    idx+=3
-    set_speed_and_distance!(ext.features, idx+=1, rear_M, scene)
-    idx+=3
-    set_speed_and_distance!(ext.features, idx+=1, rear_L, scene)
-    idx+=3
-    set_speed_and_distance!(ext.features, idx+=1, rear_R, scene)
-    idx+=3
-
+    set_neighbor_features!(ext.features, idx+=1, fore_M, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, fore_L, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, fore_R, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, rear_M, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, rear_L, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, rear_R, scene, rec, roadway)
+    idx+=4
+    set_neighbor_features!(ext.features, idx+=1, fore_fore_M, scene, rec, roadway)
+    idx+=4
     return ext.features
 end
 

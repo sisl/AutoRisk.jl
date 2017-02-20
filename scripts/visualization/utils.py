@@ -4,7 +4,14 @@ def load_labels(input_filepath):
     labels = []
     with open(input_filepath, 'r') as infile:
         for row in infile:
-            labels.append(row.strip())
+            elements = row.strip().split(' ')
+            if '*' in elements:
+                repeat = int(elements[-1])
+                base = elements[0] + '_{}'
+                for r in range(1, repeat + 1):
+                    labels.append(base.format(r))
+            else:
+                labels.append(row.strip())
     return labels
 
 def write_to_csv(output_filepath, rows, feature_labels, target_labels):

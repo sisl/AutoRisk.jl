@@ -7,7 +7,7 @@ np.set_printoptions(precision=5, suppress=True)
 import os 
 import scipy.stats
 import sys
-import seaborn as sns
+# import seaborn as sns
 
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -255,10 +255,33 @@ def sort_scenario_seeds_by_target(dataset, output_directory):
         np.savez(metadata_filepath, sorted_seeds=sorted_seeds, 
             sorted_means=sorted_means, sorted_bss=sorted_bss)
 
+def compare_dataset_features(d1, d2, l1, l2):
+    f1 = d1['x_train'][0]
+    f2 = d2['x_train'][0]
+
+    map_1 = {lv1:fv1 for (fv1,lv1) in zip(f1, l1)}
+    map_2 = {lv2:fv2 for (fv2,lv2) in zip(f2, l2)}
+
+    k1 = set(map_1.keys())
+    k2 = set(map_2.keys())
+
+    diff = k1.symmetric_difference(k2)
+    print('different keys: {}\nlen: {}'.format(sorted(diff), len(diff)))
+
+    same = k1.intersection(k2)
+    for k in l2:
+        if k in k1 and k in k2:
+            print(k)
+            print(map_1[k])
+            print(map_2[k])
+            input()
+
+
 def display_target_info(datasets, target_labels, dataset_labels, 
         output_directory):
     # basic stats
     means = [np.mean(d['y_train'], axis=0) for d in datasets]
+    print(means)
     stds = [np.std(d['y_train'], axis=0) for d in datasets]
     maxes = [np.max(d['y_train'], axis=0) for d in datasets]
     num_samples = [len(d['y_train']) for d in datasets]
@@ -285,6 +308,7 @@ def display_target_info(datasets, target_labels, dataset_labels,
             alpha=.9, edgecolor="black")
         rects.append(rect)
     
+    # change in target across datasets
     ax.set_ylabel('pr(target)')
     ax.set_title('pr(target) across datasets')
     print(target_labels)
@@ -292,6 +316,27 @@ def display_target_info(datasets, target_labels, dataset_labels,
     ax.legend(([rect[0] for rect in rects]), dataset_labels, bbox_to_anchor=(.75, .98))
     output_filepath = os.path.join(output_directory, 'target_comparison.png')
     plt.savefig(output_filepath)
+
+    # histogram of target values
+    _, num_targets = datasets[0]['y_train'].shape
+    num_datasets = len(datasets)
+    target_sets = [d['y_train'] for d in datasets]
+    for t_idx in range(num_targets):
+        # fig = plt.figure(1)
+        for d_idx in range(num_datasets):
+            plt.subplot(int('{}1{}'.format(num_datasets, d_idx + 1)))
+            n, bins, patches = plt.hist(
+                target_sets[d_idx][:, t_idx][target_sets[d_idx][:, t_idx] > 0], 
+                50, alpha=0.5)
+            plt.title('{}: {}'.format(
+                    dataset_labels[d_idx], target_labels[t_idx]))
+        output_filepath = os.path.join(
+            output_directory, 'new_target_{}.png'.format(
+                target_labels[t_idx]))
+        print(output_filepath)
+        plt.tight_layout()
+        plt.savefig(output_filepath)
+        plt.close()
 
     # for tidx in range(target_dim):
         
@@ -317,9 +362,16 @@ if __name__ == '__main__':
 
     # the dataset filepaths to visualize along with labels
     input_filepaths = [
-        '../../data/datasets/1_30/risk_10_sec.h5',
-        '../../data/datasets/1_30/risk_10_sec_bootstrap.h5',
-        '../../data/datasets/1_22/risk_5_second_fix_complete.h5',
+        '../../data/datasets/2_19/test.h5',
+        # '../../data/datasets/2_19/risk_.1_sec_.5_sec_features.h5',
+        # '../../data/datasets/2_13/risk_learned.h5',
+        # '../../data/datasets/2_13/risk_.1_sec_lidar_features.h5',
+        '../../data/datasets/2_13/risk_.1_sec_regular_features.h5'
+        # '../../data/datasets/2_4/risk_.1_sec_multi.h5',
+        # '../../data/datasets/2_4/risk_.1_sec.h5',
+        # '../../data/datasets/1_30/risk_10_sec.h5',
+        # '../../data/datasets/1_30/risk_10_sec_bootstrap.h5',
+        # '../../data/datasets/1_22/risk_5_second_fix_complete.h5',
         # '../../data/datasets/1_30/risk_5_sec_delay.h5',
         # '../../data/datasets/1_22/risk_5_second_no_idm_decel.h5',
         # '../../data/datasets/1_22/bootstrap_10_sec.h5',
@@ -340,9 +392,13 @@ if __name__ == '__main__':
         # '../../data/datasets/12_11/risk_18.h5'
     ]
     dataset_labels = [
-        'risk_10_sec',
-        'risk_10_sec_bootstrap',
-        'risk_5_second',
+        'test'
+        # 'multi',
+        # 'lidar',
+        'regular'
+        # 'risk_10_sec',
+        # 'risk_10_sec_bootstrap',
+        # 'risk_5_second',
         # 'risk_5_second_delay',
         # 'risk_5_second_no_idm_decel',
         # '10_sec_bootstrap',
@@ -373,23 +429,24 @@ if __name__ == '__main__':
         os.mkdir(output_directory)
 
     # load in each dataset
+    debug_size = 1000000
     datasets = [dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=False, train_split=1., 
-        debug_size=None, normalize=False) for 
+        debug_size=debug_size, normalize=False, timesteps=1) for 
         input_filepath in input_filepaths]
 
     # display basic info about the targets
-    display_target_info(datasets, target_labels, dataset_labels, output_directory)
+    # display_target_info(datasets, target_labels, dataset_labels, output_directory)
 
-    ## analyze behavior
-    for i, dataset in enumerate(datasets):
-        print(dataset_labels[i])
-        collision_probability_by_behavior(dataset)
+    # ## analyze behavior
+    # for i, dataset in enumerate(datasets):
+    #     print(dataset_labels[i])
+    #     collision_probability_by_behavior(dataset)
 
-    ## compute feature target correlations and write to file
-    coeffs = compute_feature_target_correlations(datasets[-1])
-    output_filepath = os.path.join(output_directory, 'coeff.csv')
-    utils.write_to_csv(output_filepath, coeffs, feature_labels, target_labels)
+    # compute feature target correlations and write to file
+    # coeffs = compute_feature_target_correlations(datasets[-1])
+    # output_filepath = os.path.join(output_directory, 'coeff.csv')
+    # utils.write_to_csv(output_filepath, coeffs, feature_labels, target_labels)
 
     # # visualize the datasets
     # visualize_datasets(datasets, dataset_labels, feature_labels, 
@@ -401,3 +458,7 @@ if __name__ == '__main__':
     # # compare two datasets
     # compare_dataset_targets_pairwise(
     #     datasets[0], datasets[1], target_labels)
+
+    feature_labels_filepath = '../../data/datasets/features_multi.csv'
+    feature_labels_multi = utils.load_labels(feature_labels_filepath)
+    compare_dataset_features(datasets[0], datasets[1], feature_labels_multi, feature_labels)
