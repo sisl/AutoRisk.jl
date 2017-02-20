@@ -173,4 +173,4 @@ end
 
 # the indexing here is to ensure that the dimension is not dropped
 get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
-get_targets(eval::Evaluator) = eval.targets[:, :]
+get_targets(eval::Evaluator) = eval.agg_targets[:, :]

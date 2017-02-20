@@ -19,13 +19,18 @@ function build_debug_dataset_collector(;
         prime_time = 10.,
         sampling_time = 5.,
         init_file = true,
-        feature_timesteps = 1)
+        feature_timesteps = 1,
+        roadway_length = 400.,
+        roadway_radius = 200.,
+        lon_σ = 0.,
+        lat_σ = 0.)
 
     seeds = collect(1:num_samples)
     max_num_samples = num_samples * max_num_veh
 
     # roadway gen
-    roadway = gen_stadium_roadway(num_lanes, length = 400., radius = 200.)
+    roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 
+        radius = roadway_radius)
     roadway_gen = StaticRoadwayGenerator(roadway)
 
     # scene gen
@@ -43,7 +48,7 @@ function build_debug_dataset_collector(;
         max_init_dist,
         rng)
 
-    params = [get_aggressive_behavior_params()]
+    params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]
     weights = WeightVec([1.])
     context = IntegratedContinuous(.1, 1)
     behavior_gen = PredefinedBehaviorGenerator(context, params, weights)

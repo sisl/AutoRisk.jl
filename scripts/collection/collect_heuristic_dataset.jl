@@ -54,6 +54,9 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
         if flags["extract_behavioral"]
             push!(subexts, BehavioralFeatureExtractor())
         end
+        if flags["extract_neighbor_behavioral"]
+            push!(subexts, NeighborBehavioralFeatureExtractor())
+        end
         if flags["extract_car_lidar"]
             push!(subexts, CarLidarFeatureExtractor(
                 extract_carlidar_rangerate = 

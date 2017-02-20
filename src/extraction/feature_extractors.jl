@@ -316,6 +316,64 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
+type NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
+    subext::BehavioralFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function NeighborBehavioralFeatureExtractor()
+        subext = BehavioralFeatureExtractor()
+        num_neighbors = 7
+        num_features = length(subext) * num_neighbors
+        return new(subext, zeros(Float64, num_features), num_features)
+    end
+end
+Base.length(ext::NeighborBehavioralFeatureExtractor) = ext.num_features
+function AutomotiveDrivingModels.pull_features!(
+        ext::NeighborBehavioralFeatureExtractor,  
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int,  
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        pastframe::Int = 0)
+
+    scene = get_scene(rec, pastframe)
+    
+    vtpf = VehicleTargetPointFront()
+    vtpr = VehicleTargetPointRear()
+    fore_M = get_neighbor_fore_along_lane(
+        scene, veh_idx, roadway, vtpf, vtpr, vtpf)
+    fore_L = get_neighbor_fore_along_left_lane(
+        scene, veh_idx, roadway, vtpf, vtpr, vtpf)
+    fore_R = get_neighbor_fore_along_right_lane(
+        scene, veh_idx, roadway, vtpf, vtpr, vtpf)
+    rear_M = get_neighbor_rear_along_lane(
+        scene, veh_idx, roadway, vtpr, vtpf, vtpr)
+    rear_L = get_neighbor_rear_along_left_lane(
+        scene, veh_idx, roadway, vtpr, vtpf, vtpr)
+    rear_R = get_neighbor_rear_along_right_lane(
+        scene, veh_idx, roadway, vtpr, vtpf, vtpr)
+
+    if fore_M.ind != 0      
+        fore_fore_M = get_neighbor_fore_along_lane(
+            scene, fore_M.ind, roadway, vtpf, vtpr, vtpf)        
+    else        
+        fore_fore_M = NeighborLongitudinalResult(0, 0.)     
+    end
+
+    idxs::Vector{Int64} = [fore_M.ind, fore_L.ind, fore_R.ind, rear_M.ind, 
+        rear_L.ind, rear_R.ind, fore_fore_M.ind]
+    fidx = 0
+    num_neigh_features = length(ext.subext)
+    for neigh_veh_idx in idxs
+        stop = fidx + num_neigh_features
+        ext.features[fidx + 1:stop] = pull_features!(ext.subext, rec, roadway,
+            neigh_veh_idx, models, pastframe)
+        fidx += num_neigh_features
+    end
+    return ext.features
+end
+
+
 type CarLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64

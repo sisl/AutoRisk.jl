@@ -4,7 +4,7 @@ using AutoRisk
 include("collection/testing_utils.jl")
 
 # testing constants
-const NUM_FEATURES = 142
+const NUM_FEATURES = 233
 const NUM_TARGETS = 5
 
 function runtests()

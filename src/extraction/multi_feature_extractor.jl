@@ -41,6 +41,7 @@ function MultiFeatureExtractor()
         WellBehavedFeatureExtractor(),
         NeighborFeatureExtractor(),
         BehavioralFeatureExtractor(),
+        NeighborBehavioralFeatureExtractor(),
         CarLidarFeatureExtractor(),
         RoadLidarFeatureExtractor()
     ]
