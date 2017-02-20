@@ -9,6 +9,7 @@ export
     WellBehavedFeatureExtractor,
     NeighborFeatureExtractor,
     BehavioralFeatureExtractor,
+    NeighborBehavioralFeatureExtractor,
     CarLidarFeatureExtractor,
     RoadLidarFeatureExtractor,
     NormalizingExtractor,
