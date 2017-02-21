@@ -374,7 +374,10 @@ class FeedForwardNeuralNetwork(NeuralNetwork):
                 weights_regularizer=weights_regularizer,
                 biases_initializer=bias_initializer)
             # tf.histogram_summary("layer_{}_activation".format(lidx), hidden)
-            hidden = tf.nn.dropout(hidden, dropout_ph)
+            if self.flags.use_batch_norm:
+                hidden = tf.contrib.layers.batch_norm(hidden)
+            else:
+                hidden = tf.nn.dropout(hidden, dropout_ph)
 
         # build output layer
         scores = tf.contrib.layers.fully_connected(hidden, 
@@ -498,7 +501,11 @@ class ClassificationFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
                 weights_regularizer=weights_regularizer,
                 biases_initializer=bias_initializer)
             # tf.histogram_summary("layer_{}_activation".format(lidx), hidden)
-            hidden = tf.nn.dropout(hidden, dropout_ph)
+
+            if self.flags.use_batch_norm:
+                hidden = tf.contrib.layers.batch_norm(hidden)
+            else:
+                hidden = tf.nn.dropout(hidden, dropout_ph)
 
         # build output layer
         scores = tf.contrib.layers.fully_connected(hidden, 

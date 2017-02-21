@@ -95,6 +95,9 @@ tf.app.flags.DEFINE_integer('num_target_bins',
 tf.app.flags.DEFINE_float('dropout_keep_prob', 
                             1.,
                             """Probability to keep a unit in dropout.""")
+tf.app.flags.DEFINE_boolean('use_batch_norm', 
+                            False,
+                            """Whether to use batch norm (True removes dropout).""")
 tf.app.flags.DEFINE_float('l2_reg', 
                             0.0,
                             """Probability to keep a unit in dropout.""")

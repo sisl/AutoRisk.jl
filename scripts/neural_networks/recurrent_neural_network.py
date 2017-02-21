@@ -95,7 +95,10 @@ class RecurrentNeuralNetwork(NeuralNetwork):
                 weights_regularizer=weights_regularizer,
                 biases_initializer=bias_initializer)
             # tf.histogram_summary("layer_{}_activation".format(lidx), hidden)
-            hidden = tf.nn.dropout(hidden, dropout_ph)
+            if self.flags.use_batch_norm:
+                hidden = tf.contrib.layers.batch_norm(hidden)
+            else:
+                hidden = tf.nn.dropout(hidden, dropout_ph)
 
         # build recurrent network 
         cell = tf.nn.rnn_cell.GRUCell(num_units=hidden_layer_dims[-1])
@@ -107,6 +110,8 @@ class RecurrentNeuralNetwork(NeuralNetwork):
         # build output layer
         last_output = tf.squeeze(tf.slice(
             outputs, (0, self.flags.timesteps - 1, 0), (-1,-1,-1)), 1)
+        if self.flags.use_batch_norm:
+            last_output = tf.contrib.layers.batch_norm(last_output)
         scores = tf.contrib.layers.fully_connected(last_output, 
                 self.flags.output_dim, 
                 activation_fn=None,
