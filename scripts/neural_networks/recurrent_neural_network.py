@@ -97,8 +97,7 @@ class RecurrentNeuralNetwork(NeuralNetwork):
             # tf.histogram_summary("layer_{}_activation".format(lidx), hidden)
             if self.flags.use_batch_norm:
                 hidden = tf.contrib.layers.batch_norm(hidden)
-            else:
-                hidden = tf.nn.dropout(hidden, dropout_ph)
+            hidden = tf.nn.dropout(hidden, dropout_ph)
 
         # build recurrent network 
         cell = tf.nn.rnn_cell.GRUCell(num_units=hidden_layer_dims[-1])
