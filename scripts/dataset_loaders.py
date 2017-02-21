@@ -40,8 +40,23 @@ def normalize_features(data, threshold=1e-8):
 
     return data
 
+def discretize_targets(targets, num_bins):
+    # linear bins for now
+    cuts = np.linspace(0, 1, num_bins + 1)
+
+    # collect indices where the target is between the cut
+    bin_idxs = []
+    for lo, hi in zip(cuts, cuts[1:]):
+        idxs = np.where((targets >= lo) & (targets <= hi))
+        bin_idxs.append(idxs)
+
+    # for each bin, assign values that belong to it
+    for c, idxs in enumerate(bin_idxs):
+        targets[idxs] = c
+
 def risk_dataset_loader(input_filepath, normalize=True, 
-        debug_size=None, train_split=.8, shuffle=False, timesteps=None):
+        debug_size=None, train_split=.8, shuffle=False, timesteps=None,
+        num_target_bins=None):
     """
     Description:
         - Load a risk dataset from file, optionally normalizing it.
@@ -71,6 +86,10 @@ def risk_dataset_loader(input_filepath, normalize=True,
         features = features[:, -timesteps:,:]
         if features.shape[1] == 1:
             features = np.squeeze(features, axis=1)
+
+    # discretize means break the targets into bins 
+    if num_target_bins is not None:
+        discretize_targets(targets, num_target_bins)
 
     msg = 'features and targets must be same length: features len: {}\ttargets len: {}'.format(
         len(features), len(targets))

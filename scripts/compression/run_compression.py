@@ -4,6 +4,7 @@ import numpy as np
 np.set_printoptions(suppress=True, precision=6)
 import os
 import sys
+from sklearn.metrics import classification_report
 import tensorflow as tf
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -72,7 +73,7 @@ tf.app.flags.DEFINE_string('hidden_layer_dims',
 tf.app.flags.DEFINE_float('learning_rate', 
                             0.0005,
                             """Initial learning rate to use.""")
-tf.app.flags.DEFINE_integer('decrease_lr_threshold', 
+tf.app.flags.DEFINE_float('decrease_lr_threshold', 
                             .001,
                             """Percent decrease in validation loss below 
                             which the learning rate will be decayed.""")
@@ -85,6 +86,12 @@ tf.app.flags.DEFINE_float('min_lr',
 tf.app.flags.DEFINE_string('loss_type', 
                            'ce',
                            """Type of loss to use {mse, ce}.""")
+tf.app.flags.DEFINE_string('task_type', 
+                           'regression',
+                           """Type of task {regression, classification}.""")
+tf.app.flags.DEFINE_integer('num_target_bins', 
+                            None,
+                            """Number of bins into which to discretize targets.""")
 tf.app.flags.DEFINE_float('dropout_keep_prob', 
                             1.,
                             """Probability to keep a unit in dropout.""")
@@ -159,9 +166,16 @@ def report_poorly_performing_indices_features(idxs, data, unnorm_data):
         print('features: {}'.format(unnorm_data['x_train'][idx,:5]))
         print('targets: {}'.format(unnorm_data['y_train'][idx]))
         print('seed num veh: {}'.format(batch_idxs[i] - batch_idxs[i-1]))
-        
 
-def score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, y_null=None):
+def classification_score(y, y_pred, name, y_null=None):
+    print('\nclassification results for {}'.format(name))
+    for tidx in range(y.shape[1]):
+        print('target: {}'.format(tidx))
+        print(classification_report(y[:,tidx], y_pred[:,tidx]))
+        input()
+
+def regression_score(y, y_pred, name, data=None, unnorm_data=None, eps=1e-16, 
+        y_null=None):
     # prevent overflow during the sum of the log terms
     y_pred = y_pred.astype(np.float128)
     # also threshold values to prevent log exception (throws off loss value)
@@ -247,7 +261,8 @@ def main(argv=None):
     input_filepath = FLAGS.dataset_filepath
     data = dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=True, train_split=.9, 
-        debug_size=FLAGS.debug_size, timesteps=FLAGS.timesteps)
+        debug_size=FLAGS.debug_size, timesteps=FLAGS.timesteps,
+        num_target_bins=FLAGS.num_target_bins)
 
     if FLAGS.use_priority:
         d = priority_dataset.PrioritizedDataset(data, FLAGS)
@@ -278,8 +293,10 @@ def main(argv=None):
         if FLAGS.timesteps > 1:
             network = rnn.RecurrentNeuralNetwork(session, FLAGS)
         else:
-            
-            network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
+            if FLAGS.task_type == 'classification':
+                network = ffnn.ClassificationFeedForwardNeuralNetwork(session, FLAGS)
+            else:
+                network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
         network.fit(d)
 
         y_idxs = np.where(np.sum(data['y_val'][:10000], axis=1) > 1e-4)[0]
@@ -290,6 +307,9 @@ def main(argv=None):
             print(y_pred_s)
             print(y_s)
             print()
+
+        # determine the function used for assessment based on the task
+        score = (regression_score if FLAGS.task_type == 'regression' else classification_score)
 
         # final train loss
         y_pred = network.predict(data['x_train'])
@@ -303,24 +323,27 @@ def main(argv=None):
         y_null = np.mean(y, axis=0)
         score(y, y_pred, 'val', y_null=y_null)
 
-        # final validation loss, hard braking
-        y_pred = network.predict(data['x_val'])
-        y_pred = y_pred[:, 3]
-        y = data['y_val'][:, 3]
-        y_null = np.mean(y, axis=0)
-        score(y, y_pred, 'hard brake', y_null=y_null)
+        # only makes sense to run this with regression
+        if FLAGS.task_type == 'regression':
+            # final validation loss, hard braking
+            y_pred = network.predict(data['x_val'])
+            y_pred = y_pred[:, 3]
+            y = data['y_val'][:, 3]
+            y_null = np.mean(y, axis=0)
+            score(y, y_pred, 'hard brake', y_null=y_null)
         
         # score again the unshuffled data
-        data = dataset_loaders.risk_dataset_loader(
-            input_filepath, shuffle=False, train_split=1., 
-            debug_size=FLAGS.debug_size)
-        unnorm_data = dataset_loaders.risk_dataset_loader(
-            input_filepath, shuffle=False, train_split=1., 
-            debug_size=FLAGS.debug_size, normalize=False)
+        if FLAGS.task_type == 'regression':
+            data = dataset_loaders.risk_dataset_loader(
+                input_filepath, shuffle=False, train_split=1., 
+                debug_size=FLAGS.debug_size)
+            unnorm_data = dataset_loaders.risk_dataset_loader(
+                input_filepath, shuffle=False, train_split=1., 
+                debug_size=FLAGS.debug_size, normalize=False)
 
-        y_pred = network.predict(data['x_train'])
-        y = data['y_train']
-        score(y, y_pred, 'unshuffled', data, unnorm_data)
+            y_pred = network.predict(data['x_train'])
+            y = data['y_train']
+            score(y, y_pred, 'unshuffled', data, unnorm_data)
           
         # save weights to a julia-compatible weight file
         neural_networks.utils.save_trainable_variables(
