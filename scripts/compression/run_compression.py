@@ -1,7 +1,7 @@
 
 import copy
 import numpy as np
-np.set_printoptions(suppress=True, precision=6)
+np.set_printoptions(suppress=True, precision=8)
 import os
 import sys
 from sklearn.metrics import classification_report
@@ -56,6 +56,10 @@ tf.app.flags.DEFINE_integer('log_summaries_every',
 tf.app.flags.DEFINE_integer('save_weights_every', 
                             1,
                             """Number of batches between logging summaries.""")
+tf.app.flags.DEFINE_bool('balanced_class_loss', 
+                            False,
+                            """Whether or not to balance the classes in 
+                            classification loss by reweighting.""")
 
 # network constants
 tf.app.flags.DEFINE_integer('max_norm', 
@@ -265,12 +269,15 @@ def main(argv=None):
     data = dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=True, train_split=.9, 
         debug_size=FLAGS.debug_size, timesteps=FLAGS.timesteps,
-        num_target_bins=FLAGS.num_target_bins)
+        num_target_bins=FLAGS.num_target_bins, balanced_class_loss=FLAGS.balanced_class_loss)
 
     if FLAGS.use_priority:
         d = priority_dataset.PrioritizedDataset(data, FLAGS)
     else:
-        d = dataset.Dataset(data, FLAGS)
+        if FLAGS.balanced_class_loss:
+            d = dataset.WeightedDataset(data, FLAGS)
+        else:
+            d = dataset.Dataset(data, FLAGS)
 
     print(np.mean(d.data['y_train'], axis=0))
     print(np.mean(d.data['y_val'], axis=0))
@@ -297,7 +304,10 @@ def main(argv=None):
             network = rnn.RecurrentNeuralNetwork(session, FLAGS)
         else:
             if FLAGS.task_type == 'classification':
-                network = ffnn.ClassificationFeedForwardNeuralNetwork(session, FLAGS)
+                if FLAGS.balanced_class_loss:
+                    network = ffnn.WeightedClassificationFeedForwardNeuralNetwork(session, FLAGS)
+                else:
+                    network = ffnn.ClassificationFeedForwardNeuralNetwork(session, FLAGS)
             else:
                 network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
         network.fit(d)

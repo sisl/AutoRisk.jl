@@ -727,3 +727,176 @@ class WeightedFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
         tf.summary.scalar('l2 reg loss', reg_loss)
 
         return loss, probs, losses
+
+class WeightedClassificationFeedForwardNeuralNetwork(ClassificationFeedForwardNeuralNetwork):
+    def __init__(self, session, flags):
+        """
+        Description:
+            - Initializes this network by storing the tf flags and 
+                building the model.
+
+        Args:
+            - session: the session with which to execute model operations
+            - flags: tensorflow flags object containing network options
+        """
+        super(WeightedClassificationFeedForwardNeuralNetwork, self).__init__(
+            session, flags)
+
+    def fit(self, dataset):
+        """
+        Description:
+            - Fit this model to the provided dataset.
+
+        Args:
+            - dataset: the dataset to fit. Must implement
+                the next_batch function  
+        """
+        self.start_time = time.time()
+
+        # optionally load
+        if self.flags.load_network:
+            self.load()
+
+        # fit the model to the dataset over a number of epochs
+        for epoch in range(self.flags.num_epochs):
+            train_loss, val_loss = 0, 0
+
+            # train epoch
+            for x, y, w in dataset.next_batch():
+                outputs_list = [
+                    self._summary_op, 
+                    self._loss, 
+                    self._train_op
+                ]
+                feed_dict = {
+                    self._input_ph: x, 
+                    self._target_ph: y,
+                    self._dropout_ph: self.flags.dropout_keep_prob,
+                    self._lr_ph: self.flags.learning_rate,
+                    self._weights_ph: w
+                }
+                summary, loss, _ = self.session.run(
+                    outputs_list,
+                    feed_dict=feed_dict)
+
+                self.train_writer.add_summary(summary, epoch)
+                train_loss += loss
+
+            # validation epoch
+            for x, y, w in dataset.next_batch(validation=True):
+                summary, loss = self.session.run([self._summary_op, self._loss],
+                    feed_dict={self._input_ph: x, self._target_ph: y,
+                    self._dropout_ph: 1., 
+                    self._weights_ph: w,
+                    self._lr_ph: 0.})
+                self.test_writer.add_summary(summary, epoch)
+                val_loss += loss
+
+            # print out progress if verbose
+            if self.flags.verbose:
+                self.log(epoch, dataset, train_loss, val_loss)
+
+            # snapshot network
+            self.save(epoch)
+
+            # update hyperparameters
+            self.update()
+
+    def _build_model(self):
+        """
+        Description:
+            - Builds the model, which entails defining placeholders, 
+                a network, loss function, and train op. 
+
+                Class variables created during this call all are assigned 
+                to self in the body of this function, so everything that is 
+                stored should be apparent from looking at this function.
+
+                The results of these methods are passed in / out explicitly.
+        """
+        # placeholders
+        (self._input_ph, self._target_ph, self._dropout_ph, 
+            self._lr_ph, self._weights_ph) = self._build_placeholders()
+
+        # network
+        self._scores = self._build_network(
+            self._input_ph, self._dropout_ph)
+
+        # loss
+        self._loss, self._probs = self._build_loss(
+            self._scores, self._target_ph, self._weights_ph)
+
+        # train operation
+        self._train_op = self._build_train_op(self._loss, self._lr_ph)
+
+        # summaries
+        self._summary_op = tf.summary.merge_all()
+
+        # intialize the model
+        self.session.run(tf.global_variables_initializer())
+
+
+    def _build_placeholders(self):
+        """
+        Description:
+            - build placeholders for inputs to the tf graph.
+
+        Returns:
+            - input_ph: placeholder for a input batch
+            - target_ph: placeholder for a target batch
+            - dropout_ph: placeholder for fraction of activations 
+                to drop
+        """
+        input_ph, target_ph, dropout_ph, lr_ph = super(
+            WeightedClassificationFeedForwardNeuralNetwork, self)._build_placeholders()
+        weights_ph = tf.placeholder(tf.float32,
+                shape=(None, self.flags.output_dim),
+                name="weights_ph")
+        return input_ph, target_ph, dropout_ph, lr_ph, weights_ph
+
+    def _build_loss(self, scores, targets, weights):
+        """
+        Description:
+            - Build a loss function to optimize using the 
+                scores of the network (unnormalized) and 
+                the target values
+
+        Args:
+            - scores: unnormalized scores output from the network
+                shape = (batch_size, output_dim * num_target_bins)
+            - targets: the target values
+                shape = (batch_size, output_dim)
+
+        Returns:
+            - symbolic loss value
+        """
+        # shape to allow for per-target softmax
+        scores = tf.reshape(
+            scores, (-1, self.flags.output_dim, self.flags.num_target_bins))
+
+        # per-target softmax
+        losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=scores, 
+            labels=targets)
+
+        # probs are the per-target softmax probabilities
+        probs = tf.nn.softmax(scores, dim=-1)
+        
+        # # summarize losses individually
+        # for tidx, target_loss in enumerate(tf.unpack(losses, axis=-1)):
+        #     print(target_loss.get_shape())
+        #     input()
+        #     tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
+
+        # overall loss is sum of individual target losses
+        loss = tf.reduce_sum(losses * weights)
+
+        # collect regularization losses
+        reg_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+        loss += reg_loss
+
+        # summaries
+        tf.summary.histogram('probs', probs)
+        tf.summary.scalar('loss', loss)
+        tf.summary.scalar('l2 reg loss', reg_loss)
+
+        return loss, probs

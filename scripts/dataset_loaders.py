@@ -1,4 +1,5 @@
 
+import collections
 import h5py
 import numpy as np
 
@@ -54,9 +55,27 @@ def discretize_targets(targets, num_bins):
     for c, idxs in enumerate(bin_idxs):
         targets[idxs] = c
 
+def get_balanced_class_weights(targets):
+    weights = np.empty(targets.shape)
+    for tidx in range(targets.shape[1]):
+        # count classes and normalize
+        c = collections.Counter()
+        c.update(targets[:,tidx])
+        for k in c.keys():
+            c[k] = c[k] ** -1
+        max_v = max(c.values())
+        for k in c.keys():
+            c[k] /= max_v
+
+        # insert weights
+        for k in c.keys():
+            idxs = np.where(targets[:,tidx] == k)[0]
+            weights[idxs, tidx] = c[k]
+    return weights
+
 def risk_dataset_loader(input_filepath, normalize=True, 
         debug_size=None, train_split=.8, shuffle=False, timesteps=None,
-        num_target_bins=None):
+        num_target_bins=None, balanced_class_loss=False):
     """
     Description:
         - Load a risk dataset from file, optionally normalizing it.
@@ -90,6 +109,10 @@ def risk_dataset_loader(input_filepath, normalize=True,
     # discretize means break the targets into bins 
     if num_target_bins is not None:
         discretize_targets(targets, num_target_bins)
+        if balanced_class_loss:
+            weights = get_balanced_class_weights(targets)
+        else:
+            weights = None
 
     msg = 'features and targets must be same length: features len: {}\ttargets len: {}'.format(
         len(features), len(targets))
@@ -108,6 +131,10 @@ def risk_dataset_loader(input_filepath, normalize=True,
         'y_train': targets[:num_train],
         'x_val': features[num_train:],
         'y_val': targets[num_train:]}
+
+    if weights is not None:
+        data['w_train'] = weights[:num_train]
+        data['w_val'] = weights[num_train:]
 
     # normalize using train statistics
     if normalize:
