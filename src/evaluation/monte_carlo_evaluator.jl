@@ -143,7 +143,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # extract target values from every frame in the record for every vehicle
         extract_targets!(eval.rec, roadway, eval.targets, eval.veh_id_to_idx,
-            eval.veh_idx_can_change, pastframe - 1, done = eval.done)
+            eval.veh_idx_can_change, pastframe, done = eval.done)
 
         # optionally bootstrap target values
         bootstrap_targets!(eval, models, roadway)
