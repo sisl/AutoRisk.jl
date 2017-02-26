@@ -107,6 +107,7 @@ def risk_dataset_loader(input_filepath, normalize=True,
             features = np.squeeze(features, axis=1)
 
     # discretize means break the targets into bins 
+    weights = None
     if num_target_bins is not None:
         discretize_targets(targets, num_target_bins)
         if balanced_class_loss:

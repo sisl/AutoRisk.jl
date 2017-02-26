@@ -312,6 +312,11 @@ def main(argv=None):
                 network = ffnn.FeedForwardNeuralNetwork(session, FLAGS)
         network.fit(d)
 
+        # save weights to a julia-compatible weight file
+        neural_networks.utils.save_trainable_variables(
+            FLAGS.julia_weights_filepath, session, data)
+
+
         y_idxs = np.where(np.sum(data['y_val'][:10000], axis=1) > 1e-4)[0]
         y_idxs = np.random.permutation(y_idxs)[:10]
         y_pred = network.predict(data['x_val'][y_idxs])
