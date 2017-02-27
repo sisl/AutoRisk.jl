@@ -139,11 +139,18 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # simulate starting from the final burn-in scene
         simulate!(temp_scene, models, roadway, eval.rec, eval.sampling_time)
+
+        # pastframe is the number of frames that have been simulated
         pastframe = Int(eval.sampling_time / eval.rec.timestep)
+
+        # get the initial extraction frame, this will typically be the first 
+        # frame following the prime time, but in the case where no time is 
+        # simulated, it should be the most recent frame
+        start_extract_frame = max(pastframe - 1, 0)
 
         # extract target values from every frame in the record for every vehicle
         extract_targets!(eval.rec, roadway, eval.targets, eval.veh_id_to_idx,
-            eval.veh_idx_can_change, pastframe, done = eval.done)
+            eval.veh_idx_can_change, start_extract_frame, done = eval.done)
 
         # optionally bootstrap target values
         bootstrap_targets!(eval, models, roadway)
