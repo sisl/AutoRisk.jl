@@ -60,6 +60,10 @@ tf.app.flags.DEFINE_bool('balanced_class_loss',
                             False,
                             """Whether or not to balance the classes in 
                             classification loss by reweighting.""")
+tf.app.flags.DEFINE_integer('target_index', 
+                            None,
+                            """Target index to fit exclusively if set (zero-based).
+                            This must be accompanied by setting output_dim to 1.""")
 
 # network constants
 tf.app.flags.DEFINE_integer('max_norm', 
@@ -269,7 +273,7 @@ def main(argv=None):
     data = dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=True, train_split=.9, 
         debug_size=FLAGS.debug_size, timesteps=FLAGS.timesteps,
-        num_target_bins=FLAGS.num_target_bins, balanced_class_loss=FLAGS.balanced_class_loss)
+        num_target_bins=FLAGS.num_target_bins, balanced_class_loss=FLAGS.balanced_class_loss, target_index=FLAGS.target_index)
 
     if FLAGS.use_priority:
         d = priority_dataset.PrioritizedDataset(data, FLAGS)
@@ -295,8 +299,11 @@ def main(argv=None):
     
     ce = -np.sum(y * np.log(y)) + -np.sum((1 - y) * np.log(1 - y))
     print("cross entropy from outputting correct values: {}".format(ce / num_samples))
-    ce = -np.sum(y[:,3] * np.log(y[:,3])) + -np.sum((1 - y[:,3]) * np.log(1 - y[:,3]))
-    print("hard brake cross entropy from outputting correct values: {}".format(ce / num_samples))
+    try:
+        ce = -np.sum(y[:,3] * np.log(y[:,3])) + -np.sum((1 - y[:,3]) * np.log(1 - y[:,3]))
+        print("hard brake cross entropy from outputting correct values: {}".format(ce / num_samples))
+    except:
+        pass
     # fit the model
     with tf.Session(config=tf.ConfigProto(log_device_placement=False)) as session:
         # if the timestep dimension is > 1, use recurrent network

@@ -75,7 +75,8 @@ def get_balanced_class_weights(targets):
 
 def risk_dataset_loader(input_filepath, normalize=True, 
         debug_size=None, train_split=.8, shuffle=False, timesteps=None,
-        num_target_bins=None, balanced_class_loss=False):
+        num_target_bins=None, balanced_class_loss=False, 
+        target_index=None):
     """
     Description:
         - Load a risk dataset from file, optionally normalizing it.
@@ -106,6 +107,10 @@ def risk_dataset_loader(input_filepath, normalize=True,
         if features.shape[1] == 1:
             features = np.squeeze(features, axis=1)
 
+    # downselect targets if specified
+    if target_index is not None:
+        targets = targets[:, target_index, np.newaxis]
+
     # discretize means break the targets into bins 
     weights = None
     if num_target_bins is not None:
@@ -127,7 +132,7 @@ def risk_dataset_loader(input_filepath, normalize=True,
     
     # separate into train / validation
     num_samples = len(features)
-    num_train = int(num_samples * train_split)
+    num_train = int(np.ceil(num_samples * train_split))
     data = {'x_train': features[:num_train],
         'y_train': targets[:num_train],
         'x_val': features[num_train:],
