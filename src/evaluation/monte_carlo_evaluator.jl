@@ -14,6 +14,10 @@ function bootstrap_targets!(eval::Evaluator, models::Dict{Int, DriverModel},
     return eval.targets
 end
 
+# the indexing here is to ensure that the dimension is not dropped
+get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
+get_targets(eval::Evaluator) = eval.agg_targets[:, :]
+
 """
 # Description:
     - MonteCarloEvaluator evaluates a set of {roadway, scene, models}
@@ -37,8 +41,6 @@ type MonteCarloEvaluator <: Evaluator
     rng::MersenneTwister
     num_veh::Int64
     veh_id_to_idx::Dict{Int64, Int64}
-    done::Set{Int64}
-
     """
     # Args:
         - ext: feature and target extractor
@@ -73,7 +75,7 @@ type MonteCarloEvaluator <: Evaluator
 
         return new(ext, num_runs, context, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps, targets, 
-            agg_targets, rng, 0, Dict{Int64, Int64}(), Set{Int}())
+            agg_targets, rng, 0, Dict{Int64, Int64}())
     end
 end
 
@@ -95,6 +97,23 @@ end
 
 """
 # Description:
+    - Resets members of eval prior to evaluation of a scene.
+
+# Args:
+    - eval: the evaluator to reset
+    - scene: the scene on which to reset
+    - seed: random seed with which to reset the evaluator
+"""
+function reset!(eval::Evaluator, scene::Scene, seed::Int64)
+    srand(seed)
+    srand(eval.rng, seed)
+    fill!(eval.agg_targets, 0)
+    eval.num_veh = length(scene)
+    empty!(eval.veh_id_to_idx)
+end
+
+"""
+# Description:
     - Evaluate a {roadway, scene, models} tuple.
 
 # Args:
@@ -107,11 +126,7 @@ end
 function evaluate!(eval::Evaluator, scene::Scene, 
         models::Dict{Int, DriverModel}, roadway::Roadway, seed::Int64)
     # reset values across this set of monte carlo runs
-    srand(seed)
-    srand(eval.rng, seed)
-    fill!(eval.agg_targets, 0)
-    eval.num_veh = length(scene)
-    empty!(eval.veh_id_to_idx)
+    reset!(eval, scene, seed)
     
     # prime the scene by simulating for short period
     # extract prediction features at this point
@@ -150,7 +165,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # extract target values from every frame in the record for every vehicle
         extract_targets!(eval.rec, roadway, eval.targets, eval.veh_id_to_idx,
-            eval.veh_idx_can_change, start_extract_frame, done = eval.done)
+            eval.veh_idx_can_change, start_extract_frame)
 
         # optionally bootstrap target values
         bootstrap_targets!(eval, models, roadway)
@@ -178,6 +193,4 @@ function evaluate!(eval::Evaluator, scene::Scene,
     eval.agg_targets[:] /= eval.num_runs
 end
 
-# the indexing here is to ensure that the dimension is not dropped
-get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
-get_targets(eval::Evaluator) = eval.agg_targets[:, :]
+

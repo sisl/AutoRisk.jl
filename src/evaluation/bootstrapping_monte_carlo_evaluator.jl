@@ -28,7 +28,6 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
     rng::MersenneTwister
     num_veh::Int64
     veh_id_to_idx::Dict{Int64, Int64}
-    done::Set{Int64}
 
     """
     # Args:
@@ -65,7 +64,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
         return new(ext, num_runs, context, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps,
             targets, agg_targets, prediction_features, prediction_model, 
-            rng, 0, Dict{Int64, Int64}(), Set{Int}())
+            rng, 0, Dict{Int64, Int64}())
     end
 end
 
@@ -75,7 +74,7 @@ function bootstrap_targets!(eval::BootstrappingMonteCarloEvaluator,
     fill!(eval.prediction_features, 0)
     for (veh_id, veh_idx) in eval.veh_id_to_idx
 
-        if !in(veh_id, eval.done) && !any(eval.targets[1:3, veh_idx] .== 1)
+        if !any(eval.targets[1:3, veh_idx] .== 1)
 
             eval.prediction_features[:, veh_idx] = pull_features!(eval.ext, eval.rec, roadway, veh_idx, models)
             bootstrap_values = predict(eval.prediction_model, reshape(
