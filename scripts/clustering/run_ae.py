@@ -28,7 +28,7 @@ tf.app.flags.DEFINE_float('dropout_keep_prob', 1., '')
 tf.app.flags.DEFINE_string('encode_dims', '64 32', '')
 tf.app.flags.DEFINE_string('decode_dims', '64', '')
 tf.app.flags.DEFINE_string('dataset_filepath', 
-    '/Users/wulfebw/Dropbox/File_Transfers/risk/risk_10_sec_10_timesteps.h5', '')
+    '/Users/wulfebw/Dropbox/File_Transfers/risk/risk_.1_sec_full.h5', '')
 tf.app.flags.DEFINE_boolean('load_network', False, '')
 tf.app.flags.DEFINE_string('snapshot_dir', 
     '../../data/snapshots/prediction_features', '')
@@ -64,6 +64,7 @@ def AE(input_dim, encode_dims, decode_dims, learning_rate):
                 weights_initializer=weights_initializer,
                 biases_initializer=bias_initializer,
                 activation_fn=tf.nn.relu)
+            encode = tf.contrib.layers.batch_norm(encode)
             encode = tf.nn.dropout(encode, dropout_ph)
 
     decode = encode
@@ -78,6 +79,7 @@ def AE(input_dim, encode_dims, decode_dims, learning_rate):
                 weights_initializer=weights_initializer,
                 biases_initializer=bias_initializer,
                 activation_fn=tf.nn.relu)
+            decode = tf.contrib.layers.batch_norm(decode)
             decode = tf.nn.dropout(decode, dropout_ph)
 
     loss = tf.reduce_sum((input_ph - decode) ** 2)
@@ -140,14 +142,20 @@ def main(argv=None):
         debug_size=FLAGS.debug_size, timesteps=1)
 
     # only select the indices with nonzero targets
-    idxs = np.where(np.sum(data['y_train'], axis=1) > 0)[0]
-    idxs = np.array(list(idxs) + list(range(500)))
+    # idxs = np.where(np.sum(data['y_train'], axis=1) > 0)[0]
+    idxs = np.where(data['y_train'][:, 0] > 0.)[0]
+    # idxs = np.array(list(idxs) + list(range(500)))
     data['x_train'] = data['x_train'][idxs]
     data['y_train'] = data['y_train'][idxs]
-    idxs = np.where(np.sum(data['y_val'], axis=1) > 0)[0]
-    idxs = np.array(list(idxs) + list(range(500)))
+    # idxs = np.where(np.sum(data['y_val'], axis=1) > 0)[0]
+    idxs = np.where(data['y_val'][:, 0] > 0.)[0]
+    # idxs = np.array(list(idxs) + list(range(500)))
     data['x_val'] = data['x_val'][idxs]
     data['y_val'] = data['y_val'][idxs]
+
+    # subselect lidar features
+    data['x_train'] = data['x_train'][:,-40:]
+    data['x_val'] = data['x_val'][:,-40:]
 
     print(len(data['x_train']))
 

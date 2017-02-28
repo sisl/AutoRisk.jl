@@ -135,6 +135,13 @@ function build_dataset_collector(output_filepath, flags, col_id = 0)
             weights = WeightVec([.2,.3,.5])
         end
         behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
+    elseif behavior_type == "varied_response_time"
+        params = [get_normal_behavior_params(
+                lon_σ = lon_accel_std_dev, 
+                lat_σ = lat_accel_std_dev, 
+                response_time = t) for t in .1:sampling_period:.5]
+        weights = WeightVec([.1, .2, .3, .4])
+        behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
     elseif behavior_type == "learned"
         behavior_gen = LearnedBehaviorGenerator(driver_network_filepath)
     else
