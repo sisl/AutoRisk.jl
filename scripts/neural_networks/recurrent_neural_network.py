@@ -100,7 +100,7 @@ class RecurrentNeuralNetwork(NeuralNetwork):
             hidden = tf.nn.dropout(hidden, dropout_ph)
 
         # build recurrent network 
-        cell = tf.nn.rnn_cell.GRUCell(num_units=hidden_layer_dims[-1])
+        cell = tf.contrib.rnn.GRUCell(num_units=hidden_layer_dims[-1])
         outputs, states = tf.nn.dynamic_rnn(
             cell=cell,
             dtype=tf.float32,

@@ -30,14 +30,14 @@ class TestFeedForwardNeuralNetworkMNIST(unittest.TestCase):
         np.random.seed(1)
         flags = testing_flags.FLAGS
         flags.input_dim = 28 * 28
-        flags.hidden_dim = 256
+        flags.hidden_dim = 128
         flags.num_hidden_layers = 3
         flags.output_dim = 10
-        flags.batch_size = 8
-        flags.num_epochs = 20
+        flags.batch_size = 16
+        flags.num_epochs = 25
         flags.learning_rate = .001
         flags.l2_reg = 0.0
-        flags.dropout_keep_prob = .5
+        flags.dropout_keep_prob = .75
         flags.verbose = False
         flags.save_weights_every = 100000
 

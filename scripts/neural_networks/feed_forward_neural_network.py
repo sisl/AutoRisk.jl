@@ -225,7 +225,8 @@ class NeuralNetwork(object):
         # create loss separately
         if self.flags.loss_type == 'ce':
             losses = tf.reduce_sum(
-                tf.nn.sigmoid_cross_entropy_with_logits(scores, targets),
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    logits=scores, labels=targets),
                 reduction_indices=(0))
         elif self.flags.loss_type == 'mse':
             losses = tf.reduce_sum((scores - targets) ** 2, 
@@ -245,7 +246,7 @@ class NeuralNetwork(object):
                 self.flags.loss_type)))
 
         # summarize losses individually
-        for tidx, target_loss in enumerate(tf.unpack(losses)):
+        for tidx, target_loss in enumerate(tf.unstack(losses)):
                 tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
 
         # overall loss is sum of individual target losses
@@ -544,7 +545,7 @@ class ClassificationFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
         probs = tf.nn.softmax(scores, dim=-1)
         
         # # summarize losses individually
-        # for tidx, target_loss in enumerate(tf.unpack(losses, axis=-1)):
+        # for tidx, target_loss in enumerate(tf.unstack(losses, axis=-1)):
         #     print(target_loss.get_shape())
         #     input()
         #     tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
@@ -706,7 +707,8 @@ class WeightedFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
         # create loss separately
         if self.flags.loss_type == 'ce':
             losses = tf.reduce_sum(
-                tf.nn.sigmoid_cross_entropy_with_logits(scores, targets),
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    logits=scores, labels=targets),
                 reduction_indices=(1), keep_dims=True)
         elif self.flags.loss_type == 'mse':
             losses = tf.reduce_sum((probs - targets) ** 2, 
@@ -882,7 +884,7 @@ class WeightedClassificationFeedForwardNeuralNetwork(ClassificationFeedForwardNe
         probs = tf.nn.softmax(scores, dim=-1)
         
         # # summarize losses individually
-        # for tidx, target_loss in enumerate(tf.unpack(losses, axis=-1)):
+        # for tidx, target_loss in enumerate(tf.unstack(losses, axis=-1)):
         #     print(target_loss.get_shape())
         #     input()
         #     tf.summary.scalar('target_{}_loss'.format(tidx), target_loss) 
