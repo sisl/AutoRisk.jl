@@ -5,7 +5,7 @@ export
     permits_valid_positions,
     generate_road_positions,
     build_vehicle,
-    reset!
+    rand!
 
 """
 # Description:
@@ -245,7 +245,7 @@ end
     - roadway: on which to place vehicles
     - seed: random seed to use for generation
 """
-function reset!(gen::HeuristicSceneGenerator, scene::Scene, 
+function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
     srand(gen.rng, seed)

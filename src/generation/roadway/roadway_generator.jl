@@ -1,7 +1,7 @@
 export 
     RoadwayGenerator,
     StaticRoadwayGenerator,
-    reset!
+    rand!
 
 """
 # Description: 
@@ -9,8 +9,8 @@ export
 """
 abstract RoadwayGenerator
 
-reset!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
-    "reset! not implemented for $(scene_generator)")
+Base.rand!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
+    "rand! not implemented for $(scene_generator)")
 
 """
 # Description:
@@ -20,5 +20,5 @@ type StaticRoadwayGenerator <: RoadwayGenerator
     roadway::Roadway
 end
 
-reset!(gen::StaticRoadwayGenerator, roadway::Roadway, seed::Int64) = gen.roadway
-reset!(gen::StaticRoadwayGenerator, seed::Int64) = gen.roadway
+Base.rand!(gen::StaticRoadwayGenerator, roadway::Roadway, seed::Int64) = gen.roadway
+Base.rand!(gen::StaticRoadwayGenerator, seed::Int64) = gen.roadway

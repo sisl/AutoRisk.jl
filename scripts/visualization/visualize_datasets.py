@@ -362,11 +362,12 @@ if __name__ == '__main__':
 
     # the dataset filepaths to visualize along with labels
     input_filepaths = [
-        '../../data/datasets/2_19/test.h5',
+        '../../data/datasets/2_19/risk_10_sec_10_timesteps.h5',
+        # '../../data/datasets/2_19/risk_.1_sec_full.h5',
         # '../../data/datasets/2_19/risk_.1_sec_.5_sec_features.h5',
         # '../../data/datasets/2_13/risk_learned.h5',
         # '../../data/datasets/2_13/risk_.1_sec_lidar_features.h5',
-        '../../data/datasets/2_13/risk_.1_sec_regular_features.h5'
+        # '../../data/datasets/2_13/risk_.1_sec_regular_features.h5'
         # '../../data/datasets/2_4/risk_.1_sec_multi.h5',
         # '../../data/datasets/2_4/risk_.1_sec.h5',
         # '../../data/datasets/1_30/risk_10_sec.h5',
@@ -392,10 +393,11 @@ if __name__ == '__main__':
         # '../../data/datasets/12_11/risk_18.h5'
     ]
     dataset_labels = [
-        'test'
+        # 'full',
+        'risk_10',
         # 'multi',
         # 'lidar',
-        'regular'
+        # 'regular'
         # 'risk_10_sec',
         # 'risk_10_sec_bootstrap',
         # 'risk_5_second',
@@ -429,14 +431,14 @@ if __name__ == '__main__':
         os.mkdir(output_directory)
 
     # load in each dataset
-    debug_size = 1000000
+    debug_size = 5000000
     datasets = [dataset_loaders.risk_dataset_loader(
         input_filepath, shuffle=False, train_split=1., 
         debug_size=debug_size, normalize=False, timesteps=1) for 
         input_filepath in input_filepaths]
 
     # display basic info about the targets
-    # display_target_info(datasets, target_labels, dataset_labels, output_directory)
+    display_target_info(datasets, target_labels, dataset_labels, output_directory)
 
     # ## analyze behavior
     # for i, dataset in enumerate(datasets):
@@ -459,6 +461,6 @@ if __name__ == '__main__':
     # compare_dataset_targets_pairwise(
     #     datasets[0], datasets[1], target_labels)
 
-    feature_labels_filepath = '../../data/datasets/features_multi.csv'
-    feature_labels_multi = utils.load_labels(feature_labels_filepath)
-    compare_dataset_features(datasets[0], datasets[1], feature_labels_multi, feature_labels)
+    # feature_labels_filepath = '../../data/datasets/features_multi.csv'
+    # feature_labels_multi = utils.load_labels(feature_labels_filepath)
+    # compare_dataset_features(datasets[0], datasets[1], feature_labels_multi, feature_labels)

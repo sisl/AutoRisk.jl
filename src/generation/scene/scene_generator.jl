@@ -1,5 +1,6 @@
 export 
-    SceneGenerator
+    SceneGenerator,
+    rand!
 
 """
 # Description:
@@ -7,5 +8,8 @@ export
 """
 abstract SceneGenerator
 
-reset!(scene_generator::SceneGenerator, scene::Scene, roadway::Roadway, 
-    seed::Int64) = error("reset! not implemented for $(scene_generator)")
+Base.rand!(scene_generator::SceneGenerator, scene::Scene, roadway::Roadway, 
+    seed::Int64) = error("rand! not implemented for $(scene_generator)")
+
+pdf(scene_generator::SceneGenerator, scene::Scene) = 1.
+logpdf(scene_generator::SceneGenerator, scene::Scene) = 0.

@@ -9,7 +9,7 @@ using Reexport
 @reexport using ForwardNets
 @reexport using HDF5
 
-import AutomotiveDrivingModels: simulate!, update!, reset!, observe!, pull_features!
+import AutomotiveDrivingModels: simulate!, update!, observe!, pull_features!
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 

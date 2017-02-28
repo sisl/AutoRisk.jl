@@ -9,11 +9,11 @@
 function test_reset_determinism()
     col_1 = build_debug_dataset_collector(
         output_filepath = "../data/test_dataset_collector_1.h5")
-    reset!(col_1, 3)
+    rand!(col_1, 3)
 
     col_2 = build_debug_dataset_collector(
         output_filepath = "../data/test_dataset_collector_2.h5")
-    reset!(col_2, 3)
+    rand!(col_2, 3)
 
     @test col_1.roadway == col_2.roadway
     @test col_1.scene == col_2.scene

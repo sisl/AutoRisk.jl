@@ -1,13 +1,12 @@
 
 export 
     LearnedBehaviorGenerator,
-    reset!,
-    rand
+    rand!
 
 type LearnedBehaviorGenerator <: BehaviorGenerator
     filepath::String
 end
-function reset!(gen::LearnedBehaviorGenerator, models::Dict{Int, DriverModel}, 
+function Base.rand!(gen::LearnedBehaviorGenerator, models::Dict{Int, DriverModel}, 
         scene::Scene, seed::Int64)
     if length(models) == 0
         for veh in scene.vehicles

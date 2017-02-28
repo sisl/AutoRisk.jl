@@ -1,7 +1,7 @@
 export 
     DatasetCollector,
     ParallelDatasetCollector,
-    reset!,
+    rand!,
     generate_dataset
 
 """
@@ -39,11 +39,11 @@ end
     - col: the collector being used
     - seed: the random seed uniquely identifying the resulting state
 """
-function reset!(col::DatasetCollector, seed::Int64)
+function Base.rand!(col::DatasetCollector, seed::Int64)
     info("id $(col.id) collecting seed $(seed)")
-    reset!(col.roadway_gen, col.roadway, seed)
-    reset!(col.scene_gen, col.scene, col.roadway, seed)
-    reset!(col.behavior_gen, col.models, col.scene, seed)
+    rand!(col.roadway_gen, col.roadway, seed)
+    rand!(col.scene_gen, col.scene, col.roadway, seed)
+    rand!(col.behavior_gen, col.models, col.scene, seed)
 end
 
 """
@@ -55,7 +55,7 @@ end
 """
 function generate_dataset(col::DatasetCollector)
     for seed in col.seeds
-        reset!(col, seed)
+        rand!(col, seed)
         evaluate!(col.eval, col.scene, col.models, col.roadway, seed)
         update!(col.dataset, get_features(col.eval), get_targets(col.eval), seed)
     end

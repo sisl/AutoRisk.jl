@@ -1,6 +1,6 @@
 export 
     DatasetSceneGenerator,
-    reset!
+    rand!
 
 type DatasetSceneGenerator <: SceneGenerator
     trajdata::Trajdata
@@ -9,7 +9,7 @@ type DatasetSceneGenerator <: SceneGenerator
     rng::MersenneTwister
 end
 
-function reset!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
+function Base.rand!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
         seed::Int64)
     # remove old contents of scene and models
     empty!(scene)

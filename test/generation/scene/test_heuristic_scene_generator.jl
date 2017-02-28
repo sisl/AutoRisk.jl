@@ -180,10 +180,10 @@ function test_heuristic_scene_reset()
     # check same seed gives same scene
     scene_1 = Scene(5)
     seed = 1
-    reset!(gen, scene_1, roadway, seed)
+    rand!(gen, scene_1, roadway, seed)
     scene_2 = Scene(5)
     seed = 1
-    reset!(gen, scene_2, roadway, seed)
+    rand!(gen, scene_2, roadway, seed)
     @test scene_1 == scene_2
    
 end

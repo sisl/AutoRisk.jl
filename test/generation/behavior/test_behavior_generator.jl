@@ -53,7 +53,7 @@ function test_behavior_reset()
     models = Dict{Int, DriverModel}()
     scene = Scene(1)
     seed = 1
-    reset!(gen, models, scene, seed)
+    rand!(gen, models, scene, seed)
 end
 
 
