@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 142
+# const NUM_FEATURES = 204
 # const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
