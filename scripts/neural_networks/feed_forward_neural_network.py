@@ -57,6 +57,7 @@ class NeuralNetwork(object):
 
             # train epoch
             for bidx, (x, y) in enumerate(dataset.next_batch()):
+                
                 summary, loss, _ = self.session.run(
                     [self._summary_op, self._loss, self._train_op],
                     feed_dict={self._input_ph: x, self._target_ph: y,
@@ -150,8 +151,10 @@ class NeuralNetwork(object):
             - val_loss: total validation loss of the epoch
         """
         self.info['val_loss'].append(val_loss)
-        train_loss /= len(dataset.data['x_train'])
-        val_loss /= len(dataset.data['x_val']) 
+        num_train = max(len(dataset.data['x_train']), 1)
+        train_loss /= num_train
+        num_val = max(len(dataset.data['x_val']), 1)
+        val_loss /= num_val
         print('epoch: {}\ttrain loss: {:.6f}\tval loss: {:.6f}\ttime: {:.4f}'.format(
             epoch, train_loss, val_loss, time.time() - self.start_time))
 
@@ -560,6 +563,214 @@ class ClassificationFeedForwardNeuralNetwork(FeedForwardNeuralNetwork):
         # summaries
         tf.summary.histogram('probs', probs)
         tf.summary.scalar('loss', loss)
+        tf.summary.scalar('l2 reg loss', reg_loss)
+
+        return loss, probs
+
+class RiskFeatureNeuralNetwork(ClassificationFeedForwardNeuralNetwork):
+    def __init__(self, session, flags):
+        """
+        Description:
+            - Initializes this network by storing the tf flags and 
+                building the model.
+
+        Args:
+            - session: the session with which to execute model operations
+            - flags: tensorflow flags object containing network options
+        """
+        super(RiskFeatureNeuralNetwork, self).__init__(session, flags)
+
+    def predict(self, inputs):
+        """
+        Description:
+            - Predict output values for a set of inputs.
+
+        Args:
+            - inputs: input values to predict
+                shape = (?, input_dim)
+
+        Returns:
+            - returns class predictions for each target for each sample.
+        """
+        num_samples = len(inputs)
+        outputs = np.empty((num_samples, self.flags.output_dim))
+        num_batches = int(num_samples / self.flags.batch_size)
+        if num_batches * self.flags.batch_size < num_samples:
+            num_batches += 1
+        for bidx in range(num_batches):
+            s = bidx * self.flags.batch_size
+            e = s + self.flags.batch_size
+            batch = inputs[s:e]
+            probs = self.session.run(
+                self._probs, feed_dict={self._input_ph: inputs[s:e],
+                self._dropout_ph: 1.})
+            outputs[s:e, :] = np.argmax(probs, axis=-1)
+        return outputs
+
+    def encode(self, inputs):
+        num_samples = len(inputs)
+        outputs = np.empty((num_samples, self.flags.encoding_dim))
+        num_batches = int(num_samples / self.flags.batch_size)
+        if num_batches * self.flags.batch_size < num_samples:
+            num_batches += 1
+        for bidx in range(num_batches):
+            s = bidx * self.flags.batch_size
+            e = s + self.flags.batch_size
+            batch = inputs[s:e]
+            encoding = self.session.run(
+                self._encoding, feed_dict={self._input_ph: inputs[s:e],
+                self._dropout_ph: 1.})
+            outputs[s:e, :] = encoding
+        return outputs
+
+    def _build_model(self):
+        """
+        Description:
+            - Builds the model, which entails defining placeholders, 
+                a network, loss function, and train op. 
+
+                Class variables created during this call all are assigned 
+                to self in the body of this function, so everything that is 
+                stored should be apparent from looking at this function.
+
+                The results of these methods are passed in / out explicitly.
+        """
+        # placeholders
+        (self._input_ph, self._target_ph, 
+            self._dropout_ph, self._lr_ph) = self._build_placeholders()
+
+        # network
+        self._scores, self._encoding, self._reconstruction = self._build_network(
+            self._input_ph, self._dropout_ph)
+
+        # loss
+        self._loss, self._probs = self._build_loss(
+            self._scores, self._target_ph, self._input_ph, self._reconstruction)
+
+        # train operation
+        self._train_op = self._build_train_op(self._loss, self._lr_ph)
+
+        # summaries
+        self._summary_op = tf.summary.merge_all()
+
+        # intialize the model
+        self.session.run(tf.global_variables_initializer())
+
+    def _build_network(self, input_ph, dropout_ph):
+        """
+        Description:
+            - Builds a feed forward network with relu units.
+
+        Args:
+            - input_ph: placeholder for the inputs
+                shape = (batch_size, input_dim)
+            - dropout_ph: placeholder for dropout value
+
+        Returns:
+            - scores: the scores for the target values
+        """
+
+        # build initializers specific to relu
+        weights_initializer = initializers.get_weight_initializer(
+            'relu')
+        bias_initializer = initializers.get_bias_initializer(
+            'relu')
+
+        # build regularizers
+        weights_regularizer = tf.contrib.layers.l2_regularizer(
+            self.flags.l2_reg)
+
+        # build hidden layers
+        # if layer dims not set individually, then assume all the same dim
+        hidden_layer_dims = self.flags.hidden_layer_dims
+        if len(hidden_layer_dims) == 0:
+            hidden_layer_dims = [self.flags.hidden_dim 
+                for _ in range(self.flags.num_hidden_layers)]
+
+        hidden = input_ph
+        for (lidx, hidden_dim) in enumerate(hidden_layer_dims):
+            hidden = tf.contrib.layers.fully_connected(hidden, 
+                hidden_dim, 
+                activation_fn=tf.nn.relu,
+                weights_initializer=weights_initializer,
+                weights_regularizer=weights_regularizer,
+                biases_initializer=bias_initializer,
+                scope='encode_{}'.format(lidx))
+
+            if self.flags.use_batch_norm:
+                hidden = tf.contrib.layers.batch_norm(hidden)
+            if lidx < len(hidden_layer_dims) - 1:
+                hidden = tf.nn.dropout(hidden, dropout_ph)
+
+        # build output layer
+        scores = tf.contrib.layers.fully_connected(hidden, 
+                self.flags.output_dim * self.flags.num_target_bins, 
+                activation_fn=None,
+                weights_regularizer=weights_regularizer,
+                scope='scores')
+
+        # encoding is affine transform of last hidden layer to allow for 
+        # negative values
+        encoding = tf.contrib.layers.fully_connected(hidden, 
+                self.flags.encoding_dim, 
+                activation_fn=None,
+                weights_regularizer=weights_regularizer,
+                scope='encoding')
+
+        # reconstruct using hidden layers (sizes are reverse of encoding)
+        hidden = encoding
+        for (lidx, hidden_dim) in enumerate(reversed(hidden_layer_dims)):
+            hidden = tf.contrib.layers.fully_connected(hidden, 
+                hidden_dim, 
+                activation_fn=tf.nn.relu,
+                weights_initializer=weights_initializer,
+                weights_regularizer=weights_regularizer,
+                biases_initializer=bias_initializer,
+                scope='decode_{}'.format(lidx))
+
+            if self.flags.use_batch_norm:
+                hidden = tf.contrib.layers.batch_norm(hidden)
+            if lidx < len(hidden_layer_dims) - 1:
+                hidden = tf.nn.dropout(hidden, dropout_ph)
+        
+        # build output layer
+        reconstruction = tf.contrib.layers.fully_connected(hidden, 
+                self.flags.input_dim, 
+                activation_fn=None,
+                weights_regularizer=weights_regularizer,
+                scope='reconstruction')
+
+        return scores, encoding, reconstruction
+
+    def _build_loss(self, scores, targets, inputs, reconstruction):
+        # shape to allow for per-target softmax
+        scores = tf.reshape(
+            scores, (-1, self.flags.output_dim, self.flags.num_target_bins))
+
+        # per-target softmax
+        losses = tf.nn.sparse_softmax_cross_entropy_with_logits(
+            logits=scores, labels=targets)
+
+        # probs are the per-target softmax probabilities
+        probs = tf.nn.softmax(scores, dim=-1)
+
+        # overall loss is sum of individual target losses
+        prediction_loss = tf.reduce_sum(losses)
+
+        # reconstruction loss (squared error)
+        reconstruction_loss = (self.flags.reconstruction_weight 
+            * tf.reduce_sum((inputs - reconstruction) ** 2))
+
+        # collect regularization losses
+        reg_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+
+        loss =  reconstruction_loss + prediction_loss + reg_loss
+
+        # summaries
+        tf.summary.histogram('probs', probs)
+        tf.summary.scalar('loss', loss)
+        tf.summary.scalar('prediction_loss', prediction_loss)
+        tf.summary.scalar('reconstruction_loss', reconstruction_loss)
         tf.summary.scalar('l2 reg loss', reg_loss)
 
         return loss, probs
