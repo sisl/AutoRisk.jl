@@ -1,10 +1,15 @@
 
+import collections
 import copy
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 import numpy as np
 np.set_printoptions(suppress=True, precision=8)
 import os
 import sys
 from sklearn.metrics import classification_report
+from sklearn.decomposition import PCA
 import tensorflow as tf
 
 path = os.path.join(os.path.dirname(__file__), os.pardir, 'neural_networks')
@@ -159,6 +164,42 @@ def classification_score(y, y_pred, name, y_null=None):
         print(classification_report(y[:,tidx], y_pred[:,tidx]))
         input()
 
+def cluster(data, network, flags):
+
+    encodings = network.encode(data['x_train'])
+    pca = PCA(n_components=2)
+    reduced_encodings = pca.fit_transform(encodings)
+
+    counts = collections.defaultdict(int)
+    colors, cat_max, idxs = [], 50, []
+    targets = data['y_train']
+    for i, t in enumerate(targets):
+        c = None
+        if t[0] > 0. and counts[0] < cat_max:
+            c = 'blue'
+            counts[0] += 1
+        elif t[1] > 0. and counts[1] < cat_max:
+            c = 'red'
+            counts[1] += 1
+        elif t[2] > 0. and counts[2] < cat_max:
+            c = 'purple'
+            counts[2] += 1
+        elif t[3] > 0. and counts[3] < cat_max:
+            c = 'orange'
+            counts[3] += 1
+        elif t[4] > 0. and counts[4] < cat_max:
+            c = 'green'
+            counts[4] += 1
+        elif counts[5] < cat_max:
+            c = 'black'
+            counts[5] += 1
+        if c is not None:
+            colors.append(c)
+            idxs.append(i)
+    plt.figure(figsize=(10,10))
+    plt.scatter(encodings[idxs,0], encodings[idxs,1], c=colors, alpha=.5)
+    plt.show()
+
 def main(argv=None):
     # custom parse of flags for list input
     custom_parse_flags(FLAGS)
@@ -203,21 +244,23 @@ def main(argv=None):
         network = ffnn.RiskFeatureNeuralNetwork(session, FLAGS)
         network.fit(d)
 
-        y_idxs = np.where(np.sum(data['y_val'][:10000], axis=1) > 1e-4)[0]
-        y_idxs = np.random.permutation(y_idxs)[:10]
-        y_pred = network.predict(data['x_val'][y_idxs])
+        # y_idxs = np.where(np.sum(data['y_val'][:10000], axis=1) > 1e-4)[0]
+        # y_idxs = np.random.permutation(y_idxs)[:10]
+        # y_pred = network.predict(data['x_val'][y_idxs])
 
-        # final train loss
-        y_pred = network.predict(data['x_train'])
-        y = data['y_train']
-        y_null = np.mean(y, axis=0)
-        classification_score(y, y_pred, 'train', y_null=y_null)
+        # # final train loss
+        # y_pred = network.predict(data['x_train'])
+        # y = data['y_train']
+        # y_null = np.mean(y, axis=0)
+        # classification_score(y, y_pred, 'train', y_null=y_null)
 
-        # final validation loss
-        y_pred = network.predict(data['x_val'])
-        y = data['y_val']
-        y_null = np.mean(y, axis=0)
-        classification_score(y, y_pred, 'val', y_null=y_null)
+        # # final validation loss
+        # y_pred = network.predict(data['x_val'])
+        # y = data['y_val']
+        # y_null = np.mean(y, axis=0)
+        # classification_score(y, y_pred, 'val', y_null=y_null)
+
+        cluster(data, network, FLAGS)
 
 if __name__ == '__main__':
     tf.app.run()
