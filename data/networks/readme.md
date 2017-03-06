@@ -1,1 +1,0 @@
-networks will be saved in a julia-readable format in this directory

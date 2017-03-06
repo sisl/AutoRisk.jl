@@ -1,1 +1,0 @@
-network training summaries will be saved in this directory

@@ -1,1 +1,0 @@
-test snapshots stored in this directory
