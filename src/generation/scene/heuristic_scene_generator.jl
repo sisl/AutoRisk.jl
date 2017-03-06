@@ -253,7 +253,7 @@ function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene,
     # heuristic generator assumes stadium roadway
     gen.total_roadway_length = get_total_roadway_length(roadway)
     if get_roadway_type(roadway) == "straight"
-        gen.max_init_dist = gen.total_roadway_length / 10.
+        gen.max_init_dist = gen.min_init_dist # gen.total_roadway_length / 10.
     else
         gen.max_init_dist = gen.total_roadway_length / 2 - gen.min_init_dist
     end
@@ -273,4 +273,5 @@ function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene,
             zip(init_road_idxs, road_positions))
         push!(scene, build_vehicle(gen, roadway, road_idx, road_pos, idx)) 
     end
+    return scene
 end

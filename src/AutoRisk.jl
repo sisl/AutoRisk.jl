@@ -4,6 +4,7 @@ module AutoRisk
 using Reexport
 
 @reexport using AutomotiveDrivingModels
+@reexport using BayesNets
 @reexport using DataStructures
 @reexport using Distributions
 @reexport using ForwardNets
