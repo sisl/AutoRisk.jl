@@ -1,5 +1,5 @@
 function build_debug_dataset_collector(;
-        output_filepath = "../data/test_dataset_collector.h5",
+        output_filepath = "data/test_dataset_collector.h5",
         num_samples = 10,
         feature_dim = NUM_FEATURES,
         target_dim = NUM_TARGETS,

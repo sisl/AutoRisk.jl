@@ -8,22 +8,22 @@
 
 function test_reset_determinism()
     col_1 = build_debug_dataset_collector(
-        output_filepath = "../data/test_dataset_collector_1.h5")
+        output_filepath = "data/test_dataset_collector_1.h5")
     rand!(col_1, 3)
 
     col_2 = build_debug_dataset_collector(
-        output_filepath = "../data/test_dataset_collector_2.h5")
+        output_filepath = "data/test_dataset_collector_2.h5")
     rand!(col_2, 3)
 
     @test col_1.roadway == col_2.roadway
     @test col_1.scene == col_2.scene
 
-    rm("../data/test_dataset_collector_1.h5")
-    rm("../data/test_dataset_collector_2.h5")
+    rm("data/test_dataset_collector_1.h5")
+    rm("data/test_dataset_collector_2.h5")
 end
 
 function test_generate_dataset_determinism()
-    filepath = "../data/test_dataset_collector.h5"
+    filepath = "data/test_dataset_collector.h5"
     feature_dim, target_dim = NUM_FEATURES, NUM_TARGETS
     col = build_debug_dataset_collector(
         output_filepath = filepath,
@@ -59,7 +59,7 @@ function test_generate_dataset_determinism()
 end
 
 function test_generate_dataset()
-    filepath = "../data/test_dataset_collector.h5"
+    filepath = "data/test_dataset_collector.h5"
     col = build_debug_dataset_collector(
         output_filepath = filepath,
         num_samples = 2,
@@ -100,7 +100,7 @@ function test_generate_dataset()
 end
 
 function test_generate_multi_timestep_dataset()
-    filepath = "../data/test_dataset_collector.h5"
+    filepath = "data/test_dataset_collector.h5"
     col = build_debug_dataset_collector(
         output_filepath = filepath,
         num_samples = 2,

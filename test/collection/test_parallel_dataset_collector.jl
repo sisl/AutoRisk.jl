@@ -8,7 +8,7 @@
 
 function test_generate_dataset_parallel()
     num_col = 2
-    filepaths = ["../data/test_dataset_collector_$(i).h5" for i in 1:num_col]
+    filepaths = ["data/test_dataset_collector_$(i).h5" for i in 1:num_col]
     cols = [build_debug_dataset_collector(
         output_filepath = filepaths[i],
         num_samples = 3,
@@ -17,7 +17,7 @@ function test_generate_dataset_parallel()
         chunk_dim = 1,
         init_file = false) for i in 1:num_col]
     seeds = collect(1:3)
-    output_filepath = "../data/test_dataset_collector.h5"
+    output_filepath = "data/test_dataset_collector.h5"
     pcol = ParallelDatasetCollector(cols, seeds, output_filepath)
 
     for col in pcol.cols

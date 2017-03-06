@@ -2,7 +2,7 @@
 # using AutoRisk
 
 function test_update()
-    output_filepath = "../data/test_dataset.h5"
+    output_filepath = "data/test_dataset.h5"
     feature_dim = 1
     feature_timesteps = 1
     target_dim = 1
@@ -23,7 +23,7 @@ function test_update()
 end
 
 function test_dataset()
-    output_filepath = "../data/test_dataset.h5"
+    output_filepath = "data/test_dataset.h5"
     feature_dim = 4
     target_dim = 3
     feature_timesteps = 1
