@@ -11,7 +11,7 @@ export
 type BootstrappingMonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     num_runs::Int64
-    context::IntegratedContinuous
+    context::ActionContext
     prime_time::Float64
     sampling_time::Float64
     veh_idx_can_change::Bool
@@ -47,7 +47,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
     """
     function BootstrappingMonteCarloEvaluator(ext::AbstractFeatureExtractor,
             num_runs::Int64, 
-            context::IntegratedContinuous,
+            context::ActionContext,
             prime_time::Float64, 
             sampling_time::Float64, 
             veh_idx_can_change::Bool, 

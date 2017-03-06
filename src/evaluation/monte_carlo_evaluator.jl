@@ -27,7 +27,7 @@ get_targets(eval::Evaluator) = eval.agg_targets[:, :]
 type MonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     num_runs::Int64
-    context::IntegratedContinuous
+    context::ActionContext
     prime_time::Float64
     sampling_time::Float64
     veh_idx_can_change::Bool
@@ -60,7 +60,7 @@ type MonteCarloEvaluator <: Evaluator
     """
     function MonteCarloEvaluator(ext::AbstractFeatureExtractor,
             num_runs::Int64, 
-            context::IntegratedContinuous,
+            context::ActionContext,
             prime_time::Float64, 
             sampling_time::Float64, 
             veh_idx_can_change::Bool, 

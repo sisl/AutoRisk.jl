@@ -8,7 +8,7 @@ export
     - A BehaviorGenerator that selects from a set of predefined behaviors.
 """
 type PredefinedBehaviorGenerator <: BehaviorGenerator
-    context::IntegratedContinuous
+    context::ActionContext
     params::Vector{BehaviorParams}
     weights::WeightVec
     rng::MersenneTwister
@@ -35,7 +35,7 @@ Base.rand(gen::PredefinedBehaviorGenerator) = sample(gen.params, gen.weights)
         between a minimum and maximum set of params
 """
 type UniformBehaviorGenerator <: BehaviorGenerator
-    context::IntegratedContinuous
+    context::ActionContext
     min_p::BehaviorParams
     max_p::BehaviorParams
     rng::MersenneTwister

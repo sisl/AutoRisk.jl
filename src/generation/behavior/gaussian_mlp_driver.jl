@@ -5,7 +5,7 @@ export
     reset_hidden_state!,
     observe!
 
-type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A, IntegratedContinuous}
+type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A, ActionContext}
     net::ForwardNet
     rec::SceneRecord
     pass::ForwardPass
@@ -13,7 +13,7 @@ type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtra
     output::Vector{G}
     extractor::E
     mvnormal::M
-    context::IntegratedContinuous
+    context::ActionContext
     features::Array{Float64}
 
     a_hi::Float64
@@ -26,11 +26,11 @@ _get_Σ_type{Σ,μ}(mvnormal::MvNormal{Σ,μ}) = Σ
 function GaussianMLPDriver{A <: DriveAction}(::Type{A}, 
         net::ForwardNet, 
         extractor::AbstractFeatureExtractor, 
-        context::IntegratedContinuous;
+        context::ActionContext;
         input::Symbol = :input,
         output::Symbol = :output,
         Σ::Union{Real, Vector{Float64}, Matrix{Float64},  Distributions.AbstractPDMat} = 0.1,
-        rec::SceneRecord = SceneRecord(2, context.Δt),
+        rec::SceneRecord = SceneRecord(2, get_timestep(context)),
         a_hi::Float64 = 3.,
         a_lo::Float64 = -5.,
         ω_hi::Float64 = .01,

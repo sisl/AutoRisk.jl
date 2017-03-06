@@ -15,6 +15,10 @@ AutomotiveDrivingModels Core additional functionality
 """
 
 ### Roadway
+function nlanes(roadway::Roadway)
+    return length(roadway.segments[0].lanes)
+end
+
 function stadium_roadway_length(roadway::Roadway)
     seg = roadway.segments[1]
     straight_length = seg.lanes[1].curve[1].pos.x
@@ -372,3 +376,21 @@ function AutomotiveDrivingModels.track_longitudinal!(
     model.a = clamp(model.a, low, model.a_max)
     model
 end
+
+### Behavior
+type StaticLongitudinalDriver <: LongitudinalDriverModel
+    a::Float64
+    σ::Float64
+    StaticLongitudinalDriver(a::Float64=0.0, σ::Float64=0.0) = new(a, σ)
+end
+get_name(::StaticLongitudinalDriver) = "ProportionalSpeedTracker"
+function Base.rand(model::StaticLongitudinalDriver)
+    if isnan(model.σ) || model.σ ≤ 0.0
+        return model.a
+    else
+        return  rand(Normal(model.a, model.σ))
+    end
+end
+
+### Context
+get_timestep(context::IntegratedContinuous) = context.Δt

@@ -15,14 +15,14 @@ import AutomotiveDrivingModels:
     set_desired_speed!,
     observe!
 
-type DelayedDriver <: DriverModel{LatLonAccel, IntegratedContinuous}
+type DelayedDriver <: DriverModel{LatLonAccel, ActionContext}
     driver::DriverModel
     rec::SceneRecord
     reaction_time::Float64 # reaction time (time delay in responding) [s]
     pastframe::Int # index into the record of the scene to observe
 
     function DelayedDriver(driver::DriverModel; reaction_time::Float64 = 0.5)
-        Δt = driver.action_context.Δt
+        Δt = get_timestep(driver.action_context)
         n_scenes = Int(ceil(reaction_time / Δt)) + 1
         rec = SceneRecord(n_scenes, Δt)
         new(driver, rec, reaction_time, -(n_scenes - 1))
