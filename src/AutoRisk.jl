@@ -9,6 +9,7 @@ using Reexport
 @reexport using Distributions
 @reexport using ForwardNets
 @reexport using HDF5
+@reexport using Parameters
 
 import AutomotiveDrivingModels: simulate!, update!, observe!, pull_features!
 import Base: display, show, rand, ==
@@ -25,6 +26,11 @@ include("extraction/feature_extractors.jl")
 include("extraction/multi_feature_extractor.jl")
 include("extraction/dataset_extraction.jl")
 
+# behaviors
+include("behaviors/delayed_intelligent_driver_model.jl")
+include("behaviors/delayed_driver_model.jl")
+include("behaviors/gaussian_mlp_driver.jl")
+
 # generation
 ## roadway
 include("generation/roadway/roadway_generator.jl")
@@ -38,11 +44,8 @@ include("generation/scene/dataset_scene_generator.jl")
 include("generation/behavior/parameters.jl")
 include("generation/behavior/behavior_generator.jl")
 include("generation/behavior/heuristic_behavior_generators.jl")
-include("generation/behavior/delayed_intelligent_driver_model.jl")
-include("generation/behavior/delayed_driver_model.jl")
 include("generation/behavior/load_policy.jl")
 include("generation/behavior/learned_behavior_generators.jl")
-include("generation/behavior/gaussian_mlp_driver.jl")
 
 # prediction
 include("prediction/neural_network.jl")
