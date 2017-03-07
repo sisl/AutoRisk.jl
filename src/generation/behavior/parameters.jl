@@ -23,7 +23,6 @@ type IDMParams
     s_min::Float64 # minimum acceptable gap [m]
     a_max::Float64 # maximum acceleration ability [m/s²]
     d_cmf::Float64 # comfortable deceleration [m/s²] (positive)
-    t_d::Float64 # time delay if using delayed response idm [s]
 end
 
 function Base.rand(rng::MersenneTwister, min::IDMParams, 
@@ -35,8 +34,7 @@ function Base.rand(rng::MersenneTwister, min::IDMParams,
         uniform(rng, min.v_des, max.v_des), 
         uniform(rng, min.s_min, max.s_min),
         uniform(rng, min.a_max, max.a_max), 
-        uniform(rng, min.d_cmf, max.d_cmf),
-        uniform(rng, min.t_d, max.t_d))
+        uniform(rng, min.d_cmf, max.d_cmf))
 end
 
 function Base.:(==)(p1::IDMParams, p2::IDMParams)
@@ -47,8 +45,7 @@ function Base.:(==)(p1::IDMParams, p2::IDMParams)
             && p1.v_des == p2.v_des
             && p1.s_min == p2.s_min
             && p1.a_max == p2.a_max
-            && p1.d_cmf == p2.d_cmf
-            && p1.t_d == p2.t_d)
+            && p1.d_cmf == p2.d_cmf)
 end
 
 type MOBILParams
@@ -92,10 +89,28 @@ type BehaviorParams
     idm::IDMParams
     mobil::MOBILParams
     lat::LateralParams
+    lon_response_time::Float64
+    overall_response_time::Float64
+    err_p_a_to_i::Float64
+    err_p_i_to_a::Float64
+
+    function BehaviorParams(idm::IDMParams, mobil::MOBILParams, 
+            lat::LateralParams; 
+            lon_response_time::Float64 = 0.0,
+            overall_response_time::Float64 = 0.0,
+            err_p_a_to_i::Float64 = 0.0,
+            err_p_i_to_a::Float64 = 0.0)
+        return new(idm, mobil, lat, lon_response_time, overall_response_time, 
+            err_p_a_to_i, err_p_i_to_a)
+    end
 end
 
 function Base.:(==)(p1::BehaviorParams, p2::BehaviorParams)
-    return p1.idm == p2.idm && p1.mobil == p2.mobil && p1.lat == p2.lat
+    return (p1.idm == p2.idm && p1.mobil == p2.mobil && p1.lat == p2.lat
+        && p1.lon_response_time == p2.lon_response_time
+        && p1.overall_response_time == p2.overall_response_time
+        && p1.err_p_a_to_i == p2.err_p_a_to_i
+        && p1.err_p_i_to_a == p2.err_p_i_to_a)
 end
 
 function Base.rand(rng::MersenneTwister, min_p::BehaviorParams, 
@@ -103,7 +118,17 @@ function Base.rand(rng::MersenneTwister, min_p::BehaviorParams,
     idm = rand(rng, min_p.idm, max_p.idm)
     mobil = rand(rng, min_p.mobil, max_p.mobil)
     lat = rand(rng, min_p.lat, max_p.lat)
-    return BehaviorParams(idm, mobil, lat)
+    lon_response_time = uniform(
+        rng, min_p.lon_response_time, max_p.lon_response_time)
+    overall_response_time = uniform(
+        rng, min_p.overall_response_time, max_p.overall_response_time)
+    err_p_a_to_i = uniform(rng, min_p.err_p_a_to_i, max_p.err_p_a_to_i)
+    err_p_i_to_a = uniform(rng, min_p.err_p_i_to_a, max_p.err_p_i_to_a)
+    return BehaviorParams(idm, mobil, lat, 
+        lon_response_time = lon_response_time,
+        overall_response_time = overall_response_time,
+        err_p_a_to_i = err_p_a_to_i,
+        err_p_i_to_a = err_p_i_to_a)
 end
 
 # convert params to a vector
@@ -125,57 +150,50 @@ Standard parameter sets
 function get_aggressive_behavior_params(;
         lon_σ = 0.0, 
         lat_σ = 0.0, 
-        response_time = 0.0)
+        lon_response_time = 0.0,
+        overall_response_time = 0.0,
+        err_p_a_to_i = 0.0,
+        err_p_i_to_a = 0.0)
     return BehaviorParams(
-        IDMParams(lon_σ, 1.5, 4.0, 0.5, 35., 4.0, 4.0, 2.5, response_time),
+        IDMParams(lon_σ, 1.5, 4.0, 0.5, 35., 4.0, 4.0, 2.5),
         MOBILParams(0.1, 2.0, 0.01),
-        LateralParams(lat_σ, 3.5, 2.5))
+        LateralParams(lat_σ, 3.5, 2.5),
+        lon_response_time = lon_response_time,
+        overall_response_time = overall_response_time,
+        err_p_a_to_i = err_p_a_to_i,
+        err_p_i_to_a = err_p_i_to_a)
 end
 
 function get_passive_behavior_params(;
         lon_σ = 0.0, 
         lat_σ = 0.0, 
-        response_time = 0.0)
+        lon_response_time = 0.0,
+        overall_response_time = 0.0,
+        err_p_a_to_i = 0.0,
+        err_p_i_to_a = 0.0)
     return BehaviorParams(
-        IDMParams(lon_σ, 1.0, 4.0, 1.75, 25., 5.0, 1.0, 1.0, response_time),
+        IDMParams(lon_σ, 1.0, 4.0, 1.75, 25., 5.0, 1.0, 1.0),
         MOBILParams(0.5, 2.0, 0.7),
-        LateralParams(lat_σ, 3.0, 2.0))
+        LateralParams(lat_σ, 3.0, 2.0),
+        lon_response_time = lon_response_time,
+        overall_response_time = overall_response_time,
+        err_p_a_to_i = err_p_a_to_i,
+        err_p_i_to_a = err_p_i_to_a)
 end
 
 function get_normal_behavior_params(;
         lon_σ = 0.0, 
         lat_σ = 0.0, 
-        response_time = 0.0)
+        lon_response_time = 0.0,
+        overall_response_time = 0.0,
+        err_p_a_to_i = 0.0,
+        err_p_i_to_a = 0.0)
     return BehaviorParams(
-        IDMParams(lon_σ, 1.25, 4.0, 1.25, 30., 4.5, 2.5, 1.75, response_time),
+        IDMParams(lon_σ, 1.25, 4.0, 1.25, 30., 4.5, 2.5, 1.75),
         MOBILParams(0.3, 2.0, 0.2),
-        LateralParams(lat_σ, 3.25, 2.25))
+        LateralParams(lat_σ, 3.25, 2.25),
+        lon_response_time = lon_response_time,
+        overall_response_time = overall_response_time,
+        err_p_a_to_i = err_p_a_to_i,
+        err_p_i_to_a = err_p_i_to_a)
 end
-
-# function get_politeness_covariance_matrix(;σ = 1.0, ρ = 0.5, 
-#         deterministic = true, delayed_response = true)
-#     # negative values indicate values that are smaller for more aggressive 
-#     eps = 0.00000001
-#     vars = [eps, 0.15, eps, -.35, 3., -.3, 1., .5, .2, 
-#             -.1, eps, -.3,
-#             eps, .15, .15]
-
-#     num_params = length(vars)
-#     covmat = zeros(num_params, num_params)
-#     for i in 1:num_params
-#         covmat[i,i] = abs(vars[i])
-#     end
-
-#     politeness_idx = 10
-#     for r in 1:num_params
-#         if vars[r] == eps || r == politeness_idx
-#             continue
-#         end
-#         cov = ρ * min(abs(vars[r]), abs(vars[politeness_idx]))
-#         if vars[r] > 0.
-#             cov *= -1
-#         end
-#         covmat[r, politeness_idx] = cov
-#         covmat[politeness_idx, r] = cov
-#     end
-# end

@@ -11,7 +11,9 @@ using Reexport
 @reexport using HDF5
 @reexport using Parameters
 
-import AutomotiveDrivingModels: simulate!, update!, observe!, pull_features!
+import AutomotiveDrivingModels: 
+    simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
+    get_name, action_context
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 
@@ -27,6 +29,7 @@ include("extraction/multi_feature_extractor.jl")
 include("extraction/dataset_extraction.jl")
 
 # behaviors
+include("behaviors/errorable_driver_model.jl")
 include("behaviors/delayed_intelligent_driver_model.jl")
 include("behaviors/delayed_driver_model.jl")
 include("behaviors/gaussian_mlp_driver.jl")

@@ -45,14 +45,26 @@ end
 """
 function build_driver(p::BehaviorParams, context::IntegratedContinuous,
         num_vehicles::Int64)
-    mlon = IntelligentDriverModel(
-        k_spd = p.idm.k_spd,
-        δ = p.idm.δ,
-        T = p.idm.T,
-        v_des = p.idm.v_des,
-        s_min = p.idm.s_min,
-        a_max = p.idm.a_max,
-        d_cmf = p.idm.d_cmf)
+    if p.lon_response_time != 0.0
+        mlon = DelayedIntelligentDriverModel(
+            k_spd = p.idm.k_spd,
+            δ = p.idm.δ,
+            T = p.idm.T,
+            v_des = p.idm.v_des,
+            s_min = p.idm.s_min,
+            a_max = p.idm.a_max,
+            d_cmf = p.idm.d_cmf,
+            t_d = p.lon_response_time)
+    else
+        mlon = IntelligentDriverModel(
+            k_spd = p.idm.k_spd,
+            δ = p.idm.δ,
+            T = p.idm.T,
+            v_des = p.idm.v_des,
+            s_min = p.idm.s_min,
+            a_max = p.idm.a_max,
+            d_cmf = p.idm.d_cmf)
+    end
     mlon.σ = p.idm.σ
     mlat = ProportionalLaneTracker(
         σ = p.lat.σ,
@@ -68,8 +80,12 @@ function build_driver(p::BehaviorParams, context::IntegratedContinuous,
         mlat = mlat, 
         mlon = mlon, 
         mlane = mlane)
-    if p.idm.t_d != 0.0
-        model = DelayedDriver(model, reaction_time = p.idm.t_d)
+    if p.overall_response_time != 0.0
+        model = DelayedDriver(model, reaction_time = p.overall_response_time)
+    end
+    if p.err_p_a_to_i != 0.0
+        model = ErrorableDriverModel(model, p_a_to_i = p.p_a_to_i, 
+            p_i_to_a = p.p_i_to_a)
     end
     set_desired_speed!(model, p.idm.v_des)
     return model

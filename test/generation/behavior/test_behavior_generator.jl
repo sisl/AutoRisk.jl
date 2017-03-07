@@ -16,7 +16,7 @@ function test_build_driver()
     s_min = 5.
     a_max = 6.
     d_cmf = 7.
-    idm_params = IDMParams(σ, k_spd, δ, T, v_des, s_min, a_max, d_cmf, 0.0)
+    idm_params = IDMParams(σ, k_spd, δ, T, v_des, s_min, a_max, d_cmf)
     politeness = 8.
     safe_decel = 9.
     advantage_threshold = 10.
@@ -43,7 +43,7 @@ end
 
 function test_behavior_reset()
 
-    idm_params = IDMParams(0.,1.,2.,3.,4.,5.,6.,7.,0.)
+    idm_params = IDMParams(0.,1.,2.,3.,4.,5.,6.,7.)
     mobil_params = MOBILParams(collect(8.:10.)...)
     lat_params = LateralParams(11., 12., 13.)
     params = [BehaviorParams(idm_params, mobil_params, lat_params)]

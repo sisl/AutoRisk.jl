@@ -24,6 +24,15 @@ function runtests()
     println("test_dataset_extraction.jl")
     include("extraction/test_dataset_extraction.jl")
 
+    # behavior
+    println("\n### behaviors ###")
+    println("test_delayed_intelligent_driver_model.jl")
+    include("behaviors/test_delayed_intelligent_driver_model.jl")
+    println("test_delayed_driver_model.jl")
+    include("behaviors/test_delayed_driver_model.jl")
+    println("test_errorable_driver_model.jl")
+    include("behaviors/test_errorable_driver_model.jl")
+
     # generation
     println("\n### generation ###")
     ## scene
@@ -34,10 +43,6 @@ function runtests()
     include("generation/behavior/test_behavior_generator.jl")
     println("test_heuristic_behavior_generators.jl")
     include("generation/behavior/test_heuristic_behavior_generators.jl")
-    println("test_delayed_intelligent_driver_model.jl")
-    include("generation/behavior/test_delayed_intelligent_driver_model.jl")
-    println("test_delayed_driver_model.jl")
-    include("generation/behavior/test_delayed_driver_model.jl")
 
     # evaluation
     println("\n### evaluation ###")

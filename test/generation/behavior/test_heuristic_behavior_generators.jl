@@ -10,7 +10,7 @@
 # include("../../../src/utils/automotive.jl")
 
 function test_predefined_behavior_generator()
-    idm_params = IDMParams(collect(0.:7.)...,0.)
+    idm_params = IDMParams(collect(0.:7.)...)
     mobil_params = MOBILParams(collect(8.:10.)...)
     lat_params = LateralParams(11., 12., 12.)
     lat_params_2 = LateralParams(13., 14., 14.)
@@ -80,11 +80,11 @@ function test_predefined_behavior_generator_non_determinism()
 end
 
 function test_uniform_behavior_generator()
-    idm_params = IDMParams(collect(0.:7.)..., 0.)
+    idm_params = IDMParams(collect(0.:7.)...)
     mobil_params = MOBILParams(collect(8.:10.)...)
     lat_params = LateralParams(11., 12., 13.)
     min_params = BehaviorParams(idm_params, mobil_params, lat_params)
-    idm_params = IDMParams(collect(1.:8.)...,0.)
+    idm_params = IDMParams(collect(1.:8.)...)
     mobil_params = MOBILParams(collect(9.:11.)...)
     lat_params = LateralParams(12., 13., 14.)
     max_params = BehaviorParams(idm_params, mobil_params, lat_params)
