@@ -46,7 +46,7 @@ end
 function build_driver(p::BehaviorParams, context::IntegratedContinuous,
         num_vehicles::Int64)
     if p.lon_response_time != 0.0
-        mlon = DelayedIntelligentDriverModel(
+        mlon = DelayedIntelligentDriverModel(context.Δt,
             k_spd = p.idm.k_spd,
             δ = p.idm.δ,
             T = p.idm.T,
@@ -84,8 +84,8 @@ function build_driver(p::BehaviorParams, context::IntegratedContinuous,
         model = DelayedDriver(model, reaction_time = p.overall_response_time)
     end
     if p.err_p_a_to_i != 0.0
-        model = ErrorableDriverModel(model, p_a_to_i = p.p_a_to_i, 
-            p_i_to_a = p.p_i_to_a)
+        model = ErrorableDriverModel(model, p_a_to_i = p.err_p_a_to_i, 
+            p_i_to_a = p.err_p_i_to_a)
     end
     set_desired_speed!(model, p.idm.v_des)
     return model

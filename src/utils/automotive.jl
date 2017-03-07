@@ -378,6 +378,7 @@ function AutomotiveDrivingModels.track_longitudinal!(
 end
 
 ### Behavior
+# adding σ to static longitudinal 
 type StaticLongitudinalDriver <: LongitudinalDriverModel
     a::Float64
     σ::Float64
@@ -391,6 +392,9 @@ function Base.rand(model::StaticLongitudinalDriver)
         return  rand(Normal(model.a, model.σ))
     end
 end
+
+# get_driver
+get_driver(model::DriverModel) = model
 
 ### Context
 get_timestep(context::IntegratedContinuous) = context.Δt

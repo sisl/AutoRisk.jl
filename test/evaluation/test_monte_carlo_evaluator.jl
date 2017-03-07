@@ -125,11 +125,11 @@ function test_monte_carlo_evaluator()
     @test eval.features[17, 1] ≈ 1. / 6.12903225806451
     @test eval.features[17, 2] ≈ 0.0
 
-    @test eval.features[61, 1] == k_spd
-    @test eval.features[61, 2] == k_spd
+    @test eval.features[65, 1] == k_spd
+    @test eval.features[65, 2] == k_spd
 
-    @test eval.features[71, 1] == politeness
-    @test eval.features[71, 2] == politeness
+    @test eval.features[75, 1] == politeness
+    @test eval.features[75, 2] == politeness
 
 end
 

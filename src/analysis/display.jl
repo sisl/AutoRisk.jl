@@ -1,6 +1,8 @@
 
 import Base: display, show
 
+import AutoViz: SceneOverlay
+
 export
     display,
     show

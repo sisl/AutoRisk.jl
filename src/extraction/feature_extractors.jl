@@ -247,7 +247,7 @@ type BehavioralFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function BehavioralFeatureExtractor()
-        num_features = 13
+        num_features = 17
         return new(zeros(Float64, num_features), num_features)
     end
 end
@@ -270,20 +270,36 @@ function AutomotiveDrivingModels.pull_features!(
     model = models[veh.def.id]
 
     # unpack the underlying driver models
+    # storing features of overlaid driver models in doing so
     # if the primary driver model is invalid for this extractor, then skip
+    next_idx = 0
+
+    # errorable features
+    if typeof(model) == ErrorableDriverModel
+        ext.features[next_idx+=1] = Float64(model.is_attentive)
+        ext.features[next_idx+=1] = model.p_a_to_i
+        ext.features[next_idx+=1] = model.p_a_to_i
+        model = model.driver
+    else
+        next_idx += 3
+    end
+
+    # delayed features
     if typeof(model) == DelayedDriver
-        mlon = model.driver.mlon
-        mlat = model.driver.mlat
-        mlane = model.driver.mlane
-    elseif typeof(model) == Tim2DDriver
+        ext.features[next_idx+=1] = model.reaction_time
+        model = model.driver
+    else
+        next_idx += 1
+    end
+
+    # unpack
+    if typeof(model) == Tim2DDriver
         mlon = model.mlon
         mlat = model.mlat
         mlane = model.mlane
     else # skip this extractor
         return ext.features
     end
-
-    next_idx = 0
 
     # longitudinal model
     if (typeof(mlon) == IntelligentDriverModel 
@@ -297,8 +313,6 @@ function AutomotiveDrivingModels.pull_features!(
         ext.features[next_idx+=1] = mlon.d_cmf
         if typeof(mlon) == DelayedIntelligentDriverModel
             ext.features[next_idx+=1] = mlon.t_d
-        elseif typeof(model) == DelayedDriver
-            ext.features[next_idx+=1] = model.reaction_time
         else
             next_idx += 1
         end

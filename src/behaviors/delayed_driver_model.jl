@@ -30,9 +30,10 @@ type DelayedDriver <: DriverModel{LatLonAccel, ActionContext}
 end
 
 get_name(::DelayedDriver) = "DelayedDriver"
-action_context(driver::DelayedDriver) = driver.driver.action_context
+action_context(driver::DelayedDriver) = action_context(driver.driver)
 set_desired_speed!(driver::DelayedDriver, v_des::Float64) = set_desired_speed!(
     driver.driver, v_des)
+get_driver(driver::DelayedDriver) = get_driver(driver.driver)
 function observe!(driver::DelayedDriver, scene::Scene, roadway::Roadway, egoid::Int)
     update!(driver.rec, scene)
     # internal driver begins observing after reaction time has passed

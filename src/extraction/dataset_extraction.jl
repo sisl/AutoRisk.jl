@@ -62,7 +62,7 @@ function extract_vehicle_frame_targets!(rec::SceneRecord, roadway::Roadway,
     # time to collision
     inv_ttc = get(INV_TTC, rec, roadway, veh_idx, pastframe)
     ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
-    if ttc.i != FeatureState.MISSING && ttc.v < 2.5
+    if ttc.i != FeatureState.MISSING && ttc.v < 3.
         targets[5, target_idx] = 1.
     end
 
