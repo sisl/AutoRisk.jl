@@ -3,7 +3,8 @@ export
     set_value!,
     Flags,
     add_entry!,
-    parse_flags!
+    parse_flags!,
+    fixup_types!
 
 """
 Simple class for parsing command line arguments.
@@ -74,6 +75,14 @@ function Base.convert(::Type{Dict}, flags::Flags)
     return d
 end
 
+function Base.convert(::Type{Flags}, d::Dict)
+    f = Flags()
+    for (k, v) in d
+        add_entry!(f, k, v, typeof(v))
+    end
+    return f
+end
+
 """
 # Description:
     - parses args into (key, value) pairs.
@@ -104,4 +113,23 @@ function parse_flags!(flags, args)
         flags[key] = value
     end
     return flags
+end
+
+
+"""
+Description:
+    - When writing flags to h5 files, you have to convert boolean types to 
+    strings (I believe as a result of a deficiency in HDF5.jl, but not sure).
+    This method can be used to fix those converted values in a loaded dictionary.
+"""
+function fixup_types!(d::Dict{String,Any})
+    for (k,v) in d
+        if v == "true"
+            v = true
+        elseif v == "false"
+            v = false
+        end
+        d[k] = v
+    end
+    d
 end

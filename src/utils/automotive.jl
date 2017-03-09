@@ -272,15 +272,17 @@ function get_collision_type(rec::SceneRecord, roadway::Roadway,
             || changed_lanes_recently(rec, roadway, other_idx, pastframe))
             collision_type = 1
 
-        # ego vehicle further along lane then rear-end-lead
-        elseif ego.state.posF.s > other.state.posF.s 
-            collision_type = 2
-
-        # other vehicle further along lane then rear-end-follow
-        else
-            collision_type = 3
+        else 
+            neigh = get_neighbor_fore_along_lane(scene, ego_idx, roadway)
+            # fore neighbor is the other vehicle then the ego vehicle is the 
+            # rear vehicle and should be labeled as a rear-end-follow collision
+            if neigh.ind == other_idx
+                collision_type = 3
+            else
+                # otherwise label as a rear-end-lead collision
+                collision_type = 2
+            end
         end
-
     end
 
     return collision_type
