@@ -30,6 +30,7 @@ function Base.rand!(gen::BehaviorGenerator, models::Dict{Int, DriverModel},
     for veh in scene.vehicles
         params = rand(gen)
         models[veh.def.id] = build_driver(params, gen.context, length(scene))
+        srand(models[veh.def.id], seed)
     end
 end
 

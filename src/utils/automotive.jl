@@ -8,7 +8,8 @@ export
     get_roadway_type,
     inverse_ttc_to_ttc,
     push_forward_records!,
-    executed_hard_brake
+    executed_hard_brake,
+    srand
 
 """
 AutomotiveDrivingModels Core additional functionality
@@ -275,11 +276,11 @@ function get_collision_type(rec::SceneRecord, roadway::Roadway,
         else 
             neigh = get_neighbor_fore_along_lane(scene, ego_idx, roadway)
             # fore neighbor is the other vehicle then the ego vehicle is the 
-            # rear vehicle and should be labeled as a rear-end-follow collision
+            # rear vehicle and should be labeled as a rear-end-rear collision
             if neigh.ind == other_idx
                 collision_type = 3
             else
-                # otherwise label as a rear-end-lead collision
+                # otherwise label as a rear-end-fore collision
                 collision_type = 2
             end
         end
@@ -380,6 +381,10 @@ function AutomotiveDrivingModels.track_longitudinal!(
 end
 
 ### Behavior
+# some driver models will need to have a random seed set for reproducibility
+# so add a base method 
+Base.srand(model::DriverModel, seed::Int) = model
+
 # adding σ to static longitudinal 
 type StaticLongitudinalDriver <: LongitudinalDriverModel
     a::Float64

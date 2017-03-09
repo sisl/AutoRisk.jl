@@ -152,7 +152,6 @@ function test_feature_names()
     fs = feature_names(ext)
     @test length(fs) == length(ext)
     @test fs[3] == "velocity"
-    print(fs)
 end
 
 @time test_multi_feature_extractor_heuristic()
