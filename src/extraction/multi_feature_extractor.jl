@@ -18,11 +18,11 @@ type MultiFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::MultiFeatureExtractor) = ext.num_features
 function feature_names(ext::MultiFeatureExtractor)
-    fs = []
+    fs = String[]
     for subext in ext.extractors
-        push!(fs, feature_names(subext))
+        push!(fs, feature_names(subext)...)
     end
-    return cat(1, fs...)
+    return fs
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::MultiFeatureExtractor, 

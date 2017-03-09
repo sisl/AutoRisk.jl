@@ -2,6 +2,7 @@ export
     Dataset,
     update!,
     finalize!,
+    add_attributes,
     aggregate_datasets
 
 """
@@ -25,6 +26,7 @@ type Dataset
     next_idx::Int64
     seeds::Vector{Int64}
     batch_idxs::Vector{Int64}
+    attrs::Dict{String, Any}
 
     """
     # Args:
@@ -40,7 +42,7 @@ type Dataset
     function Dataset(filepath::String, feature_dim::Int64, 
             feature_timesteps::Int64, target_dim::Int64,
             max_num_samples::Int64; chunk_dim::Int64 = 100, 
-            init_file::Bool = true)
+            init_file::Bool = true, attrs::Dict = Dict())
         retval = new()
         retval.filepath = filepath
         retval.feature_dim = feature_dim
@@ -51,6 +53,13 @@ type Dataset
         retval.next_idx = 1
         retval.seeds = Vector{Int64}(0)
         retval.batch_idxs = Vector{Int64}(0)
+
+        # convert all the attrs keys to strings
+        string_key_attrs = Dict{String, Any}()
+        for (k,v) in attrs
+            string_key_attrs[string(k)] = v
+        end
+        retval.attrs = string_key_attrs
 
         # conditionally create h5 file in constructor
         # note that in the parallel case, creating the file here
@@ -125,6 +134,15 @@ function update!(dataset::Dataset, features::Array{Float64},
     push!(dataset.seeds, seed)
 end
 
+function write_attrs(dataset::Dataset)
+    for (k,v) in dataset.attrs
+        if typeof(v) == Bool
+            v = string(v)
+        end
+        attrs(dataset.file["risk"])[k] = v
+    end
+end
+
 """
 # Description:
     - Finalize the dataset collection process by closing the file and 
@@ -145,6 +163,10 @@ function finalize!(dataset::Dataset)
     d_write(dataset.file, "risk/batch_idxs", dataset.batch_idxs)
     d_write(dataset.file, "risk/seeds", dataset.seeds)
 
+    # add attributes
+    write_attrs(dataset)
+
+    # close the file
     close(dataset.file)
 end
 
@@ -168,6 +190,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
     # size by iterating through the input files first
     num_features, num_targets, feature_timesteps = -1, -1, -1
     num_samples = 0
+    attributes = Dict{String, Any}()
 
     for (idx, filepath) in enumerate(input_filepaths)
         h5open(filepath, "r") do proc_file
@@ -175,6 +198,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
                 num_features = size(proc_file["risk/features"], 1)
                 feature_timesteps = size(proc_file["risk/features"], 2)
                 num_targets = size(proc_file["risk/targets"], 1)
+                attributes = h5readattr(filepath, "risk")
             end
 
             num_proc_features, num_proc_timesteps, num_proc_samples = size(
@@ -231,7 +255,8 @@ function aggregate_datasets(input_filepaths::Vector{String},
     # close file 
     close(h5file)
 
-    # write seeds and batch_idxs
+    # write attributes, seeds, batch_idxs
+    h5writeattr(output_filepath, "risk", attributes)
     h5write(output_filepath, "risk/seeds", seeds)
     h5write(output_filepath, "risk/batch_idxs", batch_idxs)
 

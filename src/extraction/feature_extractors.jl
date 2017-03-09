@@ -75,7 +75,7 @@ type CoreFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::CoreFeatureExtractor) = ext.num_features
 function feature_names(ext::CoreFeatureExtractor)
-    return ["relative_offset","relative_heading","velocity","length",
+    return String["relative_offset","relative_heading","velocity","length",
         "width","lane_curvature","markerdist_left","markerdist_right"]
 end
 function AutomotiveDrivingModels.pull_features!(
@@ -114,7 +114,7 @@ type TemporalFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::TemporalFeatureExtractor) = ext.num_features
 function feature_names(ext::TemporalFeatureExtractor)
-    return ["accel", "jerk", "turn_rate_global", "angular_rate_global",
+    return String["accel", "jerk", "turn_rate_global", "angular_rate_global",
         "turn_rate_frenet", "angular_rate_frenet",
         "timegap", "timegap_is_avail",
         "time_to_collision","time_to_collision_is_avail"]
@@ -168,7 +168,7 @@ type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::WellBehavedFeatureExtractor) = ext.num_features
 function feature_names(ext::WellBehavedFeatureExtractor)
-    return ["is_colliding", "out_of_lane", "negative_velocity"]
+    return String["is_colliding", "out_of_lane", "negative_velocity"]
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::WellBehavedFeatureExtractor, 
@@ -202,7 +202,7 @@ type NeighborFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::NeighborFeatureExtractor) = ext.num_features
 function feature_names(ext::NeighborFeatureExtractor)
-    fs = ["lane_offset_left", "lane_offset_left_is_avail",
+    fs = String["lane_offset_left", "lane_offset_left_is_avail",
         "lane_offset_right", "lane_offset_right_is_avail"]
     neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
         "fore_fore_m"]
@@ -281,7 +281,7 @@ type BehavioralFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::BehavioralFeatureExtractor) = ext.num_features
 function feature_names(ext::BehavioralFeatureExtractor)
-    return ["is_attentive",
+    return String["is_attentive",
         "prob_attentive_to_inattentive",
         "prob_inattentive_to_attentive", 
         "overall_reaction_time",
@@ -402,7 +402,7 @@ Base.length(ext::NeighborBehavioralFeatureExtractor) = ext.num_features
 function feature_names(ext::NeighborBehavioralFeatureExtractor)
     neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
         "fore_fore_m"]
-    fs = []
+    fs = String[]
     for name in neigh_names
         for subname in feature_names(ext.subext)
             push!(fs, "$(name)_$(subname)")
@@ -472,7 +472,7 @@ type CarLidarFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::CarLidarFeatureExtractor) = ext.num_features
 function feature_names(ext::CarLidarFeatureExtractor)
-    fs = []
+    fs = String[]
     for i in 1:nbeams(ext.carlidar)
         push!(fs, "lidar_$(i)")
     end
@@ -528,7 +528,7 @@ type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::RoadLidarFeatureExtractor) = ext.num_features
 function feature_names(ext::RoadLidarFeatureExtractor)
-    fs = []
+    fs = String[]
     for lane in 1:nlanes(ext.roadlidar)
         for beam in 1:nbeams(ext.roadlidar)
             push!(fs, "road_lidar_lane_$(lane)_beam_$(beam)")
