@@ -15,7 +15,8 @@ export
     NormalizingExtractor,
     EmptyExtractor,
     pull_features!,
-    length
+    length,
+    feature_names
 
 ##################### Helper methods #####################
 
@@ -73,6 +74,10 @@ type CoreFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::CoreFeatureExtractor) = ext.num_features
+function feature_names(ext::CoreFeatureExtractor)
+    return ["relative_offset","relative_heading","velocity","length",
+        "width","lane_curvature","markerdist_left","markerdist_right"]
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::CoreFeatureExtractor, 
         rec::SceneRecord,
@@ -108,6 +113,12 @@ type TemporalFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::TemporalFeatureExtractor) = ext.num_features
+function feature_names(ext::TemporalFeatureExtractor)
+    return ["accel", "jerk", "turn_rate_global", "angular_rate_global",
+        "turn_rate_frenet", "angular_rate_frenet",
+        "timegap", "timegap_is_avail",
+        "time_to_collision","time_to_collision_is_avail"]
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::TemporalFeatureExtractor, 
         rec::SceneRecord,
@@ -156,6 +167,9 @@ type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::WellBehavedFeatureExtractor) = ext.num_features
+function feature_names(ext::WellBehavedFeatureExtractor)
+    return ["is_colliding", "out_of_lane", "negative_velocity"]
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::WellBehavedFeatureExtractor, 
         rec::SceneRecord,
@@ -187,6 +201,20 @@ type NeighborFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::NeighborFeatureExtractor) = ext.num_features
+function feature_names(ext::NeighborFeatureExtractor)
+    fs = ["lane_offset_left", "lane_offset_left_is_avail",
+        "lane_offset_right", "lane_offset_right_is_avail"]
+    neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
+        "fore_fore_m"]
+    for name in neigh_names
+        push!(fs, "$(name)_dist")
+        push!(fs, "$(name)_vel")
+        push!(fs, "$(name)_accel")
+        push!(fs, "$(name)_jerk")
+        push!(fs, "$(name)_is_avail")
+    end
+    return fs
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::NeighborFeatureExtractor, 
         rec::SceneRecord,
@@ -252,6 +280,25 @@ type BehavioralFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::BehavioralFeatureExtractor) = ext.num_features
+function feature_names(ext::BehavioralFeatureExtractor)
+    return ["is_attentive",
+        "prob_attentive_to_inattentive",
+        "prob_inattentive_to_attentive", 
+        "overall_reaction_time",
+        "lon_k_spd",
+        "lon_δ",
+        "lon_T",
+        "lon_desired_velocity",
+        "lon_s_min",
+        "lon_a_max",
+        "lon_d_cmf",
+        "lon_response_time",
+        "lat_kp",
+        "lat_kd",
+        "lane_politeness",
+        "advantage_threshold",
+        "safe_decel"]
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::BehavioralFeatureExtractor,  
         rec::SceneRecord,
@@ -352,6 +399,17 @@ type NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::NeighborBehavioralFeatureExtractor) = ext.num_features
+function feature_names(ext::NeighborBehavioralFeatureExtractor)
+    neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
+        "fore_fore_m"]
+    fs = []
+    for name in neigh_names
+        for subname in feature_names(ext.subext)
+            push!(fs, "$(name)_$(subname)")
+        end
+    end
+    return fs
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::NeighborBehavioralFeatureExtractor,  
         rec::SceneRecord,
@@ -397,7 +455,6 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-
 type CarLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
@@ -414,6 +471,18 @@ type CarLidarFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::CarLidarFeatureExtractor) = ext.num_features
+function feature_names(ext::CarLidarFeatureExtractor)
+    fs = []
+    for i in 1:nbeams(ext.carlidar)
+        push!(fs, "lidar_$(i)")
+    end
+    if ext.extract_carlidar_rangerate
+        for i in 1:nbeams(ext.carlidar)
+            push!(fs, "rangerate_lidar_$(i)")
+        end
+    end
+    return fs
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::CarLidarFeatureExtractor, 
         rec::SceneRecord,
@@ -458,6 +527,15 @@ type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::RoadLidarFeatureExtractor) = ext.num_features
+function feature_names(ext::RoadLidarFeatureExtractor)
+    fs = []
+    for lane in 1:nlanes(ext.roadlidar)
+        for beam in 1:nbeams(ext.roadlidar)
+            push!(fs, "road_lidar_lane_$(lane)_beam_$(beam)")
+        end
+    end
+    return fs
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::RoadLidarFeatureExtractor, 
         rec::SceneRecord,

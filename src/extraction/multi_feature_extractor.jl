@@ -1,7 +1,8 @@
 export 
     MultiFeatureExtractor,
     length,
-    pull_features!
+    pull_features!,
+    feature_names
 
 type MultiFeatureExtractor <: AbstractFeatureExtractor
     extractors::Vector{AbstractFeatureExtractor}
@@ -16,6 +17,13 @@ type MultiFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 Base.length(ext::MultiFeatureExtractor) = ext.num_features
+function feature_names(ext::MultiFeatureExtractor)
+    fs = []
+    for subext in ext.extractors
+        push!(fs, feature_names(subext))
+    end
+    return cat(1, fs...)
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::MultiFeatureExtractor, 
         rec::SceneRecord,
