@@ -87,10 +87,8 @@ function AutomotiveDrivingModels.pull_features!(
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     veh_ego = scene[veh_idx]
-    d_ml = convert(Float64, get(
-        MARKERDIST_LEFT, rec, roadway, veh_idx, pastframe))
-    d_mr = convert(Float64, get(
-        MARKERDIST_RIGHT, rec, roadway, veh_idx, pastframe))
+    d_ml = get_markerdist_left(veh_ego, roadway)
+    d_mr = get_markerdist_right(veh_ego, roadway)
     idx = 0
     ext.features[idx+=1] = veh_ego.state.posF.t
     ext.features[idx+=1] = veh_ego.state.posF.ϕ
@@ -179,10 +177,8 @@ function AutomotiveDrivingModels.pull_features!(
         pastframe::Int = 0)
     scene = get_scene(rec, pastframe)
     veh_ego = scene[veh_idx]
-    d_ml = convert(Float64, get(
-        MARKERDIST_LEFT, rec, roadway, veh_idx, pastframe))
-    d_mr = convert(Float64, get(
-        MARKERDIST_RIGHT, rec, roadway, veh_idx, pastframe))
+    d_ml = get_markerdist_left(veh_ego, roadway)
+    d_mr = get_markerdist_right(veh_ego, roadway)
     idx = 0
     ext.features[idx+=1] = convert(Float64, get(
         IS_COLLIDING, rec, roadway, veh_idx, pastframe))

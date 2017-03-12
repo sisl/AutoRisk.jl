@@ -382,7 +382,7 @@ end
 
 ### Behavior
 # some driver models will need to have a random seed set for reproducibility
-# so add a base method 
+# so add a base method that does nothing
 Base.srand(model::DriverModel, seed::Int) = model
 
 # adding σ to static longitudinal 
