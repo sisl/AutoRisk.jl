@@ -27,7 +27,7 @@ type DatasetCollector
             scene_gen::SceneGenerator, behavior_gen::BehaviorGenerator,
             eval::Evaluator, dataset::Dataset, scene::Scene, 
             models::Dict{Int, DriverModel}, roadway::Roadway; id::Int = 0,
-            monitor::Any = Monitor())
+            monitor::Any = nothing)
         return new(seeds, roadway_gen, scene_gen, behavior_gen, eval, dataset, 
             scene, models, roadway, id, monitor)
     end
@@ -47,6 +47,13 @@ function Base.rand!(col::DatasetCollector, seed::Int64)
     rand!(col.scene_gen, col.scene, col.roadway, seed)
     rand!(col.behavior_gen, col.models, col.scene, seed)
 end
+
+"""
+Description:
+    - need this because it is possible that monitoring will not be available, 
+    and when that is the case the montior with be a nothing object. 
+"""
+monitor(mon::Void, col::DatasetCollector, seed::Int) = col
 
 """
 # Description:

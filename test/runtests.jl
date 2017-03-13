@@ -44,6 +44,8 @@ function runtests()
     include("generation/behavior/test_behavior_generator.jl")
     println("test_heuristic_behavior_generators.jl")
     include("generation/behavior/test_heuristic_behavior_generators.jl")
+    println("test_debug_generator.jl")
+    include("generation/test_debug_generator.jl")
 
     # evaluation
     println("\n### evaluation ###")
