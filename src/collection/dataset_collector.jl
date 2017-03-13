@@ -22,12 +22,14 @@ type DatasetCollector
     roadway::Roadway
 
     id::Int
+    monitor::Any
     function DatasetCollector(seeds::Vector{Int64}, roadway_gen::RoadwayGenerator,
             scene_gen::SceneGenerator, behavior_gen::BehaviorGenerator,
             eval::Evaluator, dataset::Dataset, scene::Scene, 
-            models::Dict{Int, DriverModel}, roadway::Roadway; id::Int = 0)
+            models::Dict{Int, DriverModel}, roadway::Roadway; id::Int = 0,
+            monitor::Any = Monitor())
         return new(seeds, roadway_gen, scene_gen, behavior_gen, eval, dataset, 
-            scene, models, roadway, id)
+            scene, models, roadway, id, monitor)
     end
 end
 
@@ -58,6 +60,7 @@ function generate_dataset(col::DatasetCollector)
         rand!(col, seed)
         evaluate!(col.eval, col.scene, col.models, col.roadway, seed)
         update!(col.dataset, get_features(col.eval), get_targets(col.eval), seed)
+        monitor(col.monitor, col, seed)
     end
     finalize!(col.dataset)
 end

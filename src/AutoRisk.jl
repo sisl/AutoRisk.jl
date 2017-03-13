@@ -50,6 +50,9 @@ include("generation/behavior/heuristic_behavior_generators.jl")
 include("generation/behavior/load_policy.jl")
 include("generation/behavior/learned_behavior_generators.jl")
 
+## additional generation
+include("generation/debug_generator.jl")
+
 # prediction
 include("prediction/neural_network.jl")
 
@@ -62,14 +65,16 @@ include("evaluation/bootstrapping_monte_carlo_evaluator.jl")
 include("collection/dataset.jl")
 include("collection/dataset_collector.jl")
 
-
 # Display portion of AutoRisk may be unnecessary or unavailable in some 
 # environments, so optionally include that here if possible
 try
     @reexport using AutoViz
     @reexport using Interact
+    @reexport using Reel
     # analysis
     include("analysis/display.jl")
+    # monitoring is entirely visual for now
+    include("analysis/monitor.jl")
 catch e
     println("Exception encountered in AutoRisk while trying to import display
         libraries and functionality: $(e)")

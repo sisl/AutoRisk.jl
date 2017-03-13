@@ -6,6 +6,7 @@ include("collection/testing_utils.jl")
 # testing constants
 const NUM_FEATURES = 276
 const NUM_TARGETS = 5
+const BASE_TEST_DIR = "."
 
 function runtests()
     # utils

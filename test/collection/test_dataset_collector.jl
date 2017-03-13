@@ -1,29 +1,30 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 233
+# const NUM_FEATURES = 276
 # const NUM_TARGETS = 5
+# const BASE_TEST_DIR = ".."
 
 # include("testing_utils.jl")
 
 function test_reset_determinism()
-    col_1 = build_debug_dataset_collector(
-        output_filepath = "data/test_dataset_collector_1.h5")
+    filepath_1 = joinpath(BASE_TEST_DIR, "data/test_dataset_collector_1.h5")
+    col_1 = build_debug_dataset_collector(output_filepath = filepath_1)
     rand!(col_1, 3)
 
-    col_2 = build_debug_dataset_collector(
-        output_filepath = "data/test_dataset_collector_2.h5")
+    filepath_2 = joinpath(BASE_TEST_DIR, "data/test_dataset_collector_2.h5")
+    col_2 = build_debug_dataset_collector(output_filepath = filepath_2)
     rand!(col_2, 3)
 
     @test col_1.roadway == col_2.roadway
     @test col_1.scene == col_2.scene
 
-    rm("data/test_dataset_collector_1.h5")
-    rm("data/test_dataset_collector_2.h5")
+    rm(filepath_1)
+    rm(filepath_2)
 end
 
 function test_generate_dataset_determinism()
-    filepath = "data/test_dataset_collector.h5"
+    filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
     feature_dim, target_dim = NUM_FEATURES, NUM_TARGETS
     col = build_debug_dataset_collector(
         output_filepath = filepath,
@@ -59,7 +60,7 @@ function test_generate_dataset_determinism()
 end
 
 function test_generate_dataset()
-    filepath = "data/test_dataset_collector.h5"
+    filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
     col = build_debug_dataset_collector(
         output_filepath = filepath,
         num_samples = 2,
@@ -100,7 +101,7 @@ function test_generate_dataset()
 end
 
 function test_generate_multi_timestep_dataset()
-    filepath = "data/test_dataset_collector.h5"
+    filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
     col = build_debug_dataset_collector(
         output_filepath = filepath,
         num_samples = 2,
