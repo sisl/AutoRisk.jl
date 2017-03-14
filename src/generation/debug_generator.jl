@@ -12,6 +12,9 @@ export
     hi_v_rear::Float64 = 1.
     lo_v_fore::Float64 = 0.
     hi_v_fore::Float64 = 0.
+    # step for the random values (set to the range to choose between end points)
+    s_eps::Float64 = 1e-8
+    v_eps::Float64 = 1e-8
 
     rng::MersenneTwister = MersenneTwister(1)
 end
@@ -24,10 +27,9 @@ function Base.rand!(gen::DebugSceneGenerator, scene::Scene,
     empty!(scene)
 
     # sample random values
-    eps = 1e-8
-    Δs = rand(gen.rng, gen.lo_Δs:eps:gen.hi_Δs)
-    rear_v = rand(gen.rng, gen.lo_v_rear:eps:gen.hi_v_rear)
-    fore_v = rand(gen.rng, gen.lo_v_fore:eps:gen.hi_v_fore)    
+    Δs = rand(gen.rng, gen.lo_Δs:gen.s_eps:gen.hi_Δs)
+    rear_v = rand(gen.rng, gen.lo_v_rear:gen.v_eps:gen.hi_v_rear)
+    fore_v = rand(gen.rng, gen.lo_v_fore:gen.v_eps:gen.hi_v_fore)    
 
     # rear vehicle (veh id 1)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))

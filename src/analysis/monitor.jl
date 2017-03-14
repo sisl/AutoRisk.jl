@@ -20,7 +20,7 @@ type Monitor
 end
 function monitor(mon::Monitor, col::DatasetCollector, seed::Int)
     for sub in mon.submonitors
-        monitor(sub, col, mon.output_directory, seed)
+        @spawn monitor(sub, col, mon.output_directory, seed)
     end
 end
 
@@ -49,6 +49,6 @@ function monitor(mon::ScenarioRecorderMonitor, col::DatasetCollector,
         end
         filename = "seed_$(seed)_veh_id_$(veh_id).gif"
         filepath = joinpath(output_directory, filename)
-        @spawn write(filepath, frames)
+        write(filepath, frames)
     end
 end

@@ -79,7 +79,6 @@ function bootstrap_targets!(eval::BootstrappingMonteCarloEvaluator,
             eval.prediction_features[:, veh_idx] = pull_features!(eval.ext, eval.rec, roadway, veh_idx, models)
             bootstrap_values = predict(eval.prediction_model, reshape(
                 eval.prediction_features[:, veh_idx], (1, input_dim)))
-
             eval.targets[:, veh_idx] += bootstrap_values[:]
             eval.targets[:, veh_idx] = min(max(
                 eval.targets[:, veh_idx], 0.0), 1.0)

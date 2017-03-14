@@ -156,7 +156,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
         simulate!(temp_scene, models, roadway, eval.rec, eval.sampling_time)
 
         # pastframe is the number of frames that have been simulated
-        pastframe = Int(eval.sampling_time / eval.rec.timestep)
+        pastframe = Int(round(eval.sampling_time / eval.rec.timestep))
 
         # get the initial extraction frame, this will typically be the first 
         # frame following the prime time, but in the case where no time is 
