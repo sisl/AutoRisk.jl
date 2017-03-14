@@ -3,7 +3,8 @@ urls = [
     "https://github.com/tawheeler/Vec.jl.git",
     "https://github.com/tawheeler/AutomotiveDrivingModels.jl.git",
     "https://github.com/tawheeler/AutoViz.jl.git",
-    "https://github.com/tawheeler/ForwardNets.jl.git"
+    "https://github.com/tawheeler/ForwardNets.jl.git",
+    "https://github.com/sisl/BayesNets.jl.git"
 ]
 
 for url in urls
@@ -15,6 +16,7 @@ for url in urls
 end
 
 Pkg.build("AutomotiveDrivingModels")
+Pkg.build("BayesNets")
 
 # checkout specific branches
 checkouts = [
