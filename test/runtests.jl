@@ -56,6 +56,11 @@ function runtests()
     println("test_bootstrapping_monte_carlo_evaluator.jl")
     include("evaluation/test_bootstrapping_monte_carlo_evaluator.jl")
 
+    # prediction
+    println("\n### prediction ###")
+    println("test_td_predictor.jl")
+    include("prediction/test_td_predictor.jl")
+
     # collection
     println("\n### collection ###")
     println("test_dataset.jl")

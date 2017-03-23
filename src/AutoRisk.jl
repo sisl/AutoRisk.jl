@@ -10,6 +10,7 @@ using Reexport
 @reexport using ForwardNets
 @reexport using HDF5
 @reexport using Parameters
+@reexport using GridInterpolations
 
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
@@ -55,6 +56,7 @@ include("generation/debug_generator.jl")
 
 # prediction
 include("prediction/neural_network.jl")
+include("prediction/td_predictor.jl")
 
 # evaluation
 include("evaluation/simulation.jl")
