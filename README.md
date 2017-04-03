@@ -8,7 +8,6 @@
 
 - [quickstart](#quickstart)
     - [install](#install)
-    - [collection](#collection)
 - [package outline](#package-outline)
     - [src](#src)
         - [generation](#generation)
@@ -21,7 +20,6 @@
     - [scripts](#scripts)
     - [test](#test)
     - [data](#data)
-    - [tests](#tests)
 
 <!-- /MarkdownTOC -->
 
