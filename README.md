@@ -39,7 +39,10 @@ using AutoRisk
 # check that all the tests pass
 Pkg.test("AutoRisk")
 ```
- 
+
+# package outline
+The goal of this package, "AutoRisk", is to make it easy to collect datasets focused on automotive risk. It builds on AutomotiveDrivingModels.jl
+
 ## src
 
 ### generation
