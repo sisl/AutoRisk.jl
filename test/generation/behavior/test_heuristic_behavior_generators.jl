@@ -1,13 +1,5 @@
 # using Base.Test
 # using AutoRisk
-# using AutomotiveDrivingModels
-
-# push!(LOAD_PATH, "../../../src")
-# include("../../../src/generation/behavior/parameters.jl")
-# include("../../../src/generation/behavior/behavior_generator.jl")
-# include("../../../src/generation/behavior/heuristic_behavior_generators.jl")
-
-# include("../../../src/utils/automotive.jl")
 
 function test_predefined_behavior_generator()
     idm_params = IDMParams(collect(0.:7.)...)
@@ -104,6 +96,22 @@ function test_uniform_behavior_generator()
     @test samp_params != samp_params_max
 end
 
+function test_correlated_behavior_generator()
+    min_p = get_passive_behavior_params()
+    max_p = get_aggressive_behavior_params()
+    context = IntegratedContinuous(.1, 1)
+    gen = UniformBehaviorGenerator(context, min_p, max_p)
+    srand(gen.rng, 1)
+    params_1 = rand(gen)
+    srand(gen.rng, 1)
+    params_2 = rand(gen)
+    srand(gen.rng, 2)
+    params_3 = rand(gen)
+    @test params_1 == params_2
+    @test params_2 != params_3
+end
+
 @time test_predefined_behavior_generator()
 @time test_predefined_behavior_generator_non_determinism()
 @time test_uniform_behavior_generator()
+@time test_correlated_behavior_generator()
