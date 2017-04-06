@@ -95,6 +95,7 @@ end
 function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene, 
         models::Dict{Int, DriverModel}, seed::Int64) 
     # set random seed
+    srand(seed)
     srand(gen.rng, seed)
     srand(gen.beh_gen.rng, seed)
     empty!(models)
@@ -125,7 +126,6 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             # randomly sample given the evidence and set the probability
             if veh_id == target_veh_id
                 rand!(a, gen.prop_bn, evidence)
-
                 # only the vehicle sampled from the proposal distribution 
                 # will have a weight != 1
                 gen.weights[veh_id] = pdf(gen.base_bn, a) / pdf(gen.prop_bn, a)
@@ -143,6 +143,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             params = rand(gen.beh_gen, values[:aggressiveness])
             models[veh_id] = build_driver(params, gen.beh_gen.context,
                 total_num_vehicles)
+            srand(models[veh_id], seed + Int(rand(gen.rng, 1:1e8)))
             if typeof(models[veh_id]) == ErrorableDriverModel
                 is_attentive = values[:isattentive] == 1 ? false : true
                 set_is_attentive!(models[veh_id], is_attentive)

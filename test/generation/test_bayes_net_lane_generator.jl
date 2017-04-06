@@ -69,38 +69,37 @@ function test_bayes_net_lane_gen_sampling()
     @test models[2].is_attentive == true
 end
 
-function test_bayes_net_data_collection()
+function run_bayes_net_collection()
     gen = build_debug_base_net_lane_gen()
     roadway = gen_straight_roadway(1)
     scene = Scene(2)
     models = Dict{Int,DriverModel}()
 
-    output_filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
     ext = MultiFeatureExtractor()
     context = IntegratedContinuous(.1, 1)
-    num_runs::Int64 = 2
+    num_runs = 2
     num_samples = 2
     seeds = collect(1:num_samples)
-    prime_time::Float64 = 2.
-    sampling_time::Float64 = 3.
+    prime_time = .5
+    sampling_time = .5
     max_num_veh = 2
     target_dim = NUM_TARGETS
     feature_dim = NUM_FEATURES
-    veh_idx_can_change::Bool = false
+    veh_idx_can_change = false
     feature_timesteps = 1
     chunk_dim = 1
     max_num_samples = num_samples * max_num_veh
     max_num_scenes = Int((prime_time + sampling_time) / .1)
-    rec::SceneRecord = SceneRecord(max_num_scenes, .1, max_num_veh)
-    features::Array{Float64} = Array{Float64}(feature_dim, feature_timesteps,
-        max_num_veh)
-    targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
-    rng::MersenneTwister = MersenneTwister(1)
+    rec = SceneRecord(max_num_scenes, .1, max_num_veh)
+    features = Array{Float64}(feature_dim, feature_timesteps, max_num_veh)
+    targets = Array{Float64}(target_dim, max_num_veh)
+    agg_targets = Array{Float64}(target_dim, max_num_veh)
+    rng = MersenneTwister(1)
     eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset
+    output_filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
     dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
         max_num_samples, chunk_dim = chunk_dim, use_weights = true)
 
@@ -112,15 +111,30 @@ function test_bayes_net_data_collection()
     features = read(file["risk/features"])
     targets = read(file["risk/targets"])
     weights = read(file["risk/weights"])
-
-    @test size(features) == (NUM_FEATURES, 1, 4)
-    @test size(targets) == (NUM_TARGETS, 4)
-    @test size(weights) == (1, 4)
-    @test !any(isnan(features))
-    @test !any(isnan(targets))
-    @test !any(isnan(weights))
-
+    close(file)
     rm(output_filepath)
+
+    return features, targets, weights
+end
+
+function test_bayes_net_data_collection()
+    srand(1)
+    features_1, targets_1, weights_1 = run_bayes_net_collection()
+
+    @test size(features_1) == (NUM_FEATURES, 1, 4)
+    @test size(targets_1) == (NUM_TARGETS, 4)
+    @test size(weights_1) == (1, 4)
+    @test !any(isnan(features_1))
+    @test !any(isnan(targets_1))
+    @test !any(isnan(weights_1))
+
+    # check deterministic
+    srand(1)
+    features_2, targets_2, weights_2 = run_bayes_net_collection()
+
+    @test features_1 ≈ features_2
+    @test targets_1 ≈ targets_2
+    @test weights_1 ≈ weights_2
 end
 
 

@@ -42,7 +42,6 @@ function test_build_driver()
 end
 
 function test_behavior_reset()
-
     idm_params = IDMParams(0.,1.,2.,3.,4.,5.,6.,7.)
     mobil_params = MOBILParams(collect(8.:10.)...)
     lat_params = LateralParams(11., 12., 13.)
