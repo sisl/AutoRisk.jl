@@ -61,7 +61,8 @@ function generate_dataset(col::DatasetCollector)
     for seed in col.seeds
         rand!(col, seed)
         evaluate!(col.eval, col.scene, col.models, col.roadway, seed)
-        update!(col.dataset, get_features(col.eval), get_targets(col.eval), seed)
+        update!(col.dataset, get_features(col.eval), get_targets(col.eval), 
+            get_weights(col.gen), seed)
         monitor(col.monitor, col, seed)
     end
     finalize!(col.dataset)

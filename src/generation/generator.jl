@@ -5,6 +5,8 @@ export
 
 abstract Generator
 
+get_weights(gen::Generator) = nothing
+
 type FactoredGenerator <: Generator
     roadway_gen::RoadwayGenerator
     scene_gen::SceneGenerator

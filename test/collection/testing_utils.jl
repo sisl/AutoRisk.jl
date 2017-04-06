@@ -24,7 +24,8 @@ function build_debug_dataset_collector(;
         roadway_length = 400.,
         roadway_radius = 200.,
         lon_σ = 0.,
-        lat_σ = 0.)
+        lat_σ = 0.,
+        use_weights = false)
 
     seeds = collect(1:num_samples)
     max_num_samples = num_samples * max_num_veh
@@ -76,7 +77,8 @@ function build_debug_dataset_collector(;
 
     # dataset
     dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
-        max_num_samples, chunk_dim = chunk_dim, init_file = init_file)
+        max_num_samples, chunk_dim = chunk_dim, init_file = init_file,
+        use_weights = use_weights)
 
     # collector
     col = DatasetCollector(seeds, gen, eval, dataset, scene, models, roadway)

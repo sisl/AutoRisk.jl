@@ -20,6 +20,8 @@ type Dataset
     target_dim::Int64
     targets::HDF5Dataset
 
+    weights::HDF5Dataset
+
     chunk_dim::Int64
     max_num_samples::Int64
 
@@ -27,6 +29,7 @@ type Dataset
     seeds::Vector{Int64}
     batch_idxs::Vector{Int64}
     attrs::Dict{String, Any}
+    use_weights::Bool
 
     """
     # Args:
@@ -38,11 +41,15 @@ type Dataset
         - chunk_dim: the dimension of the hdf5 chunk write sizes
         - init_file: whether to initialize the hdf5 file at construction
             set to false for parallel dataset gathering
+        - attrs: dictionary of attributes to add to the h5 file
+        - use_weights: wether or not likelihood weights should be included 
+            with the dataset
     """
     function Dataset(filepath::String, feature_dim::Int64, 
             feature_timesteps::Int64, target_dim::Int64,
             max_num_samples::Int64; chunk_dim::Int64 = 100, 
-            init_file::Bool = true, attrs::Dict = Dict())
+            init_file::Bool = true, attrs::Dict = Dict(), 
+            use_weights::Bool = false)
         retval = new()
         retval.filepath = filepath
         retval.feature_dim = feature_dim
@@ -53,6 +60,7 @@ type Dataset
         retval.next_idx = 1
         retval.seeds = Vector{Int64}(0)
         retval.batch_idxs = Vector{Int64}(0)
+        retval.use_weights = use_weights
 
         # convert all the attrs keys to strings
         string_key_attrs = Dict{String, Any}()
@@ -85,18 +93,29 @@ function initialize!(dataset::Dataset)
     # create the file and sub-datasets
     h5file = h5open(dataset.filepath, "w")
     risk_dataset = g_create(h5file, "risk")
+
     features = d_create(risk_dataset, "features", datatype(Float64), 
                 dataspace(dataset.feature_dim, dataset.feature_timesteps, 
                 dataset.max_num_samples), 
                 "chunk", (dataset.feature_dim, dataset.feature_timesteps, dataset.chunk_dim))
+    
     targets = d_create(risk_dataset, "targets", datatype(Float64), 
                 dataspace(dataset.target_dim, dataset.max_num_samples), 
                 "chunk", (dataset.target_dim, dataset.chunk_dim))
 
-    # set the values in the dataset for easier access later
+    # set the file in the dataset for easier access later
     dataset.file = h5file
     dataset.features = dataset.file["risk/features"]
     dataset.targets = dataset.file["risk/targets"]
+
+    # optional inclusion of weights
+    if dataset.use_weights
+        weights = d_create(risk_dataset, "weights", datatype(Float64), 
+                    dataspace(1, dataset.max_num_samples), 
+                    "chunk", (1, dataset.chunk_dim))
+        dataset.weights = dataset.file["risk/weights"]
+    end
+    
 end
 
 """
@@ -134,6 +153,35 @@ function update!(dataset::Dataset, features::Array{Float64},
     push!(dataset.seeds, seed)
 end
 
+function update!(dataset::Dataset, features::Array{Float64}, 
+        targets::Array{Float64}, weights::Array{Float64}, seed::Int64)
+    @assert dataset.use_weights "this dataset is not using weights"
+    # check for delayed initialization of the h5 file 
+    # and initialize if not yet created (should occur
+    # in the parallel case)
+    if !isdefined(dataset, :file)
+        initialize!(dataset)
+    end
+
+    # only add the weights, and then call the other update! to do the rest
+    # in particular, don't update the next_idx
+    num_samples = size(weights, 2)
+    s = dataset.next_idx
+    e = dataset.next_idx + num_samples - 1
+    dataset.weights[:, s:e] = weights
+
+    update!(dataset::Dataset, features::Array{Float64}, targets::Array{Float64},
+        seed::Int64)
+end
+
+# this allows for a unified interface between collector and dataset
+# is weights is void, then dataset is not using weights
+function update!(dataset::Dataset, features::Array{Float64}, 
+        targets::Array{Float64}, weights::Void, seed::Int64)
+    update!(dataset::Dataset, features::Array{Float64}, targets::Array{Float64},
+        seed::Int64)
+end
+
 function write_attrs(dataset::Dataset)
     for (k,v) in dataset.attrs
         if typeof(v) == Bool
@@ -158,6 +206,10 @@ function finalize!(dataset::Dataset)
     set_dims!(dataset.features, (dataset.feature_dim, dataset.feature_timesteps, 
         dataset.next_idx - 1))
     set_dims!(dataset.targets, (dataset.target_dim, dataset.next_idx - 1))
+
+    if dataset.use_weights
+        set_dims!(dataset.weights, (1, dataset.next_idx - 1))
+    end
     
     # add seeds and batch idxs only at the end
     d_write(dataset.file, "risk/batch_idxs", dataset.batch_idxs)
@@ -191,6 +243,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
     num_features, num_targets, feature_timesteps = -1, -1, -1
     num_samples = 0
     attributes = Dict{String, Any}()
+    use_weights = false
 
     for (idx, filepath) in enumerate(input_filepaths)
         h5open(filepath, "r") do proc_file
@@ -199,6 +252,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
                 feature_timesteps = size(proc_file["risk/features"], 2)
                 num_targets = size(proc_file["risk/targets"], 1)
                 attributes = h5readattr(filepath, "risk")
+                use_weights = exists(proc_file, "risk/weights")
             end
 
             num_proc_features, num_proc_timesteps, num_proc_samples = size(
@@ -228,6 +282,10 @@ function aggregate_datasets(input_filepaths::Vector{String},
         datatype(Float64), dataspace(num_features, feature_timesteps, num_samples))
     target_set = d_create(risk_dataset, "targets", 
         datatype(Float64), dataspace(num_targets, num_samples))
+    if use_weights
+        weight_set = d_create(risk_dataset, "weights", 
+        datatype(Float64), dataspace(1, num_samples))
+    end
     seeds = Vector{Int64}()
     batch_idxs = Vector{Int64}()
 
@@ -240,6 +298,9 @@ function aggregate_datasets(input_filepaths::Vector{String},
         eidx = sidx + num_proc_samples
         feature_set[:, :, sidx + 1:eidx] = read(proc_file["risk/features"])
         target_set[:, sidx + 1:eidx] = read(proc_file["risk/targets"])
+        if use_weights
+            weight_set[:, sidx + 1:eidx] = read(proc_file["risk/weights"])
+        end
         sidx += num_proc_samples
 
         # collect seeds and batch_idxs

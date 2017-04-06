@@ -57,7 +57,7 @@ type BayesNetLaneGenerator <: Generator
             num_veh_per_lane::Int, beh_gen::CorrelatedBehaviorGenerator, 
             rng = MersenneTwister(1))
         return new(base_bn, prop_bn, assignment_sampler, dynamics, 
-            ones(num_veh_per_lane), num_veh_per_lane, beh_gen, rng)
+            ones(1, num_veh_per_lane), num_veh_per_lane, beh_gen, rng)
     end
 end
 
@@ -97,11 +97,13 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
     # set random seed
     srand(gen.rng, seed)
     srand(gen.beh_gen.rng, seed)
+    empty!(models)
+    empty!(scene)
 
     # reallocate weight vector if it is different
     total_num_veh = nlanes(roadway) * gen.num_veh_per_lane
     if total_num_veh != length(gen.weights)
-        gen.weights = ones(total_num_veh)
+        gen.weights = ones(1, total_num_veh)
     end
 
     # assume that the vehicle with elevated target probability is the one 

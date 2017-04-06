@@ -77,7 +77,13 @@ function observe!(model::ErrorableDriverModel, scene::Scene, roadway::Roadway,
 
     return model
 end
-Base.rand(model::ErrorableDriverModel) = rand(model.driver)
+function Base.rand(model::ErrorableDriverModel)
+    a = rand(model.driver)
+    if isnan(a.a_lat) || isnan(a.a_lon)
+        return LatLonAccel(0., 0.)
+    end
+    return a
+end
 Distributions.pdf(model::ErrorableDriverModel, a::LatLonAccel) = pdf(
     model.driver, a)
 Distributions.logpdf(model::ErrorableDriverModel, a::LatLonAccel) = logpdf(
