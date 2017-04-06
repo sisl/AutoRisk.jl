@@ -83,10 +83,7 @@ type CorrelatedBehaviorGenerator <: BehaviorGenerator
     end
 end
 
-function Base.rand(gen::CorrelatedBehaviorGenerator)
-    # sample aggressiveness
-    agg = rand(gen.rng)
-
+function Base.rand(gen::CorrelatedBehaviorGenerator, agg::Float64=rand(gen.rng))
     # unpack
     min_p, max_p = gen.min_p, gen.max_p 
 
@@ -130,4 +127,3 @@ function Base.rand(gen::CorrelatedBehaviorGenerator)
 
     return p
 end
-

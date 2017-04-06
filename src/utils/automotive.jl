@@ -17,7 +17,7 @@ AutomotiveDrivingModels Core additional functionality
 
 ### Roadway
 function nlanes(roadway::Roadway)
-    return length(roadway.segments[0].lanes)
+    return length(roadway.segments[1].lanes)
 end
 
 function stadium_roadway_length(roadway::Roadway)
@@ -405,3 +405,7 @@ get_driver(model::DriverModel) = model
 
 ### Context
 get_timestep(context::IntegratedContinuous) = context.Δt
+
+
+
+

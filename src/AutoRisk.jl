@@ -22,6 +22,7 @@ import Distributions: rand, pdf, logpdf
 include("utils/automotive.jl")
 include("utils/flags.jl")
 include("utils/utils.jl")
+include("utils/assignment_sampler.jl")
 
 # extraction
 include("extraction/lidar_sensors.jl")
@@ -52,6 +53,7 @@ include("generation/behavior/load_policy.jl")
 include("generation/behavior/learned_behavior_generators.jl")
 
 ## additional generation
+include("generation/bayes_net_lane_generator.jl")
 include("generation/debug_generator.jl")
 
 # prediction

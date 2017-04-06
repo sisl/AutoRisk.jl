@@ -67,18 +67,21 @@ function update!(predictor::TDPredictor, states::Array{Float64},
     target_dim, num_targets = size(values)
     assert(num_states == num_targets)
     # for each state, interpolate it, compute it's td error, perform an update
+    total_td_error = 0
     for sidx in 1:num_states
         inds, ws = interpolants(predictor.grid, states[:, sidx])
         for tidx in 1:predictor.target_dim
             for (ind, w) in zip(inds, ws)
                 # this is discounting the reward and the value, which only makes 
                 # sense if the reward is received in transitioning to s'
-                td_error = (predictor.discount * values[tidx, sidx] 
+                td_error = w * (predictor.discount * values[tidx, sidx] 
                     - predictor.values[tidx, ind])
-                predictor.values[tidx, ind] += w * predictor.lr * td_error
+                predictor.values[tidx, ind] += predictor.lr * td_error
+                total_td_error += td_error
             end
         end
     end
+    return total_td_error
 end
 
 reset!(predictor::TDPredictor) = fill!(predictor.values, 0)

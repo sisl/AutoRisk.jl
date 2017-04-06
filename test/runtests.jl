@@ -15,6 +15,8 @@ function runtests()
     include("utils/test_utils.jl")
     println("test_automotive.jl")
     include("utils/test_automotive.jl")
+    println("test_assignment_sampler.jl")
+    include("utils/test_assignment_sampler.jl")
 
     # extraction
     println("\n### extraction ###")
@@ -46,6 +48,9 @@ function runtests()
     include("generation/behavior/test_heuristic_behavior_generators.jl")
     println("test_debug_generator.jl")
     include("generation/test_debug_generator.jl")
+    ## combined 
+    println("test_bayes_net_lane_generator.jl")
+    include("generation/test_bayes_net_lane_generator.jl")
 
     # evaluation
     println("\n### evaluation ###")

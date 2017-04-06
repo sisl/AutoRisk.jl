@@ -8,7 +8,8 @@ export
     uniform,
     get_aggressive_behavior_params,
     get_passive_behavior_params,
-    get_normal_behavior_params
+    get_normal_behavior_params,
+    infer_correlated_aggressiveness
 
 function uniform(rng::MersenneTwister, low::Float64, high::Float64)
     return low + rand(rng) * (high - low)
@@ -196,4 +197,17 @@ function get_normal_behavior_params(;
         overall_response_time = overall_response_time,
         err_p_a_to_i = err_p_a_to_i,
         err_p_i_to_a = err_p_i_to_a)
+end
+
+# infer the aggressiveness assuming it was generated from the correlated
+# model from the politeness
+function infer_correlated_aggressiveness(politeness::Float64, 
+        passive_politeness::Float64=.5, aggressive_politeness::Float64=.1)
+    return ((aggressive_politeness - politeness) 
+        / (aggressive_politeness - passive_politeness))
+end
+function infer_correlated_aggressiveness(politeness::Array{Float64}, 
+        passive_politeness::Float64=.5, aggressive_politeness::Float64=.1)
+    return ((aggressive_politeness .- politeness) 
+        ./ (aggressive_politeness - passive_politeness))
 end

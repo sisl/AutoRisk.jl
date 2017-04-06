@@ -1,8 +1,9 @@
 export 
     ErrorableDriverModel,
     get_name,
-    action_context
+    action_context,
     set_desired_speed!,
+    set_is_attentive!,
     observe!,
     rand,
     pdf,
@@ -45,6 +46,9 @@ action_context(model::ErrorableDriverModel) = action_context(model.driver)
 set_desired_speed!(model::ErrorableDriverModel, v_des::Float64) = set_desired_speed!(
     model.driver, v_des)
 get_driver(model::ErrorableDriverModel) = get_driver(model.driver)
+function set_is_attentive!(model::ErrorableDriverModel, v::Bool)
+    model.is_attentive = v
+end
 Base.srand(model::ErrorableDriverModel, seed::Int) = srand(model.rng, seed)
 function can_become_inattentive(model::ErrorableDriverModel)
     base_driver = get_driver(model)
