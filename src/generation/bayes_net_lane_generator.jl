@@ -28,7 +28,7 @@ function Base.rand!(a::Assignment, bn::BayesNet, evidence::Assignment)
     return a
 end
 
-type BayesNetLaneGenerator <: SceneGenerator
+type BayesNetLaneGenerator <: Generator
     base_bn::BayesNet
     prop_bn::BayesNet
     assignment_sampler::AssignmentSampler

@@ -52,7 +52,8 @@ include("generation/behavior/heuristic_behavior_generators.jl")
 include("generation/behavior/load_policy.jl")
 include("generation/behavior/learned_behavior_generators.jl")
 
-## additional generation
+## additional generation 
+include("generation/generator.jl")
 include("generation/bayes_net_lane_generator.jl")
 include("generation/debug_generator.jl")
 

@@ -49,11 +49,14 @@ function build_debug_dataset_collector(;
         max_init_dist,
         rng)
 
+    # behavior gen
     params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]
     weights = WeightVec([1.])
     context = IntegratedContinuous(.1, 1)
     behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
     models = Dict{Int, DriverModel}()
+
+    gen = FactoredGenerator(roadway_gen, scene_gen, behavior_gen)
 
     # evaluator
     ext = MultiFeatureExtractor()
@@ -76,8 +79,7 @@ function build_debug_dataset_collector(;
         max_num_samples, chunk_dim = chunk_dim, init_file = init_file)
 
     # collector
-    col = DatasetCollector(seeds, roadway_gen, scene_gen, behavior_gen, eval,
-        dataset, scene, models, roadway)
+    col = DatasetCollector(seeds, gen, eval, dataset, scene, models, roadway)
 
     return col
 end

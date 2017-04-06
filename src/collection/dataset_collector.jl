@@ -11,9 +11,7 @@ export
 type DatasetCollector
     seeds::Vector{Int64}
 
-    roadway_gen::RoadwayGenerator
-    scene_gen::SceneGenerator
-    behavior_gen::BehaviorGenerator
+    gen::Generator
     eval::Evaluator
     dataset::Dataset
 
@@ -23,13 +21,12 @@ type DatasetCollector
 
     id::Int
     monitor::Any
-    function DatasetCollector(seeds::Vector{Int64}, roadway_gen::RoadwayGenerator,
-            scene_gen::SceneGenerator, behavior_gen::BehaviorGenerator,
+    function DatasetCollector(seeds::Vector{Int64}, gen::Generator,
             eval::Evaluator, dataset::Dataset, scene::Scene, 
             models::Dict{Int, DriverModel}, roadway::Roadway; id::Int = 0,
             monitor::Any = nothing)
-        return new(seeds, roadway_gen, scene_gen, behavior_gen, eval, dataset, 
-            scene, models, roadway, id, monitor)
+        return new(seeds, gen, eval, dataset, scene, models, roadway, id, 
+            monitor)
     end
 end
 
@@ -43,9 +40,7 @@ end
 """
 function Base.rand!(col::DatasetCollector, seed::Int64)
     info("id $(col.id) collecting seed $(seed)")
-    rand!(col.roadway_gen, col.roadway, seed)
-    rand!(col.scene_gen, col.scene, col.roadway, seed)
-    rand!(col.behavior_gen, col.models, col.scene, seed)
+    rand!(col.gen, col.roadway, col.scene, col.models, seed)
 end
 
 """
