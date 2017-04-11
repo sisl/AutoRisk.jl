@@ -7,7 +7,7 @@ function test_simple_learning()
     maxpos = 5
     nbins = 6
     bins = linspace(minpos, maxpos, nbins)
-    null_bin = linspace(0,0,1) # mocking feature not considered
+    null_bin = linspace(0,2,2) # mocking feature not considered
     grid = RectangleGrid(bins, bins, null_bin)
     target_dim = 2
     predictor = TDPredictor(grid, target_dim, discount = 0.5)
