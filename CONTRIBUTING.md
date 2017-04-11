@@ -1,0 +1,1 @@
+This file outline guidelines for contributing to the project
