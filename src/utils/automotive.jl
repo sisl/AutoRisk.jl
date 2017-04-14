@@ -136,30 +136,30 @@ function Base.:(==)(v1::Vehicle, v2::Vehicle)
 end
 
 
-function Base.show(io::IO, vehicle::Vehicle)
-    print(io, "Vehicle Def:\n$(vehicle.def)")
-    print(io, "\nVehicle State:\n$(vehicle.state)")
-end
+# function Base.show(io::IO, vehicle::Vehicle)
+#     print(io, "Vehicle Def:\n$(vehicle.def)")
+#     print(io, "\nVehicle State:\n$(vehicle.state)")
+# end
 
-function Base.show(io::IO, def::VehicleDef)
-    print(io, "\tid: $(def.id)")
-    print(io, "\tclass: $(def.class)")
-    print(io, "\tlength: $(def.length)")
-    print(io, "\twidth: $(def.width)")
-end
+# function Base.show(io::IO, def::VehicleDef)
+#     print(io, "\tid: $(def.id)")
+#     print(io, "\tclass: $(def.class)")
+#     print(io, "\tlength: $(def.length)")
+#     print(io, "\twidth: $(def.width)")
+# end
 
-function Base.show(io::IO, state::VehicleState)
-    print(io, "\tglobal position: $(state.posG)\n")
-    print(io, "\tlane-relative position:\n$(state.posF)\n")
-    print(io, "\tvelocity: $(state.v)\n")
-end
+# function Base.show(io::IO, state::VehicleState)
+#     print(io, "\tglobal position: $(state.posG)\n")
+#     print(io, "\tlane-relative position:\n$(state.posF)\n")
+#     print(io, "\tvelocity: $(state.v)\n")
+# end
 
-function Base.show(io::IO, f::Frenet)
-    print(io, "\t\troadind: $(f.roadind)\n")
-    print(io, "\t\tdistance along lane: $(f.s)\n")
-    print(io, "\t\tlane offset: $(f.t)\n")
-    print(io, "\t\tlane-relative heading: $(f.ϕ)")
-end
+# function Base.show(io::IO, f::Frenet)
+#     print(io, "\t\troadind: $(f.roadind)\n")
+#     print(io, "\t\tdistance along lane: $(f.s)\n")
+#     print(io, "\t\tlane offset: $(f.t)\n")
+#     print(io, "\t\tlane-relative heading: $(f.ϕ)")
+# end
 
 ### Scene
 function Base.:(==)(s1::Scene, s2::Scene)
