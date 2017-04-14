@@ -8,11 +8,19 @@ urls = [
     "https://github.com/sisl/GridInterpolations.jl.git"
 ]
 
+packages = keys(Pkg.installed())
 for url in urls
     try
-        Pkg.clone(url)
+        id1 = search(url, "https://github.com/")[end]
+	offset = search(url[(id1[end]+1):end], "/")[end]
+        package = url[(id1+offset+1): (search(url,".jl.git")[1]-1) ]
+        if !in(package, packages)
+          Pkg.clone(url)
+        else
+          println("$(package) already exists. Not cloning.")
+        end
     catch e
-        println("Exception when cloning $(url): $(e)")  
+        println("Exception when cloning $(url): $(e)")
     end
 end
 
