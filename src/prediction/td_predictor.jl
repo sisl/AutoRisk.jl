@@ -2,7 +2,9 @@ export
     TDPredictor,
     predict,
     update!,
-    reset!
+    reset!,
+    step,
+    get_feedback
 
 """
 Description:
@@ -15,11 +17,14 @@ type TDPredictor <: PredictionModel
     target_dim::Int # dimension of output
     lr::Float64 # learning rate for td update
     discount::Float64 # discount rate (not entirely sound here)
+    tmax::Int # max timesteps per episode for the learner
+    td_errors::Dict{Array{Float64}, Float64} # maps states to errors
     function TDPredictor(grid::RectangleGrid, target_dim::Int;
-            lr::Float64 = .1, discount::Float64 = 1.)
+            lr::Float64 = .1, discount::Float64 = 1., tmax::Int = 1)
         values = zeros(Float64, target_dim, length(grid))
         targets = zeros(Float64, target_dim)
-        return new(grid, values, targets, target_dim, lr, discount)
+        td_errors = Dict{Array{Float64}, Float64}()
+        return new(grid, values, targets, target_dim, lr, discount, tmax, td_errors)
     end
 end
 
@@ -82,6 +87,43 @@ function update!(predictor::TDPredictor, states::Array{Float64},
         end
     end
     return total_td_error
+end
+
+function step(predictor::TDPredictor, x::Array{Float64}, a::Array{Float64}, 
+        r::Array{Float64}, nx::Array{Float64}, done::Bool)
+
+    # update 
+    total_td_error = 0
+    inds, ws = interpolants(predictor.grid, x)
+    for (ind, w) in zip(inds, ws)
+        # target value
+        target = r
+        if !done
+            target += predictor.discount * predict(predictor, x)
+        end
+
+        # update
+        td_error = w * (target - predict(predictor, nx))
+        predictor.values[:, ind] += predictor.lr * td_error
+        total_td_error += td_error
+    end
+
+    # store td-error associated with this state for later use as feedback
+    predictor.td_errors[x] = sum(abs(total_td_error))
+end
+
+function mydictcopy(src::Dict{Array{Float64},Float64}, dest::Dict{Array{Float64},Float64})
+    for (k,v) in src
+        dest[k] = v
+    end
+    dest
+end
+
+function get_feedback(predictor::TDPredictor)
+    td_errors = Dict{Array{Float64},Float64}()
+    mydictcopy(predictor.td_errors, td_errors)
+    empty!(predictor.td_errors)
+    return td_errors
 end
 
 reset!(predictor::TDPredictor) = fill!(predictor.values, 0)

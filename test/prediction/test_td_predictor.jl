@@ -68,4 +68,27 @@ function test_simple_learning()
     # PGFPlots.save("/Users/wulfebw/Desktop/test2.pdf", img)
 end
 
+function test_step()
+    srand(0)
+    minpos = 0
+    maxpos = 5
+    nbins = 6
+    bins = linspace(minpos, maxpos, nbins)
+    grid = RectangleGrid(bins, bins)
+    target_dim = 2
+    predictor = TDPredictor(grid, target_dim, lr = 1., discount = 0.5)
+
+    x = [0.,0.]
+    a = [0.]
+    r = [1., 1.]
+    nx = [0.,0.]
+    done = false
+    AutoRisk.step(predictor, x, a, r, nx, done)
+    @test predict(predictor, x) == r
+
+    AutoRisk.step(predictor, x, a, r, nx, done)
+    @test predict(predictor, x) == r + .5 * r
+end
+
 @time test_simple_learning()
+@time test_step()
