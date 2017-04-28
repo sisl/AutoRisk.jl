@@ -9,7 +9,7 @@ export
     logpdf
 
 import AutomotiveDrivingModels: 
-    LongitudinalDriverModel, 
+    LaneFollowingDriver, 
     get_name,
     set_desired_speed!,
     track_longitudinal!,
@@ -18,7 +18,7 @@ import AutomotiveDrivingModels:
 """
 IDM with a reaction time delay
 """
-type DelayedIntelligentDriverModel <: LongitudinalDriverModel
+type DelayedIntelligentDriverModel <: LaneFollowingDriver
     a::Float64 # predicted acceleration
     σ::Float64 # optional stdev on top of the model, set to zero or NaN for deterministic behavior
 

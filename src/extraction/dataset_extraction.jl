@@ -53,7 +53,6 @@ function extract_vehicle_frame_targets!(rec::SceneRecord, roadway::Roadway,
     # hard brake
     hard_brake = executed_hard_brake(rec, roadway, veh_idx, pastframe, 
         hard_brake_threshold = -3., n_past_frames = 2)
-
     if hard_brake
         targets[4, target_idx] = 1.
     end
@@ -91,7 +90,7 @@ function extract_frame_targets!(rec::SceneRecord, roadway::Roadway,
         targets::Array{Float64}, veh_id_to_idx::Dict{Int,Int}, 
         veh_idx_can_change::Bool, done::Set{Int}, pastframe::Int64)
 
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     for (veh_id, orig_veh_idx) in veh_id_to_idx
         # track which vehicles have left the scene or have already 
         # collided and skip them once either has occurred
@@ -105,7 +104,7 @@ function extract_frame_targets!(rec::SceneRecord, roadway::Roadway,
         # because if it cannot we can save a lot of time by not 
         # recomputing it for each frame
         if veh_idx_can_change
-            veh_idx = get_index_of_first_vehicle_with_id(scene, veh_id)
+            veh_idx = findfirst(scene, veh_id)
             # if the vehicle left the scene, then we assume that 
             # it will not reenter and add it to the done set
             in_scene = veh_idx == 0 ? false : true
@@ -150,7 +149,7 @@ end
 """
 function extract_targets!(rec::SceneRecord, roadway::Roadway, 
         targets::Array{Float64}, veh_id_to_idx::Dict{Int, Int},
-        veh_idx_can_change::Bool, start_frame::Int64 = rec.nscenes - 1;
+        veh_idx_can_change::Bool, start_frame::Int64 = rec.nframes - 1;
         done::Set{Int64} = Set{Int64}())
     # reset targets container and done set
     fill!(targets, 0)
@@ -175,7 +174,7 @@ function pull_features!(ext::AbstractFeatureExtractor, rec::SceneRecord,
     # extract features for each vehicle in the scene for each timestep 
     # inserting into features in past to present order
     for t in 1:steps
-        for (vidx, veh) in enumerate(get_scene(rec, -(t - 1)))
+        for (vidx, veh) in enumerate(rec[-(t - 1)])
             features[:, steps - t + 1, vidx] = pull_features!(
                 ext, rec, roadway, vidx, models, -(t-1))
         end

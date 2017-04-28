@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 276
+# const NUM_FEATURES = 268
 # const NUM_TARGETS = 5
 # BASE_TEST_DIR = ".."
 
@@ -49,8 +49,7 @@ function build_debug_base_net_lane_gen()
     num_veh_per_lane = 2
     min_p = get_passive_behavior_params(err_p_a_to_i = .5)
     max_p = get_aggressive_behavior_params(err_p_a_to_i = .5)
-    context = IntegratedContinuous(.1, 1)
-    behgen = CorrelatedBehaviorGenerator(context, min_p, max_p)
+    behgen = CorrelatedBehaviorGenerator(min_p, max_p)
     gen = BayesNetLaneGenerator(base_bn, prop_bn, sampler, dynamics, num_veh_per_lane, 
         behgen)
     return gen
@@ -76,7 +75,6 @@ function run_bayes_net_collection()
     models = Dict{Int,DriverModel}()
 
     ext = MultiFeatureExtractor()
-    context = IntegratedContinuous(.1, 1)
     num_runs = 2
     num_samples = 2
     seeds = collect(1:num_samples)
@@ -95,7 +93,7 @@ function run_bayes_net_collection()
     targets = Array{Float64}(target_dim, max_num_veh)
     agg_targets = Array{Float64}(target_dim, max_num_veh)
     rng = MersenneTwister(1)
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset

@@ -27,13 +27,13 @@ function Base.rand!(gen::BehaviorGenerator, models::Dict{Int, DriverModel},
     srand(seed)
     srand(gen.rng, seed)
     empty!(models)
-    for veh in scene.vehicles
+    for veh in scene.entities
         params = rand(gen)
-        models[veh.def.id] = build_driver(params, gen.context, length(scene))
+        models[veh.id] = build_driver(params, length(scene))
         # set the random seed of the driver, but not to just the seed value 
         # otherwise all the vehicles in the scenario will have the same random 
         # seed, which may be bad
-        srand(models[veh.def.id], seed + Int(rand(gen.rng, 1:1e8)))
+        srand(models[veh.id], seed + Int(rand(gen.rng, 1:1e8)))
     end
 end
 
@@ -44,13 +44,11 @@ end
 
 # Args:
     - p: params to use
-    - context: context for driver to use
     - num_vehicles: number of vehicles in the scene
 """
-function build_driver(p::BehaviorParams, context::IntegratedContinuous,
-        num_vehicles::Int64)
+function build_driver(p::BehaviorParams, num_vehicles::Int64, Δt::Float64 = .1)
     if p.lon_response_time != 0.0
-        mlon = DelayedIntelligentDriverModel(context.Δt,
+        mlon = DelayedIntelligentDriverModel(Δt,
             k_spd = p.idm.k_spd,
             δ = p.idm.δ,
             T = p.idm.T,
@@ -75,12 +73,12 @@ function build_driver(p::BehaviorParams, context::IntegratedContinuous,
         kp = p.lat.kp, 
         kd = p.lat.kd)
     mlat.σ = p.lat.σ
-    mlane = MOBIL(context,
+    mlane = MOBIL(.1,
         safe_decel = p.mobil.safe_decel,
         politeness = p.mobil.politeness,
         advantage_threshold = p.mobil.advantage_threshold)
-    model = Tim2DDriver(context, 
-        rec = SceneRecord(1, context.Δt, num_vehicles), 
+    model = Tim2DDriver(Δt, 
+        rec = SceneRecord(1, Δt, num_vehicles), 
         mlat = mlat, 
         mlon = mlon, 
         mlane = mlane)

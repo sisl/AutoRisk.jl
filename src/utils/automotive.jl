@@ -112,8 +112,7 @@ end
 
 ### Vehicle
 function Base.:(==)(vd1::VehicleDef, vd2::VehicleDef)
-    return (vd1.id == vd2.id 
-            && vd1.class == vd2.class 
+    return (vd1.class == vd2.class 
             && vd1.length == vd2.length
             && vd1.width == vd2.width)
 end
@@ -163,7 +162,7 @@ end
 
 ### Scene
 function Base.:(==)(s1::Scene, s2::Scene)
-    if s1.n_vehicles != s2.n_vehicles
+    if s1.n != s2.n
         return false
     end
 
@@ -177,7 +176,7 @@ function Base.:(==)(s1::Scene, s2::Scene)
 end
 
 function Base.show(io::IO, scene::Scene)
-    for (i, veh) in enumerate(scene.vehicles)
+    for (i, veh) in enumerate(scene)
         println(io, "vehicle $(i):\n$(veh)")
     end
 end
@@ -199,11 +198,11 @@ function push_forward_records!(rec::SceneRecord, pastframe::Int)
     if pastframe == 0
         return rec
     end
-    s, e = 1 - pastframe, rec.nscenes
+    s, e = 1 - pastframe, rec.nframes
     for (i, past_index) in enumerate(s:e)
-        copy!(rec.scenes[i], rec.scenes[past_index])
+        copy!(rec.frames[i], rec.frames[past_index])
     end
-    rec.nscenes = e - s + 1
+    rec.nframes = e - s + 1
     return rec
 end
 
@@ -233,20 +232,18 @@ function inverse_ttc_to_ttc(inv_ttc::FeatureValue; censor_hi::Float64 = 30.0)
 end
 
 function changed_lanes_recently(rec::SceneRecord, roadway::Roadway, 
-        vehicle_index::Int, pastframe::Int = 0; lane_change_timesteps = 10,
-        lane_change_heading_threshold = .1)
+        vehicle_index::Int, pastframe::Int = 0; lane_change_timesteps = 10)
     # get final information
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     veh = scene[vehicle_index]
-    veh_id = veh.def.id
+    veh_id = veh.id
     final_lane = veh.state.posF.roadind.tag.lane
 
     # step backward to check for lane change
     for dt in 1:lane_change_timesteps
         if pastframe_inbounds(rec, pastframe - dt)
-            veh_state = get_vehiclestate(rec, veh_id, pastframe - dt)
-            if (veh_state.posF.roadind.tag.lane != final_lane
-                || abs(veh_state.posF.ϕ) > lane_change_heading_threshold)
+            veh_state = rec[pastframe - dt][vehicle_index].state
+            if veh_state.posF.roadind.tag.lane != final_lane
                 return true
             end
         end
@@ -257,7 +254,7 @@ end
 function get_collision_type(rec::SceneRecord, roadway::Roadway, 
         vehicle_index::Int, pastframe::Int = 0)
     # get collision result from scene
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     collision = get_first_collision(scene, vehicle_index)
 
     # label and return the collision
@@ -313,8 +310,11 @@ function executed_hard_brake(rec::SceneRecord, roadway::Roadway,
     hard_brake = true
     for dt in 0:(n_past_frames - 1)
         if pastframe_inbounds(rec, pastframe - dt)
+            frame_accelfs = convert(Float64, get(
+                ACCFS, rec, roadway, vehicle_index, pastframe - dt))
             frame_accel = convert(Float64, get(
                 ACC, rec, roadway, vehicle_index, pastframe - dt))
+            frame_accel = min(frame_accel, frame_accelfs)
             if frame_accel > hard_brake_threshold
                 hard_brake = false
                 break
@@ -386,7 +386,7 @@ end
 Base.srand(model::DriverModel, seed::Int) = model
 
 # adding σ to static longitudinal 
-type StaticLongitudinalDriver <: LongitudinalDriverModel
+type StaticLongitudinalDriver <: LaneFollowingDriver
     a::Float64
     σ::Float64
     StaticLongitudinalDriver(a::Float64=0.0, σ::Float64=0.0) = new(a, σ)
@@ -402,9 +402,6 @@ end
 
 # get_driver
 get_driver(model::DriverModel) = model
-
-### Context
-get_timestep(context::IntegratedContinuous) = context.Δt
 
 
 

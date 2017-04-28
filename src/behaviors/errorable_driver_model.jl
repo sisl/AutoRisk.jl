@@ -1,7 +1,6 @@
 export 
     ErrorableDriverModel,
     get_name,
-    action_context,
     set_desired_speed!,
     set_is_attentive!,
     observe!,
@@ -11,7 +10,7 @@ export
     srand
 
 import AutomotiveDrivingModels: 
-    LongitudinalDriverModel,
+    LaneFollowingDriver,
     get_name,
     set_desired_speed!,
     track_longitudinal!,
@@ -27,7 +26,7 @@ bernoulli_sample(rng::MersenneTwister, p::Float64) = rand(rng) < p
 Description:
     - Basic errorable driver model. Suffers from inattentiveness.
 """
-type ErrorableDriverModel <: DriverModel{LatLonAccel, ActionContext}
+type ErrorableDriverModel <: DriverModel{LatLonAccel}
     driver::DriverModel
     is_attentive::Bool
     p_a_to_i::Float64 # p(true) = p(attentive -> inattentive)
@@ -42,7 +41,6 @@ type ErrorableDriverModel <: DriverModel{LatLonAccel, ActionContext}
 end
 
 get_name(::ErrorableDriverModel) = "ErrorableDriverModel"
-action_context(model::ErrorableDriverModel) = action_context(model.driver)
 set_desired_speed!(model::ErrorableDriverModel, v_des::Float64) = set_desired_speed!(
     model.driver, v_des)
 get_driver(model::ErrorableDriverModel) = get_driver(model.driver)

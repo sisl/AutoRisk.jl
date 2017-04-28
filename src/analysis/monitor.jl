@@ -36,14 +36,14 @@ function monitor(mon::ScenarioRecorderMonitor, col::DatasetCollector,
         simulate!(col.scene, col.models, col.roadway, col.eval.rec, 
             col.eval.prime_time + col.eval.sampling_time)
         frames = Frames(MIME("image/png"), fps = 10)
-        veh_id = col.scene.vehicles[1].def.id
+        veh_id = col.scene.vehicles[1].id
         stats = [
             CarFollowingStatsOverlay(veh_id, 2), 
             NeighborsOverlay(veh_id, textparams = TextParams(x = 600, y_start=300))
         ]
         cam = CarFollowCamera(veh_id, mon.zoom)
         for idx in 1:length(col.eval.rec)
-            frame = render(get_scene(col.eval.rec, idx - length(col.eval.rec)), 
+            frame = render(col.eval.rec[idx - length(col.eval.rec)], 
                 col.roadway, stats, cam = cam)
             push!(frames, frame)
         end

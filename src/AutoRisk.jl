@@ -14,27 +14,27 @@ using Reexport
 
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
-    get_name, action_context
+    get_name, show
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 
 # utils
+include("evaluation/simulation.jl")
 include("utils/automotive.jl")
-include("utils/flags.jl")
 include("utils/utils.jl")
 include("utils/assignment_sampler.jl")
+
+# # behaviors
+include("behaviors/errorable_driver_model.jl")
+# include("behaviors/delayed_intelligent_driver_model.jl")
+include("behaviors/delayed_driver_model.jl")
+include("behaviors/gaussian_mlp_driver.jl")
 
 # extraction
 include("extraction/lidar_sensors.jl")
 include("extraction/feature_extractors.jl")
 include("extraction/multi_feature_extractor.jl")
 include("extraction/dataset_extraction.jl")
-
-# behaviors
-include("behaviors/errorable_driver_model.jl")
-include("behaviors/delayed_intelligent_driver_model.jl")
-include("behaviors/delayed_driver_model.jl")
-include("behaviors/gaussian_mlp_driver.jl")
 
 # generation
 ## roadway
@@ -45,14 +45,14 @@ include("generation/scene/scene_generator.jl")
 include("generation/scene/heuristic_scene_generator.jl")
 include("generation/scene/dataset_scene_generator.jl")
 
-## behavior
+# ## behavior
 include("generation/behavior/parameters.jl")
 include("generation/behavior/behavior_generator.jl")
 include("generation/behavior/heuristic_behavior_generators.jl")
 include("generation/behavior/load_policy.jl")
 include("generation/behavior/learned_behavior_generators.jl")
 
-## additional generation 
+# ## additional generation 
 include("generation/generator.jl")
 include("generation/bayes_net_lane_generator.jl")
 include("generation/debug_generator.jl")
@@ -62,7 +62,6 @@ include("prediction/neural_network.jl")
 include("prediction/td_predictor.jl")
 
 # evaluation
-include("evaluation/simulation.jl")
 include("evaluation/monte_carlo_evaluator.jl")
 include("evaluation/bootstrapping_monte_carlo_evaluator.jl")
 
@@ -72,17 +71,17 @@ include("collection/dataset_collector.jl")
 
 # Display portion of AutoRisk may be unnecessary or unavailable in some 
 # environments, so optionally include that here if possible
-try
-    @reexport using AutoViz
-    @reexport using Interact
-    @reexport using Reel
-    # analysis
-    include("analysis/display.jl")
-    # monitoring is entirely visual for now
-    include("analysis/monitor.jl")
-catch e
-    println("Exception encountered in AutoRisk while trying to import display
-        libraries and functionality: $(e)")
-end
+# try
+#     @reexport using AutoViz
+#     @reexport using Interact
+#     @reexport using Reel
+#     # analysis
+#     include("analysis/display.jl")
+#     # monitoring is entirely visual for now
+#     include("analysis/monitor.jl")
+# catch e
+#     println("Exception encountered in AutoRisk while trying to import display
+#         libraries and functionality: $(e)")
+# end
 
 end # module

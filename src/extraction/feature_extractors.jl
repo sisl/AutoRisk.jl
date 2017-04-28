@@ -54,7 +54,7 @@ function set_neighbor_features!(features::Vector{Float64}, i::Int,
     if neigh.ind != 0
         features[i] = neigh.Δs
         features[i+1] = scene[neigh.ind].state.v
-        features[i+2] = convert(Float64, get(ACC, rec, roadway, neigh.ind))
+        features[i+2] = convert(Float64, get(ACCFS, rec, roadway, neigh.ind))
         features[i+3] = convert(Float64, get(JERK, rec, roadway, neigh.ind))
         features[i+4] = 0.0
     else
@@ -85,7 +85,7 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int,  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     veh_ego = scene[veh_idx]
     d_ml = get_markerdist_left(veh_ego, roadway)
     d_mr = get_markerdist_right(veh_ego, roadway)
@@ -175,7 +175,7 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     veh_ego = scene[veh_idx]
     d_ml = get_markerdist_left(veh_ego, roadway)
     d_mr = get_markerdist_right(veh_ego, roadway)
@@ -218,7 +218,7 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
 
     vtpf = VehicleTargetPointFront()
     vtpr = VehicleTargetPointRear()
@@ -271,7 +271,7 @@ type BehavioralFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function BehavioralFeatureExtractor()
-        num_features = 17
+        num_features = 16
         return new(zeros(Float64, num_features), num_features)
     end
 end
@@ -288,7 +288,6 @@ function feature_names(ext::BehavioralFeatureExtractor)
         "lon_s_min",
         "lon_a_max",
         "lon_d_cmf",
-        "lon_response_time",
         "lat_kp",
         "lat_kd",
         "lane_politeness",
@@ -308,9 +307,9 @@ function AutomotiveDrivingModels.pull_features!(
     end
 
     # get the vehicle model
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     veh = scene[veh_idx]
-    model = models[veh.def.id]
+    model = models[veh.id]
 
     # unpack the underlying driver models
     # storing features of overlaid driver models in doing so
@@ -345,8 +344,7 @@ function AutomotiveDrivingModels.pull_features!(
     end
 
     # longitudinal model
-    if (typeof(mlon) == IntelligentDriverModel 
-            || typeof(mlon) == DelayedIntelligentDriverModel)
+    if typeof(mlon) == IntelligentDriverModel
         ext.features[next_idx+=1] = mlon.k_spd
         ext.features[next_idx+=1] = mlon.δ
         ext.features[next_idx+=1] = mlon.T
@@ -354,13 +352,8 @@ function AutomotiveDrivingModels.pull_features!(
         ext.features[next_idx+=1] = mlon.s_min
         ext.features[next_idx+=1] = mlon.a_max
         ext.features[next_idx+=1] = mlon.d_cmf
-        if typeof(mlon) == DelayedIntelligentDriverModel
-            ext.features[next_idx+=1] = mlon.t_d
-        else
-            next_idx += 1
-        end
     else
-        next_idx += 8
+        next_idx += 7
     end
 
     # lateral model
@@ -414,7 +407,7 @@ function AutomotiveDrivingModels.pull_features!(
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
 
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     
     vtpf = VehicleTargetPointFront()
     vtpr = VehicleTargetPointRear()
@@ -486,7 +479,7 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     nbeams_carlidar = nbeams(ext.carlidar)
     idx = 0
     if nbeams_carlidar > 0
@@ -539,7 +532,7 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int,  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
-    scene = get_scene(rec, pastframe)
+    scene = rec[pastframe]
     nbeams_roadlidar = nbeams(ext.roadlidar)
     if nbeams_roadlidar > 0
         if ext.road_lidar_culling.is_leaf

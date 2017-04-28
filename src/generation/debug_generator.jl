@@ -34,20 +34,20 @@ function Base.rand!(gen::DebugSceneGenerator, scene::Scene,
     # rear vehicle (veh id 1)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     rear_state = VehicleState(Frenet(road_idx, roadway), roadway, rear_v)
-    rear_def = VehicleDef(1, AgentClass.CAR, 2., 1.)
-    push!(scene, Vehicle(rear_state, rear_def))
+    rear_def = VehicleDef(AgentClass.CAR, 2., 1.)
+    push!(scene, Vehicle(rear_state, rear_def, 1))
 
     # fore vehicle (veh id 2)
     fore_state = VehicleState(Frenet(road_idx, roadway), roadway, fore_v)
     fore_state = move_along(fore_state, roadway, Δs)
-    fore_def = VehicleDef(2, AgentClass.CAR, 2., 1.)
-    push!(scene, Vehicle(fore_state, fore_def))
+    fore_def = VehicleDef(AgentClass.CAR, 2., 1.)
+    push!(scene, Vehicle(fore_state, fore_def, 2))
 
     return scene
 end
 
 @with_kw type DebugBehaviorGenerator <: BehaviorGenerator
-    context::ActionContext = IntegratedContinuous(.1, 1)
+    Δt::Float64 = .1
     rear_lon_σ::Float64 = 0.0
     fore_lon_σ::Float64 = 0.0  
     rng::MersenneTwister = MersenneTwister(1)
@@ -55,9 +55,9 @@ end
 function Base.rand!(gen::DebugBehaviorGenerator, models::Dict{Int, DriverModel}, 
         scene::Scene, seed::Int64)
     # zero acceleration models with variable std dev
-    models[1] = Tim2DDriver(gen.context, mlon = StaticLongitudinalDriver(
+    models[1] = Tim2DDriver(gen.Δt, mlon = StaticLongitudinalDriver(
         0.0, gen.rear_lon_σ))
-    models[2] = Tim2DDriver(gen.context, mlon = StaticLongitudinalDriver(
+    models[2] = Tim2DDriver(gen.Δt, mlon = StaticLongitudinalDriver(
         0.0, gen.fore_lon_σ))
     return models
 end

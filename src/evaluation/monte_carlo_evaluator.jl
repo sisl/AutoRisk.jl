@@ -27,7 +27,6 @@ get_targets(eval::Evaluator) = eval.agg_targets[:, :]
 type MonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     num_runs::Int64
-    context::ActionContext
     prime_time::Float64
     sampling_time::Float64
     veh_idx_can_change::Bool
@@ -45,7 +44,6 @@ type MonteCarloEvaluator <: Evaluator
     # Args:
         - ext: feature and target extractor
         - num_runs: how many monte carlo runs to run
-        - context: context in which to run
         - prime_time: "burn-in" time for the scene
         - sampling_time: time to sample the scene after burn-in
         - veh_idx_can_change: whether or not the vehicle indices in the scene
@@ -60,7 +58,6 @@ type MonteCarloEvaluator <: Evaluator
     """
     function MonteCarloEvaluator(ext::AbstractFeatureExtractor,
             num_runs::Int64, 
-            context::ActionContext,
             prime_time::Float64, 
             sampling_time::Float64, 
             veh_idx_can_change::Bool, 
@@ -73,7 +70,7 @@ type MonteCarloEvaluator <: Evaluator
         @assert length(features_size) == 3
         feature_timesteps = features_size[2]
 
-        return new(ext, num_runs, context, prime_time, sampling_time, 
+        return new(ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps, targets, 
             agg_targets, rng, 0, Dict{Int64, Int64}())
     end
@@ -89,9 +86,7 @@ end
 """
 function get_veh_id_to_idx(scene::Scene, dict::Dict{Int64, Int64})
     for veh in scene
-        vehicle_index = get_index_of_first_vehicle_with_id(
-            scene, veh.def.id)
-        dict[veh.def.id] = vehicle_index
+        dict[veh.id] = findfirst(scene, veh.id)
     end
 end
 
@@ -130,7 +125,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     
     # prime the scene by simulating for short period
     # extract prediction features at this point
-    simulate!(scene, models, roadway, eval.rec, eval.prime_time)
+    simulate!(Any, eval.rec, scene, roadway, models, eval.prime_time)
 
     # need this dictionary because cars may enter or exit the 
     # scene. As a result, the indices of the scene may or may 
@@ -145,7 +140,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
         eval.feature_timesteps)
     
     # repeatedly simulate, starting from the final burn-in scene 
-    temp_scene = Scene(length(scene.vehicles))
+    temp_scene = Scene(length(scene.entities))
     pastframe = 0 # first iteration, don't alter record
     for idx in 1:eval.num_runs
         # reset
@@ -153,7 +148,8 @@ function evaluate!(eval::Evaluator, scene::Scene,
         push_forward_records!(eval.rec, -pastframe)
 
         # simulate starting from the final burn-in scene
-        simulate!(temp_scene, models, roadway, eval.rec, eval.sampling_time)
+        simulate!(Any, eval.rec, temp_scene, roadway, models, 
+            eval.sampling_time)
 
         # pastframe is the number of frames that have been simulated
         pastframe = Int(round(eval.sampling_time / eval.rec.timestep))

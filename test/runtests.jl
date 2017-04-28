@@ -4,7 +4,7 @@ using AutoRisk
 include("collection/testing_utils.jl")
 
 # testing constants
-const NUM_FEATURES = 276
+const NUM_FEATURES = 268
 const NUM_TARGETS = 5
 const BASE_TEST_DIR = "."
 
@@ -29,8 +29,8 @@ function runtests()
 
     # behavior
     println("\n### behaviors ###")
-    println("test_delayed_intelligent_driver_model.jl")
-    include("behaviors/test_delayed_intelligent_driver_model.jl")
+    # println("test_delayed_intelligent_driver_model.jl")
+    # include("behaviors/test_delayed_intelligent_driver_model.jl")
     println("test_delayed_driver_model.jl")
     include("behaviors/test_delayed_driver_model.jl")
     println("test_errorable_driver_model.jl")

@@ -1,7 +1,5 @@
+# using AutoRisk
 # using Base.Test
-
-# push!(LOAD_PATH, "../../src/utils/")
-# include("../../src/utils/utils.jl")
 
 function test_unordered_partition()
     vals = collect(1:7)

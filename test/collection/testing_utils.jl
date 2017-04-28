@@ -1,6 +1,6 @@
 
 function build_debug_dataset_collector(;
-        output_filepath = "data/test_dataset_collector.h5",
+        output_filepath = BASE_TEST_DIR * "/data/test_dataset_collector.h5",
         num_samples = 10,
         feature_dim = NUM_FEATURES,
         target_dim = NUM_TARGETS,
@@ -53,8 +53,7 @@ function build_debug_dataset_collector(;
     # behavior gen
     params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]
     weights = WeightVec([1.])
-    context = IntegratedContinuous(.1, 1)
-    behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
+    behavior_gen = PredefinedBehaviorGenerator(params, weights)
     models = Dict{Int, DriverModel}()
 
     gen = FactoredGenerator(roadway_gen, scene_gen, behavior_gen)
@@ -72,7 +71,7 @@ function build_debug_dataset_collector(;
     targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset

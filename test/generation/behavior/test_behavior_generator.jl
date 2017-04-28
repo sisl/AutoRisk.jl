@@ -25,9 +25,8 @@ function test_build_driver()
     kd = 12.
     lat_params = LateralParams(σ, kp, kd)
     params = BehaviorParams(idm_params, mobil_params, lat_params)
-    context = IntegratedContinuous(.1, 1)
     num_vehicles = 13
-    driver = build_driver(params, context, num_vehicles)
+    driver = build_driver(params, num_vehicles)
     @test driver.mlon.k_spd == k_spd
     @test driver.mlon.δ == δ
     @test driver.mlon.v_des == v_des
@@ -47,8 +46,7 @@ function test_behavior_reset()
     lat_params = LateralParams(11., 12., 13.)
     params = [BehaviorParams(idm_params, mobil_params, lat_params)]
     weights = WeightVec([1.])
-    context = IntegratedContinuous(.1, 1)
-    gen = PredefinedBehaviorGenerator(context, params, weights)
+    gen = PredefinedBehaviorGenerator(params, weights)
     models = Dict{Int, DriverModel}()
     scene = Scene(1)
     seed = 1

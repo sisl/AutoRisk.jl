@@ -166,7 +166,7 @@ function test_build_vehicle()
     @test abs(veh.state.posF.s - (road_pos - roadway_length)) < eps
     @test abs(veh.state.posF.t) < eps
     @test veh.state.posF.ϕ == 0.
-    @test veh.def.id == veh_id
+    @test veh.id == veh_id
     @test min_vehicle_length <= veh.def.length <= max_vehicle_length
     @test min_vehicle_width <= veh.def.width <= max_vehicle_width
     @test veh.def.class == AgentClass.CAR

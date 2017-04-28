@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 276
+# const NUM_FEATURES = 268
 # const NUM_TARGETS = 5
 # const BASE_TEST_DIR = ".."
 

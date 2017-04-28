@@ -1,8 +1,10 @@
-using Base.Test
-using AutoRisk
+# using Base.Test
+# using AutoRisk
+
+# BASE_TEST_DIR = ".."
 
 function test_update()
-    output_filepath = "data/test_dataset.h5"
+    output_filepath = BASE_TEST_DIR * "/data/test_dataset.h5"
     feature_dim = 1
     feature_timesteps = 1
     target_dim = 1
@@ -23,7 +25,7 @@ function test_update()
 end
 
 function test_dataset()
-    output_filepath = "data/test_dataset.h5"
+    output_filepath = BASE_TEST_DIR * "/data/test_dataset.h5"
     feature_dim = 4
     target_dim = 3
     feature_timesteps = 1
@@ -60,7 +62,7 @@ function test_dataset()
 end
 
 function test_weighted_dataset()
-    output_filepath = "data/test_weight_dataset.h5"
+    output_filepath = BASE_TEST_DIR * "/data/test_weight_dataset.h5"
     feature_dim = 4
     target_dim = 3
     feature_timesteps = 1

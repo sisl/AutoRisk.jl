@@ -1,18 +1,20 @@
 # using Base.Test
 # using AutoRisk
+# using AutoViz
+# using Reel
+# Reel.set_output_type("gif")
 
-# const NUM_FEATURES = 204
+# const NUM_FEATURES = 268
 # const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
-    context = IntegratedContinuous(.1, 1)
     num_veh = 2
     models = Dict{Int, DriverModel}()
 
     # two static drivers not in a collision
-    mlon = StaticLongitudinalDriver(0.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     roadway = gen_straight_roadway(1, 50.)
     scene = Scene(num_veh)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
@@ -20,14 +22,14 @@ function test_extract_vehicle_frame_targets()
     base_speed = 1.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
-    simulate!(scene, models, roadway, rec, T)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     targets = Array{Float64}(NUM_TARGETS, 2)
     fill!(targets, 0)
@@ -41,9 +43,9 @@ function test_extract_vehicle_frame_targets()
     @test all(abs(targets) .< 1e-8)
 
     # then in a collision
-    scene[2].state = VehicleState(Frenet(road_idx, roadway), roadway, 12.)
+    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 12.), veh_def, 2)
     T = .9
-    simulate!(scene, models, roadway, rec, T)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     veh_idx = 1
     t_idx = 1
@@ -63,12 +65,11 @@ end
 
 function test_extract_frame_targets()
     # without changing index
-    context = IntegratedContinuous(.1, 1)
     num_veh = 2
     models = Dict{Int, DriverModel}()
-    mlon = StaticLongitudinalDriver(0.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     roadway = gen_straight_roadway(1, 50.)
     scene = Scene(num_veh)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
@@ -76,14 +77,14 @@ function test_extract_frame_targets()
     base_speed = 1.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
-    simulate!(scene, models, roadway, rec, T)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     targets = Array{Float64}(NUM_TARGETS, 2)
     fill!(targets, 0)
@@ -97,8 +98,8 @@ function test_extract_frame_targets()
     @test all(abs(targets) .< 1e-8)
 
     T = .9
-    scene[2].state = VehicleState(Frenet(road_idx, roadway), roadway, 12.)
-    simulate!(scene, models, roadway, rec, T)
+    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 12.), veh_def, 2)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     fill!(targets, 0)
     extract_frame_targets!(rec, roadway, targets, veh_id_to_idx, 
@@ -113,8 +114,8 @@ function test_extract_frame_targets()
     @test done == Set([1,2])
 
     # with changing index
-    scene[2].state = VehicleState(Frenet(road_idx, roadway), roadway, 13.)
-    simulate!(scene, models, roadway, rec, T)
+    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 13.), veh_def, 2)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
     done = Set{Int64}()
     veh_idx_can_change = true
     fill!(targets, 0)
@@ -130,12 +131,11 @@ end
 
 function test_extract_targets()
 
-    context = IntegratedContinuous(.1, 1)
     num_veh = 2
     models = Dict{Int, DriverModel}()
-    mlon = StaticLongitudinalDriver(0.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     roadway = gen_straight_roadway(1, 50.)
     scene = Scene(num_veh)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
@@ -143,14 +143,14 @@ function test_extract_targets()
     base_speed = 1.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
-    simulate!(scene, models, roadway, rec, T)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
     targets = Array{Float64}(NUM_TARGETS,2)
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
@@ -163,10 +163,18 @@ function test_extract_targets()
     @test abs(targets[2,2]) < 1e-8
 
     fill!(targets, 0)
-    scene[2].state = VehicleState(Frenet(road_idx, roadway), roadway, 9.5)
-    models[1] = Tim2DDriver(context, mlon = StaticLongitudinalDriver(-5.))
-    simulate!(scene, models, roadway, rec, T)
+    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 9.5), veh_def, 2)
+    models[1] = Tim2DDriver(.1, mlon = StaticLaneFollowingDriver(-5.))
+    T = 1.
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
     extract_targets!(rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
+
+    # frames = Frames(MIME("image/png"), fps=2)
+    # frame = render(scene, roadway)
+    # push!(frames, frame)
+    # write("/Users/wulfebw/Desktop/stuff.gif", frames)
+    # println(targets[:,1])
+    # println(targets[:,2])
 
     @test targets[2,1] == 1.0
     @test targets[4,1] == 1.0
@@ -176,7 +184,6 @@ end
 
 function test_pull_features()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 100.)
@@ -185,40 +192,40 @@ function test_pull_features()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, moving the fastest
-    mlon = StaticLongitudinalDriver(2.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(2.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLongitudinalDriver(1.)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     # 3: thrid vehicle, in the front, not moving
-    mlon = StaticLongitudinalDriver(0.)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[3] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 20.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(3, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
 
     # simulate the scene for 1 second
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
 
     # simulate here because some features need priming
-    simulate!(scene, models, roadway, rec, T)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
     features = Array{Float64}(NUM_FEATURES, 1, num_veh)
 
 

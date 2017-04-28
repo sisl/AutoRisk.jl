@@ -3,7 +3,6 @@
 
 function test_car_lidar_feature_extractor()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 100.)
@@ -12,38 +11,39 @@ function test_car_lidar_feature_extractor()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, moving the fastest
-    mlon = StaticLongitudinalDriver(2.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(2.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLongitudinalDriver(1.0)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.0)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     # 3: thrid vehicle, in the front, not moving
-    mlon = StaticLongitudinalDriver(0.)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[3] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 20.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(3, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
 
     # simulate here because some features need priming
     T = .6
-    rec = SceneRecord(Int(ceil(T/.1)), .1, num_veh)
-    simulate!(scene, models, roadway, rec, T)
+    nticks = Int(ceil(T/.1))
+    rec = SceneRecord(nticks, .1, num_veh)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     carlidar_nbeams = 20
     extract_carlidar_rangerate = true
@@ -67,7 +67,6 @@ end
 
 function test_normalizing_feature_extractor()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 100.)
@@ -76,38 +75,39 @@ function test_normalizing_feature_extractor()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, moving the fastest
-    mlon = StaticLongitudinalDriver(2.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(2.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLongitudinalDriver(1.0)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.0)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     # 3: thrid vehicle, in the front, not moving
-    mlon = StaticLongitudinalDriver(0.)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(0.)
+    models[3] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 20.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(3, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
 
     # simulate here because some features need priming
     T = .6
-    rec = SceneRecord(Int(ceil(T/.1)), .1, num_veh)
-    simulate!(scene, models, roadway, rec, T)
+    nticks = Int(ceil(T/.1))
+    rec = SceneRecord(nticks, .1, num_veh)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     carlidar_nbeams = 20
     extract_carlidar_rangerate = true

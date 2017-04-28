@@ -1,11 +1,10 @@
 export
     GaussianMLPDriver,
     get_name,
-    action_context,
     reset_hidden_state!,
     observe!
 
-type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A, ActionContext}
+type GaussianMLPDriver{A, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A}
     net::ForwardNet
     rec::SceneRecord
     pass::ForwardPass
@@ -13,7 +12,6 @@ type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtra
     output::Vector{G}
     extractor::E
     mvnormal::M
-    context::ActionContext
     features::Array{Float64}
 
     a_hi::Float64
@@ -23,14 +21,13 @@ type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtra
 end
 
 _get_Σ_type{Σ,μ}(mvnormal::MvNormal{Σ,μ}) = Σ
-function GaussianMLPDriver{A <: DriveAction}(::Type{A}, 
+function GaussianMLPDriver{A}(::Type{A}, 
         net::ForwardNet, 
         extractor::AbstractFeatureExtractor, 
-        context::ActionContext;
         input::Symbol = :input,
         output::Symbol = :output,
         Σ::Union{Real, Vector{Float64}, Matrix{Float64},  Distributions.AbstractPDMat} = 0.1,
-        rec::SceneRecord = SceneRecord(2, get_timestep(context)),
+        rec::SceneRecord = SceneRecord(2, .1),
         a_hi::Float64 = 3.,
         a_lo::Float64 = -5.,
         ω_hi::Float64 = .01,
@@ -41,10 +38,9 @@ function GaussianMLPDriver{A <: DriveAction}(::Type{A},
     output = net[output].tensor
     features = zeros(Float64, (length(extractor), 500))
     mvnormal = MvNormal(Array(Float64, 2), Σ)
-    GaussianMLPDriver{A, eltype(input_vec), eltype(output), typeof(extractor), typeof(mvnormal)}(net, rec, pass, input_vec, output, extractor, mvnormal, context, features, a_hi, a_lo, ω_hi, ω_lo)
+    GaussianMLPDriver{A, eltype(input_vec), eltype(output), typeof(extractor), typeof(mvnormal)}(net, rec, pass, input_vec, output, extractor, mvnormal,features, a_hi, a_lo, ω_hi, ω_lo)
 end
 AutomotiveDrivingModels.get_name(::GaussianMLPDriver) = "GaussianMLPDriver"
-AutomotiveDrivingModels.action_context(model::GaussianMLPDriver) = model.context
 
 function AutomotiveDrivingModels.reset_hidden_state!(model::GaussianMLPDriver)
     empty!(model.rec)

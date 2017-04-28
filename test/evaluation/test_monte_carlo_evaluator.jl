@@ -1,12 +1,16 @@
 # using Base.Test
 # using AutoRisk
 
-# NUM_FEATURES = 142
+# using AutoViz
+# using Reel
+# Reel.set_output_type("gif")
+
+
+# NUM_FEATURES = 268
 # NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 500.)
@@ -15,33 +19,38 @@ function test_monte_carlo_evaluator_debug()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, moving the fastest
-    mlon = StaticLongitudinalDriver(5.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(5.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLongitudinalDriver(1.)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
-    # 3: thrid vehicle, in the front, not moving
-    mlon = StaticLongitudinalDriver(-4.5)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    # 3: thrid vehicle, in the front, moving backward
+    mlon = StaticLaneFollowingDriver(-4.5)
+    models[3] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 200.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(3, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
+
+    # frames = Frames(MIME("image/png"), fps=2)
+    # frame = render(scene, roadway)
+    # push!(frames, frame)
+    # write("/Users/wulfebw/Desktop/stuff.gif", frames)
 
     num_runs::Int64 = 10
     prime_time::Float64 = 1.
@@ -55,7 +64,7 @@ function test_monte_carlo_evaluator_debug()
 
     rng::MersenneTwister = MersenneTwister(1)
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
@@ -67,7 +76,6 @@ function test_monte_carlo_evaluator_debug()
 end
 
 function test_monte_carlo_evaluator()
-    context = IntegratedContinuous(.1, 1)
     num_veh = 2
     # one lane roadway
     roadway = gen_straight_roadway(1, 500.)
@@ -78,25 +86,25 @@ function test_monte_carlo_evaluator()
     politeness = 3.
 
     # 1: first vehicle, moving the fastest
-    mlane = MOBIL(context, politeness = politeness)
+    mlane = MOBIL(.1, politeness = politeness)
     mlon = IntelligentDriverModel(k_spd = k_spd)
-    models[1] = Tim2DDriver(context, mlane = mlane, mlon = mlon)
+    models[1] = Tim2DDriver(.1, mlane = mlane, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlane = MOBIL(context, politeness = politeness)
+    mlane = MOBIL(.1, politeness = politeness)
     mlon = IntelligentDriverModel(k_spd = k_spd)
-    models[2] = Tim2DDriver(context, mlane = mlane, mlon = mlon)
+    models[2] = Tim2DDriver(.1, mlane = mlane, mlon = mlon)
     base_speed = 0.
     road_pos = 8.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     num_runs::Int64 = 10
     prime_time::Float64 = .2
@@ -111,7 +119,7 @@ function test_monte_carlo_evaluator()
     rng::MersenneTwister = MersenneTwister(1)
 
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
@@ -128,13 +136,12 @@ function test_monte_carlo_evaluator()
     @test eval.features[65, 1] == k_spd
     @test eval.features[65, 2] == k_spd
 
-    @test eval.features[75, 1] == politeness
-    @test eval.features[75, 2] == politeness
+    @test eval.features[74, 1] == politeness
+    @test eval.features[74, 2] == politeness
 
 end
 
 function test_multi_timestep_monte_carlo_evaluator()
-    context = IntegratedContinuous(.1, 1)
     num_veh = 2
 
     # one lane roadway
@@ -143,23 +150,23 @@ function test_multi_timestep_monte_carlo_evaluator()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, accelerating the fastest
-    mlon = StaticLongitudinalDriver(2.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(2.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 0.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, accelerating at intermediate speed
-    mlon = StaticLongitudinalDriver(1.)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     num_runs::Int64 = 2
     prime_time::Float64 = .5
@@ -176,7 +183,7 @@ function test_multi_timestep_monte_carlo_evaluator()
     rng::MersenneTwister = MersenneTwister(1)
 
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)

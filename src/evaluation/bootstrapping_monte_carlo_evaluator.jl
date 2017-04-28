@@ -11,7 +11,6 @@ export
 type BootstrappingMonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     num_runs::Int64
-    context::ActionContext
     prime_time::Float64
     sampling_time::Float64
     veh_idx_can_change::Bool
@@ -33,7 +32,6 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
     """
     # Args:
         - num_runs: how many monte carlo runs to run
-        - context: context in which to run
         - prime_time: "burn-in" time for the scene
         - sampling_time: time to sample the scene after burn-in
         - veh_idx_can_change: whether or not the vehicle indices in the scene
@@ -48,7 +46,6 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
     """
     function BootstrappingMonteCarloEvaluator(ext::AbstractFeatureExtractor,
             num_runs::Int64, 
-            context::ActionContext,
             prime_time::Float64, 
             sampling_time::Float64, 
             veh_idx_can_change::Bool, 
@@ -63,7 +60,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
         @assert length(features_size) == 3
         feature_timesteps = features_size[2]
         prediction_features = Array{Float64}(features_size)
-        return new(ext, num_runs, context, prime_time, sampling_time, 
+        return new(ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps,
             targets, agg_targets, prediction_features, prediction_model, 
             rng, 0, Dict{Int64, Int64}(), discount)

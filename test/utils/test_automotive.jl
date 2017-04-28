@@ -1,7 +1,6 @@
 # using Base.Test
 # using AutoRisk
 
-
 function test_inverse_ttc_to_ttc()
     # missing
     inv_ttc = FeatureValue(0.0, FeatureState.MISSING)
@@ -29,15 +28,15 @@ function test_push_forward_records_scene_record()
     carcount = 0
     for i in max_n_scenes:-1:1
         scene = Scene(1)
-        push!(scene, Vehicle(VehicleState(), VehicleDef(i)))
+        push!(scene, Vehicle(VehicleState(), VehicleDef(), i))
         update!(rec, scene)
     end
     pastframe = -1
     push_forward_records!(rec, pastframe)
 
-    @test rec.scenes[1].vehicles[1].def.id == 2
-    @test rec.scenes[2].vehicles[1].def.id == 3
-    @test rec.nscenes == 2
+    @test rec.frames[1].entities[1].id == 2
+    @test rec.frames[2].entities[1].id == 3
+    @test rec.nframes == 2
 end
 
 function test_executed_hard_brake()
@@ -46,15 +45,15 @@ function test_executed_hard_brake()
     rec = SceneRecord(max_n_scenes, .1, 1)
     scene = Scene()
     state = VehicleState(VecSE2(), 10.)
-    push!(scene, Vehicle(state, VehicleDef(1)))
+    push!(scene, Vehicle(state, VehicleDef(), 1))
     update!(rec, scene)
     scene = Scene()
     state = VehicleState(VecSE2(), 9.)
-    push!(scene, Vehicle(state, VehicleDef(1)))
+    push!(scene, Vehicle(state, VehicleDef(), 1))
     update!(rec, scene)
     scene = Scene()
     state = VehicleState(VecSE2(), 8.)
-    push!(scene, Vehicle(state, VehicleDef(1)))
+    push!(scene, Vehicle(state, VehicleDef(), 1))
     update!(rec, scene)
 
     # did execute hard brake
@@ -63,9 +62,10 @@ function test_executed_hard_brake()
     @test executed == true
 
     # did not
+    println("pay attention")
     scene = Scene()
     state = VehicleState(VecSE2(), 8.)
-    push!(scene, Vehicle(state, VehicleDef(1)))
+    push!(scene, Vehicle(state, VehicleDef(), 1))
     update!(rec, scene)
     executed = executed_hard_brake(
         rec, roadway, 1, hard_brake_threshold = -4., n_past_frames = 2)

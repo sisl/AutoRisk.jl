@@ -230,9 +230,9 @@ function build_vehicle(gen::HeuristicSceneGenerator, roadway::Roadway,
         gen.max_vehicle_length - gen.min_vehicle_length)
     veh_width = gen.min_vehicle_width + base * (
         gen.max_vehicle_width - gen.min_vehicle_width)
-    veh_def = VehicleDef(veh_id, AgentClass.CAR, veh_length, veh_width)
+    veh_def = VehicleDef(AgentClass.CAR, veh_length, veh_width)
 
-    return Vehicle(veh_state, veh_def)
+    return Vehicle(veh_state, veh_def, veh_id)
 end
 
 """

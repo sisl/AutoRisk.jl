@@ -1,12 +1,11 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 142
+# const NUM_FEATURES = 268
 # const NUM_TARGETS = 5
 
 function test_bootstrapping_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 500.)
@@ -15,33 +14,33 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     models = Dict{Int, DriverModel}()
 
     # 1: first vehicle, moving the fastest
-    mlon = StaticLongitudinalDriver(5.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(5.)
+    models[1] = Tim2DDriver(.1, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
 
     # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLongitudinalDriver(1.)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(1.)
+    models[2] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(2, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
 
     # 3: thrid vehicle, in the front, accelerating backward
-    mlon = StaticLongitudinalDriver(-4.5)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    mlon = StaticLaneFollowingDriver(-4.5)
+    models[3] = Tim2DDriver(.1, mlon = mlon)
     base_speed = 0.
     road_pos = 200.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(3, AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def))
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
 
     num_runs::Int64 = 10
     prime_time::Float64 = 1.
@@ -61,7 +60,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     push!(prediction_model.biases, zeros(Float64, (1, NUM_TARGETS)))
 
     ext = MultiFeatureExtractor()
-    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, context, prime_time,
+    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, prime_time,
         sampling_time, veh_idx_can_change, rec, features, targets, agg_targets,
         prediction_model, rng)
 

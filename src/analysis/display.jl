@@ -24,7 +24,7 @@ function Base.show(col::DatasetCollector)
 in_collision_veh_idxs = find(col.eval.targets[1,:] .== 1.)
     @manipulate for follow_veh_idx in in_collision_veh_idxs,
                 zoom in collect(1.:2:20.),
-                i in 0:(col.eval.rec.nscenes - 1)
+                i in 0:(col.eval.rec.nframes - 1)
         # set camera
         follow_veh_id = -1
         if follow_veh_idx == 0
@@ -40,13 +40,13 @@ in_collision_veh_idxs = find(col.eval.targets[1,:] .== 1.)
         end
         
         # render scene
-        idx = -(col.eval.rec.nscenes - i)
+        idx = -(col.eval.rec.nframes - i)
         carcolors = Dict{Int,Colorant}()
-        for veh in get_scene(col.eval.rec, idx)
-            carcolors[veh.def.id] = veh.def.id == follow_veh_id ? colorant"green" : colorant"red"
+        for veh in col.eval.rec[idx]
+            carcolors[veh.id] = veh.id == follow_veh_id ? colorant"green" : colorant"red"
         end
         stats = follow_veh_id == -1 ? [] : [CarFollowingStatsOverlay(follow_veh_id)]
-        render(get_scene(col.eval.rec, idx), col.roadway, stats,
+        render(col.eval.rec[idx], col.roadway, stats,
             cam = cam, car_colors = carcolors)
     end
 end

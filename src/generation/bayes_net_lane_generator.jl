@@ -77,8 +77,8 @@ function build_vehicle(veh_id::Int, a::Assignment, roadway::Roadway,
     road_idx = RoadIndex(proj(VecSE2(0.0, 3. * (lane_idx-1), 0.0), roadway))
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, a[:velocity])
     veh_state = move_along(veh_state, roadway, pos)
-    veh_def = VehicleDef(veh_id, AgentClass.CAR, 5., 2.)
-    return Vehicle(veh_state, veh_def)
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    return Vehicle(veh_state, veh_def, veh_id)
 end
 
 
@@ -141,8 +141,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             veh = build_vehicle(veh_id, values, roadway, pos, lane_idx)
             push!(scene, veh)
             params = rand(gen.beh_gen, values[:aggressiveness])
-            models[veh_id] = build_driver(params, gen.beh_gen.context,
-                total_num_vehicles)
+            models[veh_id] = build_driver(params, total_num_vehicles)
             srand(models[veh_id], seed + Int(rand(gen.rng, 1:1e8)))
             if typeof(models[veh_id]) == ErrorableDriverModel
                 is_attentive = values[:isattentive] == 1 ? false : true

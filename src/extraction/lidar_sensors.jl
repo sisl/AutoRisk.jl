@@ -39,7 +39,7 @@ end
 nbeams(lidar::LidarSensor) = length(lidar.angles)
 function observe!(lidar::LidarSensor, scene::Scene, roadway::Roadway, vehicle_index::Int)
     state_ego = scene[vehicle_index].state
-    egoid = scene[vehicle_index].def.id
+    egoid = scene[vehicle_index].id
     ego_vel = polar(state_ego.v, state_ego.posG.θ)
     for (i,angle) in enumerate(lidar.angles)
         ray_angle = state_ego.posG.θ + angle
@@ -49,7 +49,7 @@ function observe!(lidar::LidarSensor, scene::Scene, roadway::Roadway, vehicle_in
         range = lidar.max_range
         range_rate = 0.0
         for veh in scene
-            if veh.def.id != egoid
+            if veh.id != egoid
                 to_oriented_bounding_box!(lidar.poly, veh)
 
                 range2 = AutomotiveDrivingModels.get_collision_time(ray, lidar.poly, 1.0)
@@ -161,7 +161,7 @@ function _update_lidar!(lidar::RoadlineLidarSensor, ray::VecSE2, beam_index::Int
 end
 function observe!(lidar::RoadlineLidarSensor, scene::Scene, roadway::Roadway, vehicle_index::Int)
     state_ego = scene[vehicle_index].state
-    egoid = scene[vehicle_index].def.id
+    egoid = scene[vehicle_index].id
     ego_vel = polar(state_ego.v, state_ego.posG.θ)
 
     fill!(lidar.ranges, lidar.max_range)
@@ -413,7 +413,7 @@ function _update_lidar!(lidar::RoadlineLidarSensor, ray::VecSE2, beam_index::Int
 end
 function observe!(lidar::RoadlineLidarSensor, scene::Scene, roadway::Roadway, vehicle_index::Int, rlc::RoadwayLidarCulling)
     state_ego = scene[vehicle_index].state
-    egoid = scene[vehicle_index].def.id
+    egoid = scene[vehicle_index].id
     ego_vel = polar(state_ego.v, state_ego.posG.θ)
 
     fill!(lidar.ranges, lidar.max_range)

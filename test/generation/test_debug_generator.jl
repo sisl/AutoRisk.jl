@@ -13,8 +13,8 @@ function debug_scene_gen()
     roadway = gen_straight_roadway(1)
     scene = rand!(gen, Scene(2), roadway, 1)
     
-    rear = scene.vehicles[1]
-    fore = scene.vehicles[2]
+    rear = scene.entities[1]
+    fore = scene.entities[2]
     @test rear.state.v == 1.
     @test fore.state.v == 0.
 end

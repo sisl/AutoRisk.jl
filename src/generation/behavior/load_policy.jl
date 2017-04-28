@@ -132,6 +132,6 @@ function load_gaussian_mlp_driver(
     feature_std = vec(h5read(filepath, "initial_obs_std")[1:length(base_extractor)])
     extractor = NormalizingExtractor(feature_means, feature_std, base_extractor)
 
-    return GaussianMLPDriver(action_type, net, extractor, IntegratedContinuous(0.1, 1),
+    return GaussianMLPDriver(action_type, net, extractor, 0.1,
                         input = :input, output = :output, Σ = Σ)
 end
