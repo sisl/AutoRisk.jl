@@ -47,33 +47,22 @@ end
     - num_vehicles: number of vehicles in the scene
 """
 function build_driver(p::BehaviorParams, num_vehicles::Int64, Δt::Float64 = .1)
-    if p.lon_response_time != 0.0
-        mlon = DelayedIntelligentDriverModel(Δt,
-            k_spd = p.idm.k_spd,
-            δ = p.idm.δ,
-            T = p.idm.T,
-            v_des = p.idm.v_des,
-            s_min = p.idm.s_min,
-            a_max = p.idm.a_max,
-            d_cmf = p.idm.d_cmf,
-            t_d = p.lon_response_time)
-    else
-        mlon = IntelligentDriverModel(
-            k_spd = p.idm.k_spd,
-            δ = p.idm.δ,
-            T = p.idm.T,
-            v_des = p.idm.v_des,
-            s_min = p.idm.s_min,
-            a_max = p.idm.a_max,
-            d_cmf = p.idm.d_cmf)
-    end
+    mlon = IntelligentDriverModel(
+        k_spd = p.idm.k_spd,
+        δ = p.idm.δ,
+        T = p.idm.T,
+        v_des = p.idm.v_des,
+        s_min = p.idm.s_min,
+        a_max = p.idm.a_max,
+        d_cmf = p.idm.d_cmf)
     mlon.σ = p.idm.σ
     mlat = ProportionalLaneTracker(
         σ = p.lat.σ,
         kp = p.lat.kp, 
         kd = p.lat.kd)
     mlat.σ = p.lat.σ
-    mlane = MOBIL(.1,
+    mlane = MOBIL(.1, 
+        rec = SceneRecord(2, Δt, num_vehicles),
         safe_decel = p.mobil.safe_decel,
         politeness = p.mobil.politeness,
         advantage_threshold = p.mobil.advantage_threshold)
@@ -83,7 +72,9 @@ function build_driver(p::BehaviorParams, num_vehicles::Int64, Δt::Float64 = .1)
         mlon = mlon, 
         mlane = mlane)
     if p.overall_response_time != 0.0
-        model = DelayedDriver(model, reaction_time = p.overall_response_time)
+        model = DelayedDriver(model, 
+            reaction_time = p.overall_response_time,
+            num_vehicles = num_vehicles)
     end
     if p.err_p_a_to_i != 0.0
         model = ErrorableDriverModel(model, p_a_to_i = p.err_p_a_to_i, 

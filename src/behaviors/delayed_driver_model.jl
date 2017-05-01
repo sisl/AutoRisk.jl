@@ -19,10 +19,13 @@ type DelayedDriver <: DriverModel{LatLonAccel}
     reaction_time::Float64 # reaction time (time delay in responding) [s]
     pastframe::Int # index into the record of the scene to observe
 
-    function DelayedDriver(driver::DriverModel; reaction_time::Float64 = 0.5)
+    function DelayedDriver(driver::DriverModel; 
+            reaction_time::Float64 = 0.5, 
+            num_vehicles::Int = 100
+        )
         Δt = driver.rec.timestep
         n_scenes = Int(ceil(reaction_time / Δt)) + 1
-        rec = SceneRecord(n_scenes, Δt)
+        rec = SceneRecord(n_scenes, Δt, num_vehicles)
         new(driver, rec, reaction_time, -(n_scenes - 1))
     end
 end
