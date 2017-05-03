@@ -85,9 +85,10 @@ end
     - dict: dictionary to populate
 """
 function get_veh_id_to_idx(scene::Scene, dict::Dict{Int64, Int64})
-    for veh in scene
-        dict[veh.id] = findfirst(scene, veh.id)
+    for (i, veh) in enumerate(scene)
+        dict[veh.id] = i # findfirst(scene, veh.id)
     end
+    dict
 end
 
 """

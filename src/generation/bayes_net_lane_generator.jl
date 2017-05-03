@@ -120,6 +120,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
         a = Assignment()
         evidence = Assignment()
         pos = get_total_roadway_length(roadway) * 2 / 3.
+
         for veh_idx in 1:gen.num_veh_per_lane
             veh_id = veh_idx + (lane_idx - 1) * gen.num_veh_per_lane
 

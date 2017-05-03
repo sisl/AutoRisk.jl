@@ -29,7 +29,7 @@ function AutomotiveDrivingModels.pull_features!(
         rec::SceneRecord,
         roadway::Roadway, 
         vehicle_index::Int,  
-        models = Dict{Int, DriverModel},
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     feature_index = 1
     for (subext, len) in zip(ext.extractors, ext.lengths)

@@ -5,7 +5,8 @@ urls = [
     "https://github.com/tawheeler/AutoViz.jl.git",
     "https://github.com/tawheeler/ForwardNets.jl.git",
     "https://github.com/sisl/BayesNets.jl.git",
-    "https://github.com/sisl/GridInterpolations.jl.git"
+    "https://github.com/sisl/GridInterpolations.jl.git",
+    "https://github.com/wulfebw/CommandLineFlags.jl.git"
 ]
 
 packages = keys(Pkg.installed())
