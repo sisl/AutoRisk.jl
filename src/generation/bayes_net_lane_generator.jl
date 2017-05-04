@@ -32,7 +32,6 @@ type BayesNetLaneGenerator <: Generator
     base_bn::BayesNet
     prop_bn::BayesNet
     assignment_sampler::AssignmentSampler
-    dynamics::Dict{Symbol,Symbol}
     weights::Array{Float64}
     num_veh_per_lane::Int
     beh_gen::CorrelatedBehaviorGenerator
@@ -46,27 +45,23 @@ type BayesNetLaneGenerator <: Generator
         - base_bn: for generating normal cars in the lane
         - prop_bn: for generating importance sampled car
         - assignment_sampler: samples continuous values from discrete classes
-        - dynamics: map from variables at time t to variables at time t+1 that 
-            should assume the same values
         - beh_gen: must be a correlated behavior generator, samples driver 
             given aggressiveness values
         - num_veh_per_lane: number of vehicles per lane
     """
     function BayesNetLaneGenerator(base_bn::BayesNet, prop_bn::BayesNet,
-            assignment_sampler::AssignmentSampler, dynamics::Dict{Symbol,Symbol},
-            num_veh_per_lane::Int, beh_gen::CorrelatedBehaviorGenerator, 
-            rng = MersenneTwister(1))
-        return new(base_bn, prop_bn, assignment_sampler, dynamics, 
+            assignment_sampler::AssignmentSampler, num_veh_per_lane::Int, 
+            beh_gen::CorrelatedBehaviorGenerator, rng = MersenneTwister(1))
+        return new(base_bn, prop_bn, assignment_sampler, 
             ones(1, num_veh_per_lane), num_veh_per_lane, beh_gen, rng)
     end
 end
 
-# dynamics gives mapping of src keys to dest keys
-function update!(dyn::Dict{Symbol,Symbol}, src::Assignment, dest::Assignment)
-    for (src_key, dest_key) in dyn
-        dest[dest_key] = src[src_key]
-    end
-    return dest
+# propagate values for use in generating the next vehicle
+function update!(dest::Assignment, gen::BayesNetLaneGenerator, src::Assignment)
+    velocity = src[:relvelocity] + src[:forevelocity]
+    dest[:forevelocity] = discretize(
+        gen.assignment_sampler, velocity, :forevelocity)
 end
 
 update_pos(pos::Float64, a::Assignment) = pos - a[:foredistance]
@@ -75,7 +70,8 @@ get_weights(gen::BayesNetLaneGenerator) = gen.weights
 function build_vehicle(veh_id::Int, a::Assignment, roadway::Roadway, 
         pos::Float64, lane_idx::Int = 1)
     road_idx = RoadIndex(proj(VecSE2(0.0, 3. * (lane_idx-1), 0.0), roadway))
-    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, a[:velocity])
+    velocity = a[:relvelocity] + a[:forevelocity]
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, velocity)
     veh_state = move_along(veh_state, roadway, pos)
     veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
     return Vehicle(veh_state, veh_def, veh_id)
@@ -151,7 +147,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
             # propagate forward the variables of this car to be evidence for 
             # the next vehicle
-            update!(gen.dynamics, a, evidence)
+            update!(evidence, gen, values)
         end
     end
     return scene

@@ -11,7 +11,7 @@ function build_debug_base_net_lane_gen()
     data = ones(Int, num_vars, num_samples) * 2
     data[:,1] = 1
     training_data = DataFrame(
-            velocity = data[1,:],
+            relvelocity = data[1,:],
             forevelocity = data[2,:],
             foredistance = data[3,:],
             aggressiveness = data[4,:],
@@ -19,11 +19,11 @@ function build_debug_base_net_lane_gen()
     )
     base_bn = fit(DiscreteBayesNet, training_data, (
             :isattentive=>:foredistance, 
-            :isattentive=>:velocity,
+            :isattentive=>:relvelocity,
             :aggressiveness=>:foredistance, 
-            :aggressiveness=>:velocity,
-            :foredistance=>:velocity,
-            :forevelocity=>:velocity
+            :aggressiveness=>:relvelocity,
+            :foredistance=>:relvelocity,
+            :forevelocity=>:relvelocity
         )
     )
     new_values = ones(Int, num_samples)
@@ -31,27 +31,25 @@ function build_debug_base_net_lane_gen()
     training_data[:isattentive] = new_values
     prop_bn = fit(DiscreteBayesNet, training_data, (
             :isattentive=>:foredistance, 
-            :isattentive=>:velocity,
+            :isattentive=>:relvelocity,
             :aggressiveness=>:foredistance, 
-            :aggressiveness=>:velocity,
-            :foredistance=>:velocity,
-            :forevelocity=>:velocity
+            :aggressiveness=>:relvelocity,
+            :foredistance=>:relvelocity,
+            :forevelocity=>:relvelocity
         )
     )
     var_edges = Dict(
         :aggressiveness=>[0.,.5,1.], 
         :foredistance=>[0.,10.,20.],
         :forevelocity=>[0.,5.,10.],
-        :velocity=>[0.,5.,10.]
+        :relvelocity=>[0.,5.,10.]
     )
     sampler = UniformAssignmentSampler(var_edges)
-    dynamics = Dict(:velocity=>:forevelocity)
     num_veh_per_lane = 2
     min_p = get_passive_behavior_params(err_p_a_to_i = .5)
     max_p = get_aggressive_behavior_params(err_p_a_to_i = .5)
     behgen = CorrelatedBehaviorGenerator(min_p, max_p)
-    gen = BayesNetLaneGenerator(base_bn, prop_bn, sampler, dynamics, num_veh_per_lane, 
-        behgen)
+    gen = BayesNetLaneGenerator(base_bn, prop_bn, sampler, num_veh_per_lane, behgen)
     return gen
 end
 

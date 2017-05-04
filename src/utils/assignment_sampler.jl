@@ -2,7 +2,8 @@ export
     AssignmentSampler,
     UniformAssignmentSampler,
     random_uniform,
-    rand
+    rand,
+    discretize
 
 abstract AssignmentSampler
 rand(samp::AssignmentSampler, a::Assignment) = error("not implemented")
@@ -49,3 +50,18 @@ function rand(samp::UniformAssignmentSampler, a::Assignment)
 
     return values
 end
+
+# faster to use the biject method if edges is large, but it seems likely 
+# that edges will be small
+function discretize(v::Float64, edges::Vector{Float64})
+    i = 1
+    for (i, edge) in enumerate(edges[1:end-1])
+        if v < edge
+            break
+        end
+    end
+    return i
+end
+
+discretize(samp::UniformAssignmentSampler, v::Float64, s::Symbol) = discretize(
+    v, samp.var_edges[s])
