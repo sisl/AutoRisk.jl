@@ -277,22 +277,22 @@ type BehavioralFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::BehavioralFeatureExtractor) = ext.num_features
 function feature_names(ext::BehavioralFeatureExtractor)
-    return String["is_attentive",
-        "prob_attentive_to_inattentive",
-        "prob_inattentive_to_attentive", 
-        "overall_reaction_time",
-        "lon_k_spd",
-        "lon_δ",
-        "lon_T",
-        "lon_desired_velocity",
-        "lon_s_min",
-        "lon_a_max",
-        "lon_d_cmf",
-        "lat_kp",
-        "lat_kd",
-        "lane_politeness",
-        "advantage_threshold",
-        "safe_decel"]
+    return String["beh_is_attentive",
+        "beh_prob_attentive_to_inattentive",
+        "beh_prob_inattentive_to_attentive", 
+        "beh_overall_reaction_time",
+        "beh_lon_k_spd",
+        "beh_lon_δ",
+        "beh_lon_T",
+        "beh_lon_desired_velocity",
+        "beh_lon_s_min",
+        "beh_lon_a_max",
+        "beh_lon_d_cmf",
+        "beh_lat_kp",
+        "beh_lat_kd",
+        "beh_lane_politeness",
+        "beh_advantage_threshold",
+        "beh_safe_decel"]
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::BehavioralFeatureExtractor,  

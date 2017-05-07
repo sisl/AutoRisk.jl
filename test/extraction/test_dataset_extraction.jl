@@ -4,7 +4,6 @@
 # using Reel
 # Reel.set_output_type("gif")
 
-# const NUM_FEATURES = 268
 # const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
@@ -226,10 +225,8 @@ function test_pull_features()
 
     # simulate here because some features need priming
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
-    features = Array{Float64}(NUM_FEATURES, 1, num_veh)
-
-
     ext = MultiFeatureExtractor()
+    features = Array{Float64}(length(ext), 1, num_veh)
     pull_features!(ext, rec, roadway, models, features)
 
     @test features[3,1] ≈ 4.
@@ -253,7 +250,52 @@ function test_pull_features()
     @test features[17,3] ≈ 0.0 
 end
 
+function test_pull_features_multitimestep()
+    num_veh = 2
+    timesteps = 2
+    roadway = gen_straight_roadway(1, 100.)
+    ext = CoreFeatureExtractor()
+    rec = SceneRecord(2, .1, num_veh)
+
+    base_speed = 1.
+    road_pos = 10.
+
+    scene = Scene(num_veh)
+    # 1: first vehicle
+    road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_def = VehicleDef(AgentClass.CAR, 3., 3.) # check for length
+    push!(scene, Vehicle(veh_state, veh_def, 1))
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_state = move_along(veh_state, roadway, road_pos)
+    veh_def = VehicleDef(AgentClass.CAR, 5., 5.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
+    update!(rec, scene)
+    update!(rec, scene) # update second time so features are primed
+
+    # second scene
+    scene = Scene(num_veh)
+    road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
+    base_speed = 2.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_def = VehicleDef(AgentClass.CAR, 6., 6.)
+    push!(scene, Vehicle(veh_state, veh_def, 3)) # note the different id
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_state = move_along(veh_state, roadway, road_pos)
+    veh_def = VehicleDef(AgentClass.CAR, 5., 5.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
+    update!(rec, scene)
+
+    features = Array{Float64}(length(ext), timesteps, num_veh)
+    models = Dict{Int, DriverModel}()
+    pull_features!(ext, rec, roadway, models, features, timesteps)
+
+    @test features[4,:,1] == [0.,6.]
+    @test features[4,:,2] == [5.,5.]
+end
+
 @time test_extract_vehicle_frame_targets()
 @time test_extract_frame_targets()
 @time test_extract_targets()
 @time test_pull_features()
+@time test_pull_features_multitimestep()
