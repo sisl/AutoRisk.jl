@@ -55,7 +55,7 @@ end
 # that edges will be small
 function discretize(v::Float64, edges::Vector{Float64})
     i = 1
-    for (i, edge) in enumerate(edges[1:end-1])
+    for (i, edge) in enumerate(edges[2:end])
         if v < edge
             break
         end
