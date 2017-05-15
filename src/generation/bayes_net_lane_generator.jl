@@ -138,6 +138,11 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             veh = build_vehicle(veh_id, values, roadway, pos, lane_idx)
             push!(scene, veh)
             params = rand(gen.beh_gen, values[:aggressiveness])
+            # if first vehicle in lane, set desired speed to current speed 
+            # as a hack to prevent universal acceleration
+            if veh_idx == 1
+                params.idm.v_des = veh.state.v
+            end
             models[veh_id] = build_driver(params, total_num_vehicles)
             srand(models[veh_id], seed + Int(rand(gen.rng, 1:1e8)))
             if typeof(models[veh_id]) == ErrorableDriverModel
