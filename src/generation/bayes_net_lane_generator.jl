@@ -1,7 +1,8 @@
 export
     BayesNetLaneGenerator,
     get_weights,
-    rand!
+    rand!,
+    get_target_vehicle_index
 
 # forward sampling a BN with evidence generally doesn't work, since it 
 # requires running inference to get the posterior
@@ -77,6 +78,14 @@ function build_vehicle(veh_id::Int, a::Assignment, roadway::Roadway,
     return Vehicle(veh_state, veh_def, veh_id)
 end
 
+function get_target_vehicle_index(gen::BayesNetLaneGenerator, roadway::Roadway)
+    target_veh_id = Int(ceil(
+        floor(nlanes(roadway) / 2) 
+        * gen.num_veh_per_lane 
+        + gen.num_veh_per_lane - 1))
+    return target_veh_id
+end
+
 
 """
 # Description:
@@ -105,10 +114,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
     # assume that the vehicle with elevated target probability is the one 
     # in the middle of the lanes, and is the second to last vehicle in its lane
-    target_veh_id = Int(ceil(
-        floor(nlanes(roadway) / 2) 
-        * gen.num_veh_per_lane 
-        + gen.num_veh_per_lane - 1))
+    target_veh_id = get_target_vehicle_index(gen, roadway)
     total_num_vehicles = nlanes(roadway) * gen.num_veh_per_lane
 
     # generate lanes independently
