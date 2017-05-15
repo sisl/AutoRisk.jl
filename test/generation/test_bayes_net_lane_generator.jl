@@ -7,7 +7,7 @@
 
 function build_debug_base_net_lane_gen()
     num_samples = 1000
-    num_vars = 5
+    num_vars = 7
     data = ones(Int, num_vars, num_samples) * 2
     data[:,1] = 1
     training_data = DataFrame(
@@ -15,7 +15,9 @@ function build_debug_base_net_lane_gen()
             forevelocity = data[2,:],
             foredistance = data[3,:],
             aggressiveness = data[4,:],
-            isattentive = data[5,:]
+            isattentive = data[5,:],
+            vehlength = data[6,:],
+            vehwidth = data[7,:]
     )
     base_bn = fit(DiscreteBayesNet, training_data, (
             :isattentive=>:foredistance, 
@@ -23,7 +25,8 @@ function build_debug_base_net_lane_gen()
             :aggressiveness=>:foredistance, 
             :aggressiveness=>:relvelocity,
             :foredistance=>:relvelocity,
-            :forevelocity=>:relvelocity
+            :forevelocity=>:relvelocity,
+            :vehlength=>:vehwidth
         )
     )
     new_values = ones(Int, num_samples)
@@ -35,7 +38,8 @@ function build_debug_base_net_lane_gen()
             :aggressiveness=>:foredistance, 
             :aggressiveness=>:relvelocity,
             :foredistance=>:relvelocity,
-            :forevelocity=>:relvelocity
+            :forevelocity=>:relvelocity,
+            :vehlength=>:vehwidth
         )
     )
     var_edges = Dict(

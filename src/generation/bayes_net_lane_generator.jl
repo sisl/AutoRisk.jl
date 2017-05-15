@@ -73,7 +73,7 @@ function build_vehicle(veh_id::Int, a::Assignment, roadway::Roadway,
     velocity = a[:relvelocity] + a[:forevelocity]
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, velocity)
     veh_state = move_along(veh_state, roadway, pos)
-    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    veh_def = VehicleDef(AgentClass.CAR, a[:vehlength], a[:vehwidth])
     return Vehicle(veh_state, veh_def, veh_id)
 end
 
