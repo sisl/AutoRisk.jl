@@ -227,7 +227,12 @@ function inverse_ttc_to_ttc(inv_ttc::FeatureValue; censor_hi::Float64 = 30.0)
         return FeatureValue(censor_hi, FeatureState.CENSORED_HI)
     else
         # even if the value was censored hi, can still take the inverse
-        return FeatureValue(1.0 / inv_ttc.v)
+        ttc = 1.0 / inv_ttc.v
+        if ttc > censor_hi
+            return FeatureValue(censor_hi, FeatureState.CENSORED_HI)
+        else
+            return FeatureValue(ttc, FeatureState.GOOD)
+        end
     end
 end
 

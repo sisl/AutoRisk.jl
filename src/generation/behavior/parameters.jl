@@ -156,7 +156,8 @@ function get_aggressive_behavior_params(;
         err_p_a_to_i = 0.0,
         err_p_i_to_a = 0.0)
     return BehaviorParams(
-        IDMParams(lon_σ, 1.5, 4.0, 0.5, 39., 4.0, 4.0, 2.5),
+        IDMParams(lon_σ, 1.5, 4.0, 0.25, 35., 2.0, 3.0, 2.0),
+        # IDMParams(lon_σ, 1.5, 4.0, 0.5, 39., 4.0, 4.0, 2.5),
         MOBILParams(0.1, 2.0, 0.01),
         LateralParams(lat_σ, 3.5, 2.5),
         lon_response_time = lon_response_time,
@@ -173,7 +174,8 @@ function get_passive_behavior_params(;
         err_p_a_to_i = 0.0,
         err_p_i_to_a = 0.0)
     return BehaviorParams(
-        IDMParams(lon_σ, 1.0, 4.0, 1.75, 33., 5.0, 1.0, 1.0),
+        IDMParams(lon_σ, 1.0, 4.0, 1., 30., 4.0, 1.0, 1.0),
+        # IDMParams(lon_σ, 1.0, 4.0, 1.75, 33., 5.0, 1.0, 1.0),
         MOBILParams(0.5, 2.0, 0.7),
         LateralParams(lat_σ, 3.0, 2.0),
         lon_response_time = lon_response_time,
