@@ -31,8 +31,9 @@ end
 
 type BayesNetLaneGenerator <: Generator
     base_bn::BayesNet
+    base_assignment_sampler::AssignmentSampler
     prop_bn::BayesNet
-    assignment_sampler::AssignmentSampler
+    prop_assignment_sampler::AssignmentSampler
     weights::Array{Float64}
     num_veh_per_lane::Int
     beh_gen::CorrelatedBehaviorGenerator
@@ -44,17 +45,23 @@ type BayesNetLaneGenerator <: Generator
 
     Args:
         - base_bn: for generating normal cars in the lane
+        - base_assignment_sampler: samples continuous values from discrete classes
         - prop_bn: for generating importance sampled car
-        - assignment_sampler: samples continuous values from discrete classes
+        - prop_assignment_sampler: samples continuous values from discrete classes
         - beh_gen: must be a correlated behavior generator, samples driver 
             given aggressiveness values
         - num_veh_per_lane: number of vehicles per lane
     """
-    function BayesNetLaneGenerator(base_bn::BayesNet, prop_bn::BayesNet,
-            assignment_sampler::AssignmentSampler, num_veh_per_lane::Int, 
-            beh_gen::CorrelatedBehaviorGenerator, rng = MersenneTwister(1))
-        return new(base_bn, prop_bn, assignment_sampler, 
-            ones(1, num_veh_per_lane), num_veh_per_lane, beh_gen, rng)
+    function BayesNetLaneGenerator(base_bn::BayesNet, 
+            base_assignment_sampler::AssignmentSampler,
+            prop_bn::BayesNet,
+            prop_assignment_sampler::AssignmentSampler, 
+            num_veh_per_lane::Int, 
+            beh_gen::CorrelatedBehaviorGenerator, 
+            rng = MersenneTwister(1))
+        return new(base_bn, base_assignment_sampler, prop_bn,
+            prop_assignment_sampler, ones(1, num_veh_per_lane), 
+            num_veh_per_lane, beh_gen, rng)
     end
 end
 
@@ -62,7 +69,7 @@ end
 function update!(dest::Assignment, gen::BayesNetLaneGenerator, src::Assignment)
     velocity = src[:relvelocity] + src[:forevelocity]
     dest[:forevelocity] = discretize(
-        gen.assignment_sampler, velocity, :forevelocity)
+        gen.base_assignment_sampler, velocity, :forevelocity)
 end
 
 update_pos(pos::Float64, a::Assignment) = pos - a[:foredistance]
@@ -129,15 +136,22 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             # randomly sample given the evidence and set the probability
             if veh_id == target_veh_id
                 rand!(a, gen.prop_bn, evidence)
+                base_a = swap_discretization(a, gen.prop_assignment_sampler, 
+                    gen.base_assignment_sampler)
                 # only the vehicle sampled from the proposal distribution 
                 # will have a weight != 1
-                gen.weights[veh_id] = pdf(gen.base_bn, a) / pdf(gen.prop_bn, a)
+                gen.weights[veh_id] = pdf(gen.base_bn, base_a) / pdf(gen.prop_bn, a)
+                # sample continuous values from the discrete assignments
+                values = rand(gen.prop_assignment_sampler, a)
             else
                 rand!(a, gen.base_bn, evidence)
+                # sample continuous values from the discrete assignments
+                values = rand(gen.base_assignment_sampler, a)
             end
 
-            # sample continuous values from the discrete assignments
-            values = rand(gen.assignment_sampler, a)
+            # TODO: give each variable its own sampler rather than doing this
+            # reset the value of attentive in values to its discrete value
+            values[:isattentive] = a[:isattentive]
 
             # build and add the vehicle to the scene and models
             pos = update_pos(pos, values)

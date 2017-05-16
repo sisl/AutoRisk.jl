@@ -3,7 +3,8 @@ export
     UniformAssignmentSampler,
     random_uniform,
     rand,
-    discretize
+    discretize,
+    swap_discretization
 
 abstract AssignmentSampler
 rand(samp::AssignmentSampler, a::Assignment) = error("not implemented")
@@ -36,7 +37,7 @@ end
 function rand(samp::UniformAssignmentSampler, a::Assignment)
     # sample the variables from the appropriate uniform distribution
     values = Assignment()
-    unsampled_vars = setdiff(a, keys(samp.var_edges))
+    unsampled_vars = setdiff(keys(a), keys(samp.var_edges))
     for (var, edges) in samp.var_edges
         values[var] = random_uniform(samp.rng, edges[a[var]], edges[a[var] + 1])
     end
@@ -51,12 +52,31 @@ function rand(samp::UniformAssignmentSampler, a::Assignment)
     return values
 end
 
+function swap_discretization(a::Assignment, src::AssignmentSampler, 
+        dest::AssignmentSampler)
+    dest_a = Assignment()
+    # for each variable, find the bin in dest containing the mean value of 
+    # the bin from src
+    for (variable, src_bin) in a
+        src_edges = src.var_edges[variable]
+        src_mean = (src_edges[src_bin] + src_edges[src_bin + 1]) / 2
+        dest_bin = 1
+        for (dest_bin, edge) in enumerate(dest.var_edges[variable][2:end])
+            if src_mean <= edge
+                break
+            end
+        end
+        dest_a[variable] = dest_bin
+    end
+    return dest_a
+end
+
 # faster to use the biject method if edges is large, but it seems likely 
 # that edges will be small
 function discretize(v::Float64, edges::Vector{Float64})
     i = 1
     for (i, edge) in enumerate(edges[2:end])
-        if v < edge
+        if v <= edge
             break
         end
     end

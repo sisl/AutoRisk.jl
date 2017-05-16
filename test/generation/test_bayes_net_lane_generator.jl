@@ -46,14 +46,19 @@ function build_debug_base_net_lane_gen()
         :aggressiveness=>[0.,.5,1.], 
         :foredistance=>[0.,10.,20.],
         :forevelocity=>[0.,5.,10.],
-        :relvelocity=>[0.,5.,10.]
+        :relvelocity=>[0.,5.,10.],
+        :isattentive=>[1.,1.5,2.],
+        :aggressiveness=>[0.,.5,1.],
+        :vehlength=>[0.,.5,3.],
+        :vehwidth=>[0.,.5,3.]
     )
     sampler = UniformAssignmentSampler(var_edges)
     num_veh_per_lane = 2
     min_p = get_passive_behavior_params(err_p_a_to_i = .5)
     max_p = get_aggressive_behavior_params(err_p_a_to_i = .5)
     behgen = CorrelatedBehaviorGenerator(min_p, max_p)
-    gen = BayesNetLaneGenerator(base_bn, prop_bn, sampler, num_veh_per_lane, behgen)
+    gen = BayesNetLaneGenerator(base_bn, sampler, prop_bn, sampler, 
+        num_veh_per_lane, behgen)
     return gen
 end
 
