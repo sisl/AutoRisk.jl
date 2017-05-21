@@ -135,7 +135,10 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
             # randomly sample given the evidence and set the probability
             if veh_id == target_veh_id
-                rand!(a, gen.prop_bn, evidence)
+                # swap evidence discretization
+                prop_evidence = swap_discretization(evidence, 
+                    gen.base_assignment_sampler, gen.prop_assignment_sampler)
+                rand!(a, gen.prop_bn, prop_evidence)
                 # note: this swaps the discretization from the proposal
                 # bn to the base bn such that bins below or above the 
                 # bounds of the base bn are clamped to the lowest/highest 
