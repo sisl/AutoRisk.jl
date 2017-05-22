@@ -144,6 +144,5 @@ function test_bayes_net_data_collection()
     @test weights_1 ≈ weights_2
 end
 
-
 @time test_bayes_net_lane_gen_sampling()
 @time test_bayes_net_data_collection()

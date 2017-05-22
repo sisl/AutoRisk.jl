@@ -27,7 +27,7 @@ type AssignmentSampler
             rng::MersenneTwister = MersenneTwister(1))
         if isempty(sampling_methods)
             for (var, disc) in discs
-                if typeof(disc) == LinearDiscretizer
+                if typeof(disc) == LinearDiscretizer{Float64,Int}
                     sampling_methods[var] = SAMPLE_UNIFORM
                 end
             end
