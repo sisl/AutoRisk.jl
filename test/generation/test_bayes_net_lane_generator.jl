@@ -42,17 +42,18 @@ function build_debug_base_net_lane_gen()
             :vehlength=>:vehwidth
         )
     )
-    var_edges = Dict(
-        :aggressiveness=>[0.,.5,1.], 
-        :foredistance=>[0.,10.,20.],
-        :forevelocity=>[0.,5.,10.],
-        :relvelocity=>[0.,5.,10.],
-        :isattentive=>[1.,1.5,2.],
-        :aggressiveness=>[0.,.5,1.],
-        :vehlength=>[0.,.5,3.],
-        :vehwidth=>[0.,.5,3.]
+    discs = Dict{Symbol, AbstractDiscretizer}(
+        :aggressiveness=>LinearDiscretizer([0.,.5,1.]), 
+        :foredistance=>LinearDiscretizer([0.,10.,20.]),
+        :forevelocity=>LinearDiscretizer([0.,5.,10.]),
+        :relvelocity=>LinearDiscretizer([0.,5.,10.]),
+        :isattentive=>CategoricalDiscretizer([1.,2.]),
+        :aggressiveness=>LinearDiscretizer([0.,.5,1.]),
+        :vehlength=>LinearDiscretizer([0.,.5,3.]),
+        :vehwidth=>LinearDiscretizer([0.,.5,3.])
     )
-    sampler = UniformAssignmentSampler(var_edges)
+    
+    sampler = AssignmentSampler(discs)
     num_veh_per_lane = 2
     min_p = get_passive_behavior_params(err_p_a_to_i = .5)
     max_p = get_aggressive_behavior_params(err_p_a_to_i = .5)
@@ -69,6 +70,7 @@ function test_bayes_net_lane_gen_sampling()
     models = Dict{Int,DriverModel}()
     rand!(gen, roadway, scene, models, 1)
 
+    # proposal car is the first one
     @test get_weights(gen)[1] < 1.
     @test models[1].is_attentive == false
     @test get_weights(gen)[2] ≈ 1.

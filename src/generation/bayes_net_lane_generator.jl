@@ -67,9 +67,8 @@ end
 
 # propagate values for use in generating the next vehicle
 function update!(dest::Assignment, gen::BayesNetLaneGenerator, src::Assignment)
-    velocity = src[:relvelocity] + src[:forevelocity]
-    dest[:forevelocity] = discretize(
-        gen.base_assignment_sampler, velocity, :forevelocity)
+    vel = src[:relvelocity] + src[:forevelocity]
+    dest[:forevelocity] = encode(gen.base_assignment_sampler, vel, :forevelocity)
 end
 
 update_pos(pos::Float64, a::Assignment) = pos - a[:foredistance]
@@ -157,10 +156,6 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 # sample continuous values from the discrete assignments
                 values = rand(gen.base_assignment_sampler, a)
             end
-
-            # TODO: give each variable its own sampler rather than doing this
-            # reset the value of attentive in values to its discrete value
-            values[:isattentive] = a[:isattentive]
 
             # build and add the vehicle to the scene and models
             pos = update_pos(pos, values)

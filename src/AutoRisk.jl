@@ -6,6 +6,7 @@ using Reexport
 @reexport using AutomotiveDrivingModels
 @reexport using BayesNets
 @reexport using DataStructures
+@reexport using Discretizers
 @reexport using Distributions
 @reexport using ForwardNets
 @reexport using HDF5
@@ -17,6 +18,7 @@ import AutomotiveDrivingModels:
     get_name, show
 import Base: display, show, rand, rand!, ==
 import Distributions: rand, pdf, logpdf
+import Discretizers: encode, decode
 
 # utils
 include("evaluation/simulation.jl")
