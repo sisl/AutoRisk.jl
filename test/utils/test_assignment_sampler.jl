@@ -2,7 +2,7 @@
 # using AutoRisk
 
 function test_assignment_sampler()
-    discs = Dict{Symbol,AbstractDiscretizer}(:vel=>LinearDiscretizer([0., 1., 2.]), 
+    discs = Dict{Symbol,LinCatDiscretizer}(:vel=>LinearDiscretizer([0., 1., 2.]), 
         :pos=>LinearDiscretizer([-1.,0.,1.]))
     samp = AssignmentSampler(discs)
     a = Assignment(:vel=>1, :pos=>2)
@@ -17,11 +17,11 @@ function test_assignment_sampler()
 end
 
 function test_swap_discretization()
-    discs = Dict{Symbol,AbstractDiscretizer}(:vel=>LinearDiscretizer([-1., 0., 1., 2., 3.]), 
+    discs = Dict{Symbol,LinCatDiscretizer}(:vel=>LinearDiscretizer([-1., 0., 1., 2., 3.]), 
         :pos=>LinearDiscretizer([-1.,0.,1.]))
     src = AssignmentSampler(discs)
 
-    discs = Dict{Symbol,AbstractDiscretizer}(:vel=>LinearDiscretizer([0., 1., 2.]), 
+    discs = Dict{Symbol,LinCatDiscretizer}(:vel=>LinearDiscretizer([0., 1., 2.]), 
         :pos=>LinearDiscretizer([-2.,-1.,0.,1.,2.]))
     dest = AssignmentSampler(discs)
 
@@ -49,9 +49,9 @@ function test_swap_discretization()
 end
 
 function test_categorical_disc_type()
-    discs = Dict{Symbol,AbstractDiscretizer}(
+    discs = Dict{Symbol,LinCatDiscretizer}(
         :vel=>LinearDiscretizer([-1., 0., 1., 2., 3.]), 
-        :pos=>CategoricalDiscretizer([1.,2.]))
+        :pos=>CategoricalDiscretizer([1,2]))
     samp = AssignmentSampler(discs)
     a = Assignment(:vel=>2, :pos=>2)
     v = rand(samp, a)

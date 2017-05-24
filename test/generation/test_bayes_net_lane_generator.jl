@@ -42,12 +42,12 @@ function build_debug_base_net_lane_gen()
             :vehlength=>:vehwidth
         )
     )
-    discs = Dict{Symbol, AbstractDiscretizer}(
+    discs = Dict{Symbol, LinCatDiscretizer}(
         :aggressiveness=>LinearDiscretizer([0.,.5,1.]), 
         :foredistance=>LinearDiscretizer([0.,10.,20.]),
         :forevelocity=>LinearDiscretizer([0.,5.,10.]),
         :relvelocity=>LinearDiscretizer([0.,5.,10.]),
-        :isattentive=>CategoricalDiscretizer([1.,2.]),
+        :isattentive=>CategoricalDiscretizer([1,2]),
         :aggressiveness=>LinearDiscretizer([0.,.5,1.]),
         :vehlength=>LinearDiscretizer([0.,.5,3.]),
         :vehwidth=>LinearDiscretizer([0.,.5,3.])

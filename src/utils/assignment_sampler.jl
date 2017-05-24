@@ -4,7 +4,10 @@ export
     encode,
     decode,
     swap_discretization,
-    get_disc_types
+    get_disc_types,
+    LinCatDiscretizer
+
+typealias LinCatDiscretizer Union{LinearDiscretizer{Float64,Int},CategoricalDiscretizer{Int,Int}}
 
 """
 # Description: 
@@ -18,11 +21,11 @@ export
 
 """
 type AssignmentSampler
-    discs::Dict{Symbol, AbstractDiscretizer}
+    discs::Dict{Symbol, LinCatDiscretizer}
     sampling_methods::Dict{Symbol, AbstractSampleMethod}
     rng::MersenneTwister
     function AssignmentSampler(
-            discs::Dict{Symbol, AbstractDiscretizer},
+            discs::Dict{Symbol, LinCatDiscretizer},
             sampling_methods::Dict{Symbol, AbstractSampleMethod} = Dict{Symbol, AbstractSampleMethod}(),
             rng::MersenneTwister = MersenneTwister(1))
         if isempty(sampling_methods)
