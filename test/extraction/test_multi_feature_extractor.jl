@@ -1,5 +1,5 @@
-# using Base.Test
-# using AutoRisk
+using Base.Test
+using AutoRisk
 
 function test_multi_feature_extractor_heuristic()
     # add three vehicles and specifically check neighbor features
@@ -152,6 +152,73 @@ function test_feature_names()
     @test fs[3] == "velocity"
 end
 
+function test_no_prime_extraction()
+    # add three vehicles and specifically check neighbor features
+    num_veh = 3
+    # one lane roadway
+    roadway = gen_straight_roadway(1, 100.)
+    scene = Scene(num_veh)
+
+    models = Dict{Int, DriverModel}()
+
+    # 1: first vehicle, moving the fastest
+    mlon = StaticLaneFollowingDriver(2.)
+    mlane = MOBIL(.1)
+    models[1] = Tim2DDriver(.1, mlon = mlon, mlane = mlane)
+    road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
+    base_speed = 2.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_def = VehicleDef(AgentClass.CAR, 4., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 1))
+
+    # 2: second vehicle, in the middle, moving at intermediate speed
+    mlon = StaticLaneFollowingDriver(1.0)
+    models[2] = Tim2DDriver(.1, mlon = mlon, mlane = mlane)
+    base_speed = 1.
+    road_pos = 10.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_state = move_along(veh_state, roadway, road_pos)
+    veh_def = VehicleDef(AgentClass.CAR, 4.5, 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 2))
+
+    # 3: thrid vehicle, in the front, not moving
+    mlon = StaticLaneFollowingDriver(0.)
+    models[3] = Tim2DDriver(.1, mlon = mlon, mlane = mlane)
+    base_speed = 0.
+    road_pos = 20.
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
+    veh_state = move_along(veh_state, roadway, road_pos)
+    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+    push!(scene, Vehicle(veh_state, veh_def, 3))
+
+    # simulate the scene for 1 second
+    rec = SceneRecord(1, .1, num_veh)
+    update!(rec, scene)
+
+    subexts = [
+        CoreFeatureExtractor(),
+        TemporalFeatureExtractor(),
+        WellBehavedFeatureExtractor(),
+        NeighborFeatureExtractor(),
+        CarLidarFeatureExtractor(),
+        BehavioralFeatureExtractor()
+    ]
+    ext = MultiFeatureExtractor(subexts)
+    features = Array{Float64}(length(ext), num_veh)
+
+    features[:,1] = pull_features!(ext, rec, roadway, 1, models)
+    features[:,2] = pull_features!(ext, rec, roadway, 2, models)
+    features[:,3] = pull_features!(ext, rec, roadway, 3, models)
+
+    feature_names_list = feature_names(ext)
+    politeness_index = find(feature_names_list .== "beh_lane_politeness")
+    politeness_values = features[politeness_index,:]
+    @test politeness_values[1] ≈ .35
+    agg_values = infer_correlated_aggressiveness(politeness_values)
+    @test agg_values[1] ≈ .625
+end
+
 @time test_multi_feature_extractor_heuristic()
 @time test_multi_feature_extractor()
 @time test_feature_names()
+@time test_no_prime_extraction()

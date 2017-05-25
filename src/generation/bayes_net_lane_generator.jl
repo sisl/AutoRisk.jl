@@ -65,22 +65,21 @@ type BayesNetLaneGenerator <: Generator
     end
 end
 
-# propagate values for use in generating the next vehicle
-function update!(dest::Assignment, gen::BayesNetLaneGenerator, src::Assignment)
-    vel = src[:relvelocity] + src[:forevelocity]
-    dest[:forevelocity] = encode(gen.base_assignment_sampler, vel, :forevelocity)
-end
-
-update_pos(pos::Float64, a::Assignment) = pos - a[:foredistance]
 get_weights(gen::BayesNetLaneGenerator) = gen.weights
 
-function build_vehicle(veh_id::Int, a::Assignment, roadway::Roadway, 
-        pos::Float64, lane_idx::Int = 1)
+function build_vehicle(
+        veh_id::Int, 
+        roadway::Roadway, 
+        pos::Float64, 
+        vel::Float64,
+        vehlength::Float64,
+        vehwidth::Float64,
+        lane_idx::Int = 1
+    )
     road_idx = RoadIndex(proj(VecSE2(0.0, 3. * (lane_idx-1), 0.0), roadway))
-    velocity = a[:relvelocity] + a[:forevelocity]
-    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, velocity)
+    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, vel)
     veh_state = move_along(veh_state, roadway, pos)
-    veh_def = VehicleDef(AgentClass.CAR, a[:vehlength], a[:vehwidth])
+    veh_def = VehicleDef(AgentClass.CAR, vehlength, vehwidth)
     return Vehicle(veh_state, veh_def, veh_id)
 end
 
@@ -128,6 +127,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
         a = Assignment()
         evidence = Assignment()
         pos = get_total_roadway_length(roadway) * 2 / 3.
+        vel = Inf
 
         for veh_idx in 1:gen.num_veh_per_lane
             veh_id = veh_idx + (lane_idx - 1) * gen.num_veh_per_lane
@@ -157,9 +157,31 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 values = rand(gen.base_assignment_sampler, a)
             end
 
-            # build and add the vehicle to the scene and models
-            pos = update_pos(pos, values)
-            veh = build_vehicle(veh_id, values, roadway, pos, lane_idx)
+            # set velocity if not yet set
+            # subsequently update this velocity, discretizing it to do sampling 
+            # but do not take the resampled value, instead use the true value
+            # not that this means the values[:forevelocity] will be invalid
+            # after the initial sample, so set inside if just for accuracy
+            if vel == Inf
+                vel = values[:forevelocity] + values[:relvelocity]
+            else
+                values[:forevelocity] = vel
+                vel += values[:relvelocity]
+            end
+            # propagate forward the variables of this car to be evidence for 
+            # the next vehicle
+            evidence[:forevelocity] = encode(
+                gen.base_assignment_sampler, vel, :forevelocity)
+
+            # position should be updated as the foredistance plus half the 
+            # vehicle length because that is where foredistance is 
+            # measured from
+            pos = pos - values[:foredistance] - values[:vehlength] / 2
+            # build and add the vehicle to the scene
+            veh = build_vehicle(veh_id, roadway, pos, vel, values[:vehlength],
+                values[:vehwidth], lane_idx)
+            # position subsequently updated to the rear of the vehicle
+            pos = pos - values[:vehlength] / 2
             push!(scene, veh)
             params = rand(gen.beh_gen, values[:aggressiveness])
             # if first vehicle in lane, set desired speed to current speed 
@@ -173,10 +195,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 is_attentive = values[:isattentive] == 1 ? false : true
                 set_is_attentive!(models[veh_id], is_attentive)
             end
-
-            # propagate forward the variables of this car to be evidence for 
-            # the next vehicle
-            update!(evidence, gen, values)
+            
         end
     end
     return scene

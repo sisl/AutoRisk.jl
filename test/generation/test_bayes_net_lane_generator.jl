@@ -144,5 +144,78 @@ function test_bayes_net_data_collection()
     @test weights_1 ≈ weights_2
 end
 
+function build_simple_realistic_base_net_lane_gen(;
+        num_veh_per_lane = 2
+    )
+    num_samples = 1000
+    num_vars = 7
+    # each variable equally split between bins
+    data = ones(Int, num_vars, num_samples)
+    data[:,Int(ceil(end/2)):end] = 2
+
+    training_data = DataFrame(
+            relvelocity = data[1,:],
+            forevelocity = data[2,:],
+            foredistance = data[3,:],
+            aggressiveness = data[4,:],
+            isattentive = data[5,:],
+            vehlength = data[6,:],
+            vehwidth = data[7,:]
+    )
+    base_bn = fit(DiscreteBayesNet, training_data, (
+            :isattentive=>:foredistance, 
+            :isattentive=>:relvelocity,
+            :aggressiveness=>:foredistance, 
+            :aggressiveness=>:relvelocity,
+            :foredistance=>:relvelocity,
+            :forevelocity=>:relvelocity,
+            :vehlength=>:vehwidth
+        )
+    )
+    prop_bn = base_bn
+    discs = Dict{Symbol, LinCatDiscretizer}(
+        :aggressiveness=>LinearDiscretizer([0.,.5,1.]), 
+        :foredistance=>LinearDiscretizer([5.,5.1, 5.2]),
+        :forevelocity=>LinearDiscretizer([1.,5.,10.]),
+        :relvelocity=>LinearDiscretizer([-1.,0.,1.]),
+        :isattentive=>CategoricalDiscretizer([1,2]),
+        :aggressiveness=>LinearDiscretizer([0.,.5,1.]),
+        :vehlength=>LinearDiscretizer([0.,1.,2.]),
+        :vehwidth=>LinearDiscretizer([0.,1.,2.])
+    )
+    
+    sampler = AssignmentSampler(discs)
+    min_p = get_passive_behavior_params()
+    max_p = get_aggressive_behavior_params()
+    behgen = CorrelatedBehaviorGenerator(min_p, max_p)
+    gen = BayesNetLaneGenerator(base_bn, sampler, prop_bn, sampler, 
+        num_veh_per_lane, behgen)
+    return gen
+end
+
+function test_scene_features_align_with_bounds()
+    num_veh_per_lane = 3
+    gen = build_simple_realistic_base_net_lane_gen(
+        num_veh_per_lane = num_veh_per_lane
+    )
+    roadway = gen_straight_roadway(1)
+    scene = Scene(num_veh_per_lane)
+    models = Dict{Int,DriverModel}()
+    rand!(gen, roadway, scene, models, 2)
+    ext = NeighborFeatureExtractor()
+    rec = SceneRecord(num_veh_per_lane, .1)
+    update!(rec, scene)
+    features = Array{Float64}(length(ext), num_veh_per_lane)
+    features[:, 1] = pull_features!(ext, rec, roadway, 1, models)
+    features[:, 2] = pull_features!(ext, rec, roadway, 2, models)
+    features[:, 3] = pull_features!(ext, rec, roadway, 3, models)
+
+    @test 5.1 <= features[5, 2] <= 5.2
+    @test 1. <= features[6, 2] <= 10.
+    @test 5.0 <= features[5, 3] <= 5.1
+    @test 1. <= features[6, 3] <= 10.
+end
+
 @time test_bayes_net_lane_gen_sampling()
 @time test_bayes_net_data_collection()
+@time test_scene_features_align_with_bounds()
