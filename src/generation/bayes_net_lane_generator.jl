@@ -37,6 +37,7 @@ type BayesNetLaneGenerator <: Generator
     weights::Array{Float64}
     num_veh_per_lane::Int
     beh_gen::CorrelatedBehaviorGenerator
+    target_veh_id::Int
     rng::MersenneTwister
     """
     Description:
@@ -52,17 +53,37 @@ type BayesNetLaneGenerator <: Generator
             given aggressiveness values
         - num_veh_per_lane: number of vehicles per lane
     """
-    function BayesNetLaneGenerator(base_bn::BayesNet, 
+    function BayesNetLaneGenerator(
+            base_bn::BayesNet, 
             base_assignment_sampler::AssignmentSampler,
             prop_bn::BayesNet,
             prop_assignment_sampler::AssignmentSampler, 
             num_veh_per_lane::Int, 
             beh_gen::CorrelatedBehaviorGenerator, 
-            rng = MersenneTwister(1))
+            rng = MersenneTwister(1)
+        )
         return new(base_bn, base_assignment_sampler, prop_bn,
             prop_assignment_sampler, ones(1, num_veh_per_lane), 
-            num_veh_per_lane, beh_gen, rng)
+            num_veh_per_lane, beh_gen, 0, rng)
     end
+end
+
+function BayesNetLaneGenerator(
+        base_bn_filepath::String,
+        prop_bn_filepath::String,
+        num_veh_per_lane::Int,
+        beh_gen::CorrelatedBehaviorGenerator,
+        rng::MersenneTwister = MersenneTwister(1)
+    )
+    d = JLD.load(base_bn_filepath) 
+    base_bn = d["bn"]
+    base_sampler = AssignmentSampler(d["discs"])
+
+    d = JLD.load(prop_bn_filepath) 
+    prop_bn = d["bn"]
+    prop_sampler = AssignmentSampler(d["discs"])
+    return BayesNetLaneGenerator(base_bn, base_sampler, prop_bn, prop_sampler,
+        num_veh_per_lane, beh_gen, rng)
 end
 
 get_weights(gen::BayesNetLaneGenerator) = gen.weights
@@ -119,7 +140,7 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
     # assume that the vehicle with elevated target probability is the one 
     # in the middle of the lanes, and is the second to last vehicle in its lane
-    target_veh_id = get_target_vehicle_index(gen, roadway)
+    gen.target_veh_id = target_veh_id = get_target_vehicle_index(gen, roadway)
     total_num_vehicles = nlanes(roadway) * gen.num_veh_per_lane
 
     # generate lanes independently
