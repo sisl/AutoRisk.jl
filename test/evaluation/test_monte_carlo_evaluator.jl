@@ -64,7 +64,8 @@ function test_monte_carlo_evaluator_debug()
 
     rng::MersenneTwister = MersenneTwister(1)
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
+    target_ext = TargetExtractor()
+    eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
@@ -119,7 +120,8 @@ function test_monte_carlo_evaluator()
     rng::MersenneTwister = MersenneTwister(1)
 
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
+    target_ext = TargetExtractor()
+    eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
@@ -183,7 +185,8 @@ function test_multi_timestep_monte_carlo_evaluator()
     rng::MersenneTwister = MersenneTwister(1)
 
     ext = MultiFeatureExtractor()
-    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
+    target_ext = TargetExtractor()
+    eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)

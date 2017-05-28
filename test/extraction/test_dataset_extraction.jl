@@ -9,6 +9,7 @@
 function test_extract_vehicle_frame_targets()
     num_veh = 2
     models = Dict{Int, DriverModel}()
+    ext = TargetExtractor()
 
     # two static drivers not in a collision
     mlon = StaticLaneFollowingDriver(0.)
@@ -34,10 +35,12 @@ function test_extract_vehicle_frame_targets()
     fill!(targets, 0)
     veh_idx = 1
     t_idx = 1
-    extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
+    targets[:, t_idx] = pull_features!(ext, rec, roadway, veh_idx, 0)
+    # extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
     veh_idx = 2
     t_idx = 2
-    extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
+    targets[:, t_idx] = pull_features!(ext, rec, roadway, veh_idx, 0)
+    #extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
 
     @test all(abs(targets) .< 1e-8)
 
@@ -48,10 +51,12 @@ function test_extract_vehicle_frame_targets()
 
     veh_idx = 1
     t_idx = 1
-    extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
+    targets[:, t_idx] = pull_features!(ext, rec, roadway, veh_idx, 0)
+    #extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
     veh_idx = 2
     t_idx = 2
-    extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
+    targets[:, t_idx] = pull_features!(ext, rec, roadway, veh_idx, 0)
+    # extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
 
     @test targets[2,1] == 1.0
     @test abs(targets[4,1]) < 1e-8
@@ -66,6 +71,7 @@ function test_extract_frame_targets()
     # without changing index
     num_veh = 2
     models = Dict{Int, DriverModel}()
+    ext = TargetExtractor()
     mlon = StaticLaneFollowingDriver(0.)
     models[1] = Tim2DDriver(.1, mlon = mlon)
     models[2] = Tim2DDriver(.1, mlon = mlon)
@@ -91,7 +97,7 @@ function test_extract_frame_targets()
     veh_idx_can_change = false
     done = Set{Int64}()
     pastframe = 0
-    extract_frame_targets!(rec, roadway, targets, veh_id_to_idx, 
+    extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
         veh_idx_can_change, done, pastframe)
 
     @test all(abs(targets) .< 1e-8)
@@ -101,7 +107,7 @@ function test_extract_frame_targets()
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
     fill!(targets, 0)
-    extract_frame_targets!(rec, roadway, targets, veh_id_to_idx, 
+    extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
         veh_idx_can_change, done, pastframe)
 
     @test targets[2,1] == 1.0
@@ -118,7 +124,7 @@ function test_extract_frame_targets()
     done = Set{Int64}()
     veh_idx_can_change = true
     fill!(targets, 0)
-    extract_frame_targets!(rec, roadway, targets, veh_id_to_idx, 
+    extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
         veh_idx_can_change, done, pastframe)
 
     @test targets[2,1] == 1.0
@@ -132,6 +138,7 @@ function test_extract_targets()
 
     num_veh = 2
     models = Dict{Int, DriverModel}()
+    ext = TargetExtractor()
     mlon = StaticLaneFollowingDriver(0.)
     models[1] = Tim2DDriver(.1, mlon = mlon)
     models[2] = Tim2DDriver(.1, mlon = mlon)
@@ -154,7 +161,7 @@ function test_extract_targets()
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
     veh_idx_can_change = true
-    extract_targets!(rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
+    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
 
     @test abs(targets[1,1]) < 1e-8
     @test abs(targets[2,1]) < 1e-8
@@ -166,7 +173,7 @@ function test_extract_targets()
     models[1] = Tim2DDriver(.1, mlon = StaticLaneFollowingDriver(-5.))
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
-    extract_targets!(rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
+    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
 
     # frames = Frames(MIME("image/png"), fps=2)
     # frame = render(scene, roadway)

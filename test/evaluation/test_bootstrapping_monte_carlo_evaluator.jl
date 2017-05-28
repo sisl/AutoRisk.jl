@@ -60,7 +60,8 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     push!(prediction_model.biases, zeros(Float64, (1, NUM_TARGETS)))
 
     ext = MultiFeatureExtractor()
-    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, prime_time,
+    target_ext = TargetExtractor()
+    eval = BootstrappingMonteCarloEvaluator(ext, target_ext, num_runs, prime_time,
         sampling_time, veh_idx_can_change, rec, features, targets, agg_targets,
         prediction_model, rng)
 

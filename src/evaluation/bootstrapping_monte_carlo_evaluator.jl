@@ -10,6 +10,7 @@ export
 """
 type BootstrappingMonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
+    target_ext::AbstractFeatureExtractor
     num_runs::Int64
     prime_time::Float64
     sampling_time::Float64
@@ -44,7 +45,9 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
         - agg_targets: aggregate target values accumulated across runs
         - rng: random number generator to use
     """
-    function BootstrappingMonteCarloEvaluator(ext::AbstractFeatureExtractor,
+    function BootstrappingMonteCarloEvaluator(
+            ext::AbstractFeatureExtractor,
+            target_ext::AbstractFeatureExtractor,
             num_runs::Int64, 
             prime_time::Float64, 
             sampling_time::Float64, 
@@ -55,12 +58,13 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
             agg_targets::Array{Float64}, 
             prediction_model::PredictionModel,
             rng::MersenneTwister = MersenneTwister(1);
-            discount::Float64 = 1.)
+            discount::Float64 = 1.
+        )
         features_size = size(features)
         @assert length(features_size) == 3
         feature_timesteps = features_size[2]
         prediction_features = Array{Float64}(features_size)
-        return new(ext, num_runs, prime_time, sampling_time, 
+        return new(ext, target_ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps,
             targets, agg_targets, prediction_features, prediction_model, 
             rng, 0, Dict{Int64, Int64}(), discount)

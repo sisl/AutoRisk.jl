@@ -26,6 +26,7 @@ get_targets(eval::Evaluator) = eval.agg_targets[:, :]
 """
 type MonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
+    target_ext::AbstractFeatureExtractor
     num_runs::Int64
     prime_time::Float64
     sampling_time::Float64
@@ -42,7 +43,8 @@ type MonteCarloEvaluator <: Evaluator
     veh_id_to_idx::Dict{Int64, Int64}
     """
     # Args:
-        - ext: feature and target extractor
+        - ext: feature extractor
+        - target_ext: target extractor
         - num_runs: how many monte carlo runs to run
         - prime_time: "burn-in" time for the scene
         - sampling_time: time to sample the scene after burn-in
@@ -56,7 +58,9 @@ type MonteCarloEvaluator <: Evaluator
         - agg_targets: aggregate target values accumulated across runs
         - rng: random number generator to use
     """
-    function MonteCarloEvaluator(ext::AbstractFeatureExtractor,
+    function MonteCarloEvaluator(
+            ext::AbstractFeatureExtractor,
+            target_ext::AbstractFeatureExtractor,
             num_runs::Int64, 
             prime_time::Float64, 
             sampling_time::Float64, 
@@ -65,12 +69,13 @@ type MonteCarloEvaluator <: Evaluator
             features::Array{Float64}, 
             targets::Array{Float64},
             agg_targets::Array{Float64}, 
-            rng::MersenneTwister = MersenneTwister(1))
+            rng::MersenneTwister = MersenneTwister(1)
+        )
         features_size = size(features)
         @assert length(features_size) == 3
         feature_timesteps = features_size[2]
 
-        return new(ext, num_runs, prime_time, sampling_time, 
+        return new(ext, target_ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps, targets, 
             agg_targets, rng, 0, Dict{Int64, Int64}())
     end
@@ -161,8 +166,8 @@ function evaluate!(eval::Evaluator, scene::Scene,
         start_extract_frame = max(pastframe - 1, 0)
 
         # extract target values from every frame in the record for every vehicle
-        extract_targets!(eval.rec, roadway, eval.targets, eval.veh_id_to_idx,
-            eval.veh_idx_can_change, start_extract_frame)
+        extract_targets!(eval.target_ext, eval.rec, roadway, eval.targets, 
+            eval.veh_id_to_idx, eval.veh_idx_can_change, start_extract_frame)
 
         # optionally bootstrap target values
         bootstrap_targets!(eval, models, roadway)

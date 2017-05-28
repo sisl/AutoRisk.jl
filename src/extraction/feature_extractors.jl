@@ -582,3 +582,35 @@ function AutomotiveDrivingModels.pull_features!(
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
 end
+
+##################### Scenario Feature Extractor #####################
+
+function pull_features!(ext::AbstractFeatureExtractor, rec::SceneRecord, 
+        roadway::Roadway, models::Dict{Int, DriverModel}, features::Array{Float64},
+        steps::Int64 = 1)
+    # reset features container
+    fill!(features, 0)
+
+    # map original id to index into features, since index in scene may change
+    # note that this selects the latest scene, which means certain features 
+    # may be missing for vehicles, but that at least the last timestep 
+    # will have features
+    id2idx = Dict((veh.id)=>vidx for (vidx, veh) in enumerate(rec[0]))
+
+    # extract features for each vehicle in the scene for each timestep 
+    # inserting into features in past to present order
+    for t in 1:steps
+        pastframe = -(t - 1)
+        for (vidx, veh) in enumerate(rec[pastframe])
+
+            # check for existence of the vehicle id
+            # if it's not present, this means the vehicle has entered the scene
+            # since starting feature extraction, and we elect to skip it
+            if in(veh.id, keys(id2idx))
+                features[:, steps - t + 1, id2idx[veh.id]] = pull_features!(
+                    ext, rec, roadway, vidx, models, pastframe)
+            end
+        end
+    end
+    return features
+end

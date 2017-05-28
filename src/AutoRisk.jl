@@ -35,9 +35,9 @@ include("behaviors/gaussian_mlp_driver.jl")
 
 # extraction
 include("extraction/lidar_sensors.jl")
+include("extraction/target_extractor.jl")
 include("extraction/feature_extractors.jl")
 include("extraction/multi_feature_extractor.jl")
-include("extraction/dataset_extraction.jl")
 
 # generation
 ## roadway

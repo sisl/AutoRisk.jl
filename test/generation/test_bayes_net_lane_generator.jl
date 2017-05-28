@@ -84,6 +84,7 @@ function run_bayes_net_collection()
     models = Dict{Int,DriverModel}()
 
     ext = MultiFeatureExtractor()
+    target_ext = TargetExtractor()
     num_runs = 2
     num_samples = 2
     seeds = collect(1:num_samples)
@@ -102,7 +103,7 @@ function run_bayes_net_collection()
     targets = Array{Float64}(target_dim, max_num_veh)
     agg_targets = Array{Float64}(target_dim, max_num_veh)
     rng = MersenneTwister(1)
-    eval = MonteCarloEvaluator(ext, num_runs, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset
