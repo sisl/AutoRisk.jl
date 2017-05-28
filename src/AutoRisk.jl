@@ -12,6 +12,7 @@ using Reexport
 @reexport using HDF5
 @reexport using Parameters
 @reexport using GridInterpolations
+@reexport using StatsBase
 
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,

@@ -45,7 +45,7 @@ function test_behavior_reset()
     mobil_params = MOBILParams(collect(8.:10.)...)
     lat_params = LateralParams(11., 12., 13.)
     params = [BehaviorParams(idm_params, mobil_params, lat_params)]
-    weights = WeightVec([1.])
+    weights = StatsBase.Weights([1.])
     gen = PredefinedBehaviorGenerator(params, weights)
     models = Dict{Int, DriverModel}()
     scene = Scene(1)

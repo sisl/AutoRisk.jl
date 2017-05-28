@@ -10,7 +10,7 @@ export
 """
 type PredefinedBehaviorGenerator <: BehaviorGenerator
     params::Vector{BehaviorParams}
-    weights::WeightVec
+    weights::StatsBase.Weights
     rng::MersenneTwister
 
     """

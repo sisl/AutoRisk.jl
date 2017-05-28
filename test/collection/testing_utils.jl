@@ -52,7 +52,7 @@ function build_debug_dataset_collector(;
 
     # behavior gen
     params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]
-    weights = WeightVec([1.])
+    weights = StatsBase.Weights([1.])
     behavior_gen = PredefinedBehaviorGenerator(params, weights)
     models = Dict{Int, DriverModel}()
 

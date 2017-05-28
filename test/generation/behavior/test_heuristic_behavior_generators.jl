@@ -8,7 +8,7 @@ function test_predefined_behavior_generator()
     lat_params_2 = LateralParams(13., 14., 14.)
     params = [BehaviorParams(idm_params, mobil_params, lat_params),
         BehaviorParams(idm_params, mobil_params, lat_params_2)]
-    weights = WeightVec([.5, .5])
+    weights = StatsBase.Weights([.5, .5])
     gen = PredefinedBehaviorGenerator(params, weights)
 
     srand(1)
