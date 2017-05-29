@@ -207,14 +207,13 @@ function test_multi_timestep_monte_carlo_evaluator()
     @test eval.features[3,5,2] ≈ .5
 
     # check accel over time
-    @test eval.features[9,1,1] ≈ 0.
+    @test eval.features[9,1,1] ≈ 2.
     @test eval.features[9,2,1] ≈ 2.
     @test eval.features[9,3,1] ≈ 2.
-    @test eval.features[9,1,2] ≈ 0.
+    @test eval.features[9,1,2] ≈ 1.
     @test eval.features[9,2,2] ≈ 1.
     @test eval.features[9,3,2] ≈ 1.
 
-    # println(eval.features[:,3,1])
 end
 
 @time test_monte_carlo_evaluator_debug()

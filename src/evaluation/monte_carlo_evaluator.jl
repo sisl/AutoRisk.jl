@@ -155,7 +155,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # simulate starting from the final burn-in scene
         simulate!(Any, eval.rec, temp_scene, roadway, models, 
-            eval.sampling_time)
+            eval.sampling_time, update_first_scene = false)
 
         # pastframe is the number of frames that have been simulated
         pastframe = Int(round(eval.sampling_time / eval.rec.timestep))

@@ -16,6 +16,46 @@ type MultiFeatureExtractor <: AbstractFeatureExtractor
         new(extractors, lengths, features, num_features)
     end
 end
+# convenience constructor
+function MultiFeatureExtractor(;
+        extract_core::Bool = true,
+        extract_temporal::Bool = true,
+        extract_well_behaved::Bool = true,
+        extract_neighbor::Bool = true,
+        extract_behavioral::Bool = true,
+        extract_neighbor_behavioral::Bool = true,
+        extract_car_lidar::Bool = true,
+        extract_car_lidar_range_rate::Bool = true,
+        extract_road_lidar::Bool = false
+    )
+    subexts::Vector{AbstractFeatureExtractor} = []
+    if extract_core
+        push!(subexts, CoreFeatureExtractor())
+    end
+    if extract_temporal
+        push!(subexts, TemporalFeatureExtractor())
+    end
+    if extract_well_behaved
+        push!(subexts, WellBehavedFeatureExtractor())
+    end
+    if extract_neighbor
+        push!(subexts, NeighborFeatureExtractor())
+    end
+    if extract_behavioral
+        push!(subexts, BehavioralFeatureExtractor())
+    end
+    if extract_neighbor_behavioral
+        push!(subexts, NeighborBehavioralFeatureExtractor())
+    end
+    if extract_car_lidar
+        push!(subexts, CarLidarFeatureExtractor(
+            extract_carlidar_rangerate = extract_car_lidar_range_rate))
+    end
+    if extract_road_lidar
+        push!(subexts, RoadLidarFeatureExtractor())
+    end
+    return MultiFeatureExtractor(subexts)
+end
 Base.length(ext::MultiFeatureExtractor) = ext.num_features
 function feature_names(ext::MultiFeatureExtractor)
     fs = String[]

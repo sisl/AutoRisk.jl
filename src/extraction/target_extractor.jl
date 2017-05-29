@@ -42,7 +42,7 @@ function AutomotiveDrivingModels.pull_features!(
         rec::SceneRecord,
         roadway::Roadway, 
         veh_idx::Int,
-        pastframe::Int
+        pastframe::Int = 0
     )
     fill!(ext.features, 0)
 

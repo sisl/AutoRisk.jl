@@ -10,6 +10,7 @@ using Reexport
 @reexport using Distributions
 @reexport using ForwardNets
 @reexport using HDF5
+@reexport using JLD
 @reexport using Parameters
 @reexport using GridInterpolations
 @reexport using StatsBase

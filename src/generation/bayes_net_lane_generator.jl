@@ -170,8 +170,30 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 # only the vehicle sampled from the proposal distribution 
                 # will have a weight != 1
                 gen.weights[veh_id] = pdf(gen.base_bn, base_a) / pdf(gen.prop_bn, a)
+
                 # sample continuous values from the discrete assignments
                 values = rand(gen.prop_assignment_sampler, a)
+
+                # inspect the relative probabilities of the variables in the 
+                # assignment
+                # if gen.weights[veh_id] > 5.
+                #     println(gen.weights[veh_id])
+                #     println("values")
+                #     println(values)
+                #     println()
+                #     for (k,v) in base_a
+                #         println("key: $(k)")
+                #         println("base value: $(v)")
+                #         println("prop value: $(a[k])")
+                #         base_cpd = get(gen.base_bn, k)
+                #         prop_cpd = get(gen.prop_bn, k)
+
+                #         println("base prob: $(pdf(base_cpd, base_a))")
+                #         println("prop prob: $(pdf(prop_cpd, a))")
+                #     end
+                #     readline()
+                # end
+
             else
                 rand!(a, gen.base_bn, evidence)
                 # sample continuous values from the discrete assignments

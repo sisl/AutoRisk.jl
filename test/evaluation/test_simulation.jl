@@ -48,7 +48,7 @@ function test_simulate()
     @test veh_2.state.posF.ϕ ≈ 0.
 
     # check record
-    @test rec.nframes == 10
+    @test rec.nframes == 11
     rec_scene = rec[0]
     @test rec_scene == scene
     @test convert(Float64, get(SPEED, rec, roadway, 1, 0)) ≈ 1.0

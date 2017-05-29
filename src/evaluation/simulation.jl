@@ -18,8 +18,12 @@ function simulate!{S,D,I,A,R,M<:DriverModel}(
         scene::EntityFrame{S,D,I}, 
         roadway::R,
         models::Dict{I,M}, 
-        T::Float64
+        T::Float64;
+        update_first_scene::Bool = true
     )
+    if update_first_scene
+        update!(rec, scene)
+    end
     actions = Array(A, length(scene))
     for t in 0:rec.timestep:(T - rec.timestep)
         get_actions!(actions, scene, roadway, models)
