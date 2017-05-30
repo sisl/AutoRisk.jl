@@ -125,7 +125,7 @@ function extract_frame_targets!(
         # extract target values for this vehicle in the current 
         # frame, provided it has not left the scene
         if in_scene
-            targets[:, orig_veh_idx] = pull_features!(ext, rec, 
+            targets[:, orig_veh_idx] += pull_features!(ext, rec, 
                 roadway, veh_idx, pastframe)
             in_collision = any(targets[1:3, orig_veh_idx] .> 0)
         end
@@ -180,4 +180,9 @@ function extract_targets!(
         extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
             veh_idx_can_change, done, pastframe)
     end
+
+    # clamp the values because we are interested in the occurence or lack of 
+    # occurence of targets so that they can be interpreted as probabilities
+    # before this point, we've just inremented
+    clamp!(targets, 0, 1)
 end
