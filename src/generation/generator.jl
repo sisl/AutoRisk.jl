@@ -1,11 +1,14 @@
 export 
     Generator,
     FactoredGenerator,
-    rand!
+    rand!,
+    get_weights,
+    get_target_vehicle_id
 
 abstract Generator
 
 get_weights(gen::Generator) = nothing
+get_target_vehicle_id(gen::Generator) = nothing
 
 type FactoredGenerator <: Generator
     roadway_gen::RoadwayGenerator

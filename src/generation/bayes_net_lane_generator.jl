@@ -2,7 +2,8 @@ export
     BayesNetLaneGenerator,
     get_weights,
     rand!,
-    get_target_vehicle_index
+    get_target_vehicle_index,
+    get_target_vehicle_id
 
 # forward sampling a BN with evidence generally doesn't work, since it 
 # requires running inference to get the posterior
@@ -87,6 +88,7 @@ function BayesNetLaneGenerator(
 end
 
 get_weights(gen::BayesNetLaneGenerator) = gen.weights
+get_target_vehicle_id(gen::BayesNetLaneGenerator) = gen.target_veh_id
 
 function build_vehicle(
         veh_id::Int, 

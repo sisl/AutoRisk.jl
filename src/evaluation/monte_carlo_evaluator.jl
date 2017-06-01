@@ -4,7 +4,8 @@ export
     evaluate!,
     get_veh_id_to_idx,
     get_features,
-    get_targets
+    get_targets,
+    reset!
 
 abstract Evaluator
 
