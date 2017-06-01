@@ -17,7 +17,9 @@ end
 
 # the indexing here is to ensure that the dimension is not dropped
 get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
+get_features(eval::Evaluator, veh_idx::Int) = eval.features[:, 1:eval.feature_timesteps, veh_idx]
 get_targets(eval::Evaluator) = eval.agg_targets[:, :]
+get_targets(eval::Evaluator, veh_idx::Int) = eval.agg_targets[:, veh_idx]
 
 """
 # Description:
@@ -73,9 +75,12 @@ type MonteCarloEvaluator <: Evaluator
             rng::MersenneTwister = MersenneTwister(1)
         )
         features_size = size(features)
-        @assert length(features_size) == 3
-        feature_timesteps = features_size[2]
-
+        if length(features_size) >= 3
+            feature_timesteps = features_size[2]
+        else
+            feature_timesteps = 1
+        end
+        
         return new(ext, target_ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps, targets, 
             agg_targets, rng, 0, Dict{Int64, Int64}())
@@ -196,4 +201,67 @@ function evaluate!(eval::Evaluator, scene::Scene,
     eval.agg_targets[:] /= eval.num_runs
 end
 
+
+function Base.srand(eval::Evaluator, seed::Int)
+    srand(seed)
+    srand(eval.rng, seed)
+end
+
+"""
+# Description:
+    - Evaluate a {roadway, scene, models} tuple for a single vehicle.
+
+# Args:
+    - eval: evaluator to use
+    - scene: contains the vehicles to evaluate
+    - models: contains driver models to use in propagating scene
+    - roadway: roadway on which scene is based
+    - veh_idx: index of vehicle in scene to evaluate
+        assumed that index and id are const
+    - seed: random seed used for evaluation 
+"""
+function evaluate!(eval::Evaluator, scene::Scene, 
+        models::Dict{Int, DriverModel}, roadway::Roadway, veh_idx::Int64, seed::Int64)
+    # reset values across this set of monte carlo runs
+    fill!(eval.agg_targets, 0)
+    
+    # repeatedly simulate, starting from the final burn-in scene 
+    temp_scene = Scene(length(scene.entities))
+    pastframe = 0 # first iteration, don't alter record
+    for idx in 1:eval.num_runs
+        # reset
+        copy!(temp_scene, scene)
+        push_forward_records!(eval.rec, -pastframe)
+
+        # simulate starting from the final burn-in scene
+        simulate!(Any, eval.rec, temp_scene, roadway, models, 
+            eval.sampling_time, update_first_scene = false)
+
+        # pastframe is the number of frames that have been simulated
+        pastframe = Int(round(eval.sampling_time / eval.rec.timestep))
+
+        # get the initial extraction frame, this will typically be the first 
+        # frame following the prime time, but in the case where no time is 
+        # simulated, it should be the most recent frame
+        start_extract_frame = max(pastframe - 1, 0)
+
+        # extract target values from every frame in the record for every vehicle
+        eval.targets[:] = pull_features!(eval.target_ext, eval.rec, roadway, veh_idx)
+         
+        # add targets to aggregate targets
+        eval.agg_targets[:] += eval.targets[:]  
+    end
+
+    # divide by num_runs to get average values
+    eval.agg_targets[:] /= eval.num_runs
+
+    # copy the contents of the temp scene back into the original scene in 
+    # case the final simulated scene needs to be used later
+    copy!(scene, temp_scene)
+
+    # set done if the last monte carlo run has a positive target
+    done = any(eval.targets .> 0 )
+
+    return done
+end
 
