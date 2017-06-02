@@ -222,12 +222,14 @@ end
 """
 function evaluate!(eval::Evaluator, scene::Scene, 
         models::Dict{Int, DriverModel}, roadway::Roadway, veh_idx::Int64, seed::Int64)
-    # reset values across this set of monte carlo runs
-    fill!(eval.agg_targets, 0)
+
+    fill!(eval.features, 0)
+    fill!(eval.targets, 0)
     
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.entities))
     pastframe = 0 # first iteration, don't alter record
+    terminals = Bool[]
     for idx in 1:eval.num_runs
         # reset
         copy!(temp_scene, scene)
@@ -246,22 +248,21 @@ function evaluate!(eval::Evaluator, scene::Scene,
         start_extract_frame = max(pastframe - 1, 0)
 
         # extract target values from every frame in the record for every vehicle
-        eval.targets[:] = pull_features!(eval.target_ext, eval.rec, roadway, veh_idx)
-         
-        # add targets to aggregate targets
-        eval.agg_targets[:] += eval.targets[:]  
-    end
+        eval.targets[idx, :] = pull_features!(eval.target_ext, eval.rec, roadway, veh_idx)
 
-    # divide by num_runs to get average values
-    eval.agg_targets[:] /= eval.num_runs
+        # set done if any monte carlo run samples positive target
+        done = any(eval.targets[idx, :] .> 0)
+        push!(terminals, done)
+        if !done
+            eval.features[idx, :] = pull_features!(eval.ext, eval.rec, roadway, veh_idx, models)
+        end
+
+    end
 
     # copy the contents of the temp scene back into the original scene in 
     # case the final simulated scene needs to be used later
     copy!(scene, temp_scene)
 
-    # set done if the last monte carlo run has a positive target
-    done = any(eval.targets .> 0 )
-
-    return done
+    return eval.features, eval.targets, terminals
 end
 
