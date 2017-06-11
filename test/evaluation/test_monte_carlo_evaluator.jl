@@ -133,7 +133,7 @@ function test_monte_carlo_evaluator()
     @test eval.features[15, 2] ≈ 30.
 
     @test eval.features[17, 1] ≈ 1. / 6.12903225806451
-    @test eval.features[17, 2] ≈ 0.0
+    @test eval.features[17, 2] ≈ 30.0
 
     @test eval.features[65, 1] == k_spd
     @test eval.features[65, 2] == k_spd

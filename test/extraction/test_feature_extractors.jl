@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-function test_car_lidar_feature_extractor()
+function get_feature_debug_scenario()
     # add three vehicles and specifically check neighbor features
     num_veh = 3
     # one lane roadway
@@ -38,6 +38,11 @@ function test_car_lidar_feature_extractor()
     veh_state = move_along(veh_state, roadway, road_pos)
     veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
     push!(scene, Vehicle(veh_state, veh_def, 3))
+    return num_veh, scene, roadway, models
+end
+
+function test_car_lidar_feature_extractor()
+    num_veh, scene, roadway, models = get_feature_debug_scenario()
 
     # simulate here because some features need priming
     T = .6
@@ -66,42 +71,8 @@ function test_car_lidar_feature_extractor()
 end
 
 function test_normalizing_feature_extractor()
-    # add three vehicles and specifically check neighbor features
-    num_veh = 3
-    # one lane roadway
-    roadway = gen_straight_roadway(1, 100.)
-    scene = Scene(num_veh)
-
-    models = Dict{Int, DriverModel}()
-
-    # 1: first vehicle, moving the fastest
-    mlon = StaticLaneFollowingDriver(2.)
-    models[1] = Tim2DDriver(.1, mlon = mlon)
-    road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
-    base_speed = 2.
-    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def, 1))
-
-    # 2: second vehicle, in the middle, moving at intermediate speed
-    mlon = StaticLaneFollowingDriver(1.0)
-    models[2] = Tim2DDriver(.1, mlon = mlon)
-    base_speed = 1.
-    road_pos = 10.
-    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def, 2))
-
-    # 3: thrid vehicle, in the front, not moving
-    mlon = StaticLaneFollowingDriver(0.)
-    models[3] = Tim2DDriver(.1, mlon = mlon)
-    base_speed = 0.
-    road_pos = 20.
-    veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
-    veh_state = move_along(veh_state, roadway, road_pos)
-    veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
-    push!(scene, Vehicle(veh_state, veh_def, 3))
+    
+    num_veh, scene, roadway, models = get_feature_debug_scenario()
 
     # simulate here because some features need priming
     T = .6
@@ -121,5 +92,62 @@ function test_normalizing_feature_extractor()
     @test features[end,1] ≈ -1.0
 end
 
+function test_neighbor_and_temporal_feature_extractors()
+    num_veh, scene, roadway, models = get_feature_debug_scenario()
+
+    # set the first and third modles to accelerate
+    models[1] = Tim2DDriver(.1, mlon=IntelligentDriverModel(σ=.1))
+    models[2] = Tim2DDriver(.1, mlon=StaticLaneFollowingDriver(-.1))
+    models[3] = Tim2DDriver(.1, mlon=IntelligentDriverModel(σ=.1))
+
+    # simulate here because some features need priming
+    T = .5
+    feature_timesteps = 2
+    nticks = Int(ceil(T/.1)) * 2
+    rec = SceneRecord(nticks, .1, num_veh)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T)
+
+    subexts = AbstractFeatureExtractor[
+        NeighborFeatureExtractor(),
+        TemporalFeatureExtractor()
+    ]
+    ext = MultiFeatureExtractor(subexts)
+
+    features = zeros(length(ext), feature_timesteps, num_veh)
+    features[:,1,1] = pull_features!(ext, rec, roadway, 1, models)
+    features[:,1,2] = pull_features!(ext, rec, roadway, 2, models)
+    features[:,1,3] = pull_features!(ext, rec, roadway, 3, models)
+    features[:,2,1] = pull_features!(ext, rec, roadway, 1, models, -2)
+    features[:,2,2] = pull_features!(ext, rec, roadway, 2, models, -2)
+    features[:,2,3] = pull_features!(ext, rec, roadway, 3, models, -2)
+
+    fns = feature_names(ext)
+    # neighbor
+    fns_to_test = [["$(v)_m_dist", "$(v)_m_vel", "$(v)_m_accel"] 
+        for v in ["fore", "rear"]]
+    fns_to_test = [fns_to_test[1] ; fns_to_test[2]]
+    for fn in fns_to_test
+        fidx = find(fns .== fn)
+        try
+            @test features[fidx,1,2] != features[fidx,2,2]
+        catch e
+            println("neighbor feature extractor failed")
+            println("feature $(fn) stayed the same across timesteps")
+            throw(e)
+        end
+    end
+
+    # temporal
+    fidx = find(fns .== "timegap")
+    @test features[fidx,1,1] != features[fidx,2,1]
+    @test features[fidx,1,2] != features[fidx,2,2]
+    # fidx = find(fns .== "time_to_collision")
+    # println(features[fidx,:,1])
+    # println(features[fidx,:,2])
+    # println(features[fidx,:,3])
+    # @test features[fidx,1,1] != features[fidx,2,1] 
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
+@time test_neighbor_and_temporal_feature_extractors()

@@ -72,7 +72,7 @@ function test_multi_feature_extractor_heuristic()
     @test features[4,3] == 5.
     @test features[9,3] ≈ 0.
     @test features[15,3] ≈ 30.
-    @test features[17,3] ≈ 0. 
+    @test features[17,3] ≈ 30. 
 end
 
 function test_multi_feature_extractor()

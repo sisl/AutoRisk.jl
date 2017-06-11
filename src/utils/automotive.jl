@@ -220,8 +220,8 @@ end
 ### Features
 function inverse_ttc_to_ttc(inv_ttc::FeatureValue; censor_hi::Float64 = 30.0)
     if inv_ttc.i == FeatureState.MISSING
-        # if the value is missing then leave at zero and set missing
-        return FeatureValue(0.0, FeatureState.MISSING)
+        # if the value is missing then censor hi and set missing
+        return FeatureValue(censor_hi, FeatureState.MISSING)
     elseif inv_ttc.i == FeatureState.GOOD && inv_ttc.v == 0.0
         # if the car in front is pulling away, then set to a censored hi value
         return FeatureValue(censor_hi, FeatureState.CENSORED_HI)

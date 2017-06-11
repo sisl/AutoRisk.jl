@@ -6,7 +6,7 @@ function test_inverse_ttc_to_ttc()
     inv_ttc = FeatureValue(0.0, FeatureState.MISSING)
     ttc = inverse_ttc_to_ttc(inv_ttc)
     @test ttc.i == FeatureState.MISSING
-    @test ttc.v == 0.0
+    @test ttc.v == 30.0
 
     # pulling away
     inv_ttc = FeatureValue(0.0, FeatureState.GOOD)

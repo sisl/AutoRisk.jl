@@ -20,8 +20,8 @@ export
 
 ##################### Helper methods #####################
 
-function set_feature_missing!(features::Vector{Float64}, i::Int)
-    features[i] = 0.0
+function set_feature_missing!(features::Vector{Float64}, i::Int; censor::Float64 = 0. )
+    features[i] = censor
     features[i+1] = 1.0
 end
 
@@ -31,9 +31,9 @@ function set_feature!(features::Vector{Float64}, i::Int, v::Float64)
 end
 
 function set_dual_feature!(features::Vector{Float64}, i::Int, 
-        f::FeatureValue)
+        f::FeatureValue; censor::Float64 = 0.)
     if f.i == FeatureState.MISSING
-        set_feature_missing!(features, i)
+        set_feature_missing!(features, i, censor = censor)
     else
         set_feature!(features, i, f.v)
     end
@@ -50,12 +50,14 @@ end
 
 function set_neighbor_features!(features::Vector{Float64}, i::Int, 
         neigh::NeighborLongitudinalResult, scene::Scene, rec::SceneRecord, 
-        roadway::Roadway)
+        roadway::Roadway, pastframe::Int = 0)
     if neigh.ind != 0
         features[i] = neigh.Δs
         features[i+1] = scene[neigh.ind].state.v
-        features[i+2] = convert(Float64, get(ACCFS, rec, roadway, neigh.ind))
-        features[i+3] = convert(Float64, get(JERK, rec, roadway, neigh.ind))
+        features[i+2] = convert(Float64, get(ACCFS, rec, roadway, neigh.ind,
+            pastframe))
+        features[i+3] = convert(Float64, get(JERK, rec, roadway, neigh.ind, 
+            pastframe))
         features[i+4] = 0.0
     else
         features[i:i+3] = 0.0
@@ -142,16 +144,17 @@ function AutomotiveDrivingModels.pull_features!(
     # will be in the position currently occupied by the vehicle 
     # infront's back bumper
     set_dual_feature!(ext.features, idx+=1, 
-        get(TIMEGAP, rec, roadway, veh_idx, censor_hi = 30.0))
+        get(TIMEGAP, rec, roadway, veh_idx, pastframe, censor_hi = 30.0),
+        censor = 30.0)
     idx+=1
 
     # inverse time to collision is the time until a collision 
     # assuming that no actions are taken
     # inverse is taken so as to avoid infinite value, so flip here to get back
     # to TTC
-    inv_ttc = get(INV_TTC, rec, roadway, veh_idx)
+    inv_ttc = get(INV_TTC, rec, roadway, veh_idx, pastframe)
     ttc = inverse_ttc_to_ttc(inv_ttc, censor_hi = 30.0)
-    set_dual_feature!(ext.features, idx+=1, ttc)
+    set_dual_feature!(ext.features, idx+=1, ttc, censor = 30.0)
     idx+=1
     return ext.features
 end
@@ -250,19 +253,26 @@ function AutomotiveDrivingModels.pull_features!(
         LANEOFFSETRIGHT, rec, roadway, veh_idx, pastframe))
     idx+=1
 
-    set_neighbor_features!(ext.features, idx+=1, fore_M, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, fore_M, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_L, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, fore_L, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_R, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, fore_R, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, rear_M, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, rear_M, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, rear_L, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, rear_L, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, rear_R, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, rear_R, scene, rec, roadway,
+        pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_fore_M, scene, rec, roadway)
+    set_neighbor_features!(ext.features, idx+=1, fore_fore_M, scene, rec, 
+        roadway, pastframe)
     idx+=4
     return ext.features
 end
