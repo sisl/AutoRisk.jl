@@ -8,7 +8,6 @@
 
 - [quickstart](#quickstart)
     - [install](#install)
-    - [collection](#collection)
 - [package outline](#package-outline)
     - [src](#src)
         - [generation](#generation)
@@ -21,7 +20,6 @@
     - [scripts](#scripts)
     - [test](#test)
     - [data](#data)
-    - [tests](#tests)
 
 <!-- /MarkdownTOC -->
 
@@ -40,13 +38,6 @@ using AutoRisk
 Pkg.test("AutoRisk")
 ```
 
-## collection
-- cd scripts/collection and run:
-```bash
-julia run_collect_heuristic_dataset.jl --num_scenarios 1 --num_monte_carlo_runs 1
-```
-- This should generate a dataset from a single scenario (i.e., a roadway, scene, behavior model tuple), output some information about that dataset, and save it to a file in the data directory.
-
 # package outline
 The goal of this package, "AutoRisk", is to make it easy to collect datasets focused on automotive risk. It builds on AutomotiveDrivingModels.jl
 
@@ -56,7 +47,7 @@ The goal of this package, "AutoRisk", is to make it easy to collect datasets foc
 - Source code in this subdirectory deals with the generation of roadways, scenes, and behavior.
 
 #### roadway
-- In performing a simulation, the first decision to make is what roadway should be used in the simulation. 
+- In performing a simulation, the first decision to make is what roadway should be used in the simulation.
     + Currently two roadways are considered, a stadium roadway and a straight roadway.
 
 #### scene
@@ -77,7 +68,7 @@ The goal of this package, "AutoRisk", is to make it easy to collect datasets foc
 ### analysis
 - Each roadway, scene, behavior, and evaluation grouping is uniquely identified by a seed associated with it. Because of this, given a seed, we can visualize what the scene looks like and how evaluation of it proceeds. This directory deals with this process of analyzing the scenes and how they are evaluated, and for now just contains some evaluation code.
 
-## scripts 
+## scripts
 - This directory contains scripts for using AutoRisk to collect datasets (collection), for fitting models to those datasets (compression and prediction), and for visualizing datasets and scenarios (visualization).
 
 ## test
@@ -88,9 +79,3 @@ julia runtests.jl
 
 ## data
 - This directory holds data associated with the project such as generated datasets, log files, neural network files (useable from julia), snapshots and summaries (files saved by tensorflow during training), and visualizations (generally the output from the visualization scripts).
-
-## tests
-- This directory contains tests for the python code in the scripts directory. To run the tests:
-```bash
-python run_tests.py
-```
