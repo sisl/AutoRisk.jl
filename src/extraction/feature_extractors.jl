@@ -143,9 +143,12 @@ function AutomotiveDrivingModels.pull_features!(
     # timegap is the time between when this vehicle's front bumper
     # will be in the position currently occupied by the vehicle 
     # infront's back bumper
-    set_dual_feature!(ext.features, idx+=1, 
-        get(TIMEGAP, rec, roadway, veh_idx, pastframe, censor_hi = 30.0),
-        censor = 30.0)
+    timegap_censor_hi = 30.
+    timegap = get(TIMEGAP, rec, roadway, veh_idx, pastframe, censor_hi = timegap_censor_hi)
+    if timegap.v > timegap_censor_hi
+        timegap = FeatureValue(timegap_censor_hi, timegap.i)
+    end
+    set_dual_feature!(ext.features, idx+=1, timegap, censor = timegap_censor_hi)
     idx+=1
 
     # inverse time to collision is the time until a collision 
