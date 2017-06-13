@@ -177,22 +177,23 @@ function test_multi_timestep_monte_carlo_evaluator()
     feature_timesteps = 5
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, feature_timesteps,
-        num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
-
     rng::MersenneTwister = MersenneTwister(1)
 
     ext = MultiFeatureExtractor()
     target_ext = TargetExtractor()
+
+    features::Array{Float64} = Array{Float64}(length(ext), feature_timesteps,
+        num_veh)
+    targets::Array{Float64} = Array{Float64}(length(target_ext), num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(length(target_ext), num_veh)
+
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
-
+    original_scene = copy!(Scene(num_veh), scene)
     evaluate!(eval, scene, models, roadway, 1)
 
-    @test size(eval.features) == (NUM_FEATURES, feature_timesteps, 2)
-    @test size(eval.targets) == (NUM_TARGETS, 2)
+    @test size(eval.features) == (length(ext), feature_timesteps, 2)
+    @test size(eval.targets) == (length(target_ext), 2)
 
     # check velocity over time
     @test eval.features[3,1,1] ≈ .2
@@ -213,6 +214,31 @@ function test_multi_timestep_monte_carlo_evaluator()
     @test eval.features[9,1,2] ≈ 1.
     @test eval.features[9,2,2] ≈ 1.
     @test eval.features[9,3,2] ≈ 1.
+
+    # now check for step_size case
+    step_size = 2
+    feature_timesteps = 2
+    features = Array{Float64}(length(ext), feature_timesteps,
+        num_veh)
+    eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
+        veh_idx_can_change, rec, features, targets, agg_targets, rng, 
+        feature_step_size = step_size)
+    evaluate!(eval, original_scene, models, roadway, 1)
+
+    @test size(eval.features) == (length(ext), feature_timesteps, 2)
+    @test size(eval.targets) == (length(target_ext), 2)
+
+    # check velocity over time
+    @test eval.features[3,1,1] ≈ .6
+    @test eval.features[3,2,1] ≈ 1.
+    @test eval.features[3,1,2] ≈ .3
+    @test eval.features[3,2,2] ≈ .5
+
+    # check accel over time
+    @test eval.features[9,1,1] ≈ 2.
+    @test eval.features[9,2,1] ≈ 2.
+    @test eval.features[9,1,2] ≈ 1.
+    @test eval.features[9,2,2] ≈ 1.
 
 end
 

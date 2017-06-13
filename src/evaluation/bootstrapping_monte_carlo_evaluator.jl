@@ -29,6 +29,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
     num_veh::Int64
     veh_id_to_idx::Dict{Int64, Int64}
     discount::Float64
+    feature_step_size::Int64
 
     """
     # Args:
@@ -58,7 +59,8 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
             agg_targets::Array{Float64}, 
             prediction_model::PredictionModel,
             rng::MersenneTwister = MersenneTwister(1);
-            discount::Float64 = 1.
+            discount::Float64 = 1.,
+            feature_step_size::Int64 = 1
         )
         features_size = size(features)
         @assert length(features_size) == 3
@@ -67,7 +69,7 @@ type BootstrappingMonteCarloEvaluator <: Evaluator
         return new(ext, target_ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps,
             targets, agg_targets, prediction_features, prediction_model, 
-            rng, 0, Dict{Int64, Int64}(), discount)
+            rng, 0, Dict{Int64, Int64}(), discount, feature_step_size)
     end
 end
 

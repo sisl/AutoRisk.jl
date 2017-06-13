@@ -600,7 +600,7 @@ end
 
 function pull_features!(ext::AbstractFeatureExtractor, rec::SceneRecord, 
         roadway::Roadway, models::Dict{Int, DriverModel}, features::Array{Float64},
-        steps::Int64 = 1)
+        steps::Int64 = 1; step_size::Int = 1)
     # reset features container
     fill!(features, 0)
 
@@ -612,15 +612,17 @@ function pull_features!(ext::AbstractFeatureExtractor, rec::SceneRecord,
 
     # extract features for each vehicle in the scene for each timestep 
     # inserting into features in past to present order
-    for t in 1:steps
+    pos = 0
+    for t in 1 : step_size : (steps * step_size)
         pastframe = -(t - 1)
+        pos += 1
         for (vidx, veh) in enumerate(rec[pastframe])
 
             # check for existence of the vehicle id
             # if it's not present, this means the vehicle has entered the scene
             # since starting feature extraction, and we elect to skip it
             if in(veh.id, keys(id2idx))
-                features[:, steps - t + 1, id2idx[veh.id]] = pull_features!(
+                features[:, steps - pos + 1, id2idx[veh.id]] = pull_features!(
                     ext, rec, roadway, vidx, models, pastframe)
             end
         end

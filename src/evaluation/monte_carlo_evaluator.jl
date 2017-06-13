@@ -44,6 +44,7 @@ type MonteCarloEvaluator <: Evaluator
     rng::MersenneTwister
     num_veh::Int64
     veh_id_to_idx::Dict{Int64, Int64}
+    feature_step_size::Int64
     """
     # Args:
         - ext: feature extractor
@@ -72,7 +73,8 @@ type MonteCarloEvaluator <: Evaluator
             features::Array{Float64}, 
             targets::Array{Float64},
             agg_targets::Array{Float64}, 
-            rng::MersenneTwister = MersenneTwister(1)
+            rng::MersenneTwister = MersenneTwister(1);
+            feature_step_size::Int64 = 1
         )
         features_size = size(features)
         if length(features_size) >= 3
@@ -83,7 +85,7 @@ type MonteCarloEvaluator <: Evaluator
         
         return new(ext, target_ext, num_runs, prime_time, sampling_time, 
             veh_idx_can_change, rec, features, feature_timesteps, targets, 
-            agg_targets, rng, 0, Dict{Int64, Int64}())
+            agg_targets, rng, 0, Dict{Int64, Int64}(), feature_step_size)
     end
 end
 
@@ -149,7 +151,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
     # extract features for all vehicles using scenes simulated so far
     pull_features!(eval.ext, eval.rec, roadway, models, eval.features, 
-        eval.feature_timesteps)
+        eval.feature_timesteps, step_size = eval.feature_step_size)
     
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.entities))

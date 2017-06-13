@@ -148,6 +148,41 @@ function test_neighbor_and_temporal_feature_extractors()
     # @test features[fidx,1,1] != features[fidx,2,1] 
 end
 
+function test_feature_step_size_larger_than_1()
+    num_veh, scene, roadway, models = get_feature_debug_scenario()
+
+    # set the first and third modles to accelerate
+    models[1] = Tim2DDriver(.1, mlon=StaticLaneFollowingDriver(1.))
+    init_v_id_1 = scene[1].state.v
+    models[2] = Tim2DDriver(.1, mlon=StaticLaneFollowingDriver(2.))
+    init_v_id_2 = scene[2].state.v
+    models[3] = Tim2DDriver(.1, mlon=StaticLaneFollowingDriver(3.))
+    init_v_id_3 = scene[3].state.v
+
+    # simulate here because some features need priming
+    T = .4
+    nticks = Int(ceil(T/.1))
+    rec = SceneRecord(nticks + 1, .1, num_veh)
+    simulate!(LatLonAccel, rec, scene, roadway, models, T, update_first_scene = true)
+
+    ext = CoreFeatureExtractor()
+    # frames: [.4 .3 .2 .1 .0]
+    # following should extract features for [.4 .2 .0]
+    # for veh 1, this should give init_v_id_1 + [0, .2, .4]
+    # for veh 2, init_v_id_2 + [0, .4, .8]
+    # for veh 3, init_v_id_3 + [0, .6, 1.2]
+    timesteps = 3
+    step_size = 2
+    features = zeros(length(ext), timesteps, num_veh)
+    pull_features!(ext, rec, roadway, models, features, timesteps, step_size = 2)
+    vel_idx = find(feature_names(ext) .== "velocity")
+
+    @test all(features[vel_idx,:,1] .- (init_v_id_1 + [0 .2 .4]) .< 0.0001)
+    @test all(features[vel_idx,:,2] .- (init_v_id_2 + [0 .4 .8]) .< 0.0001)
+    @test all(features[vel_idx,:,3] .- (init_v_id_3 + [0 .6 1.2]) .< 0.0001)
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
 @time test_neighbor_and_temporal_feature_extractors()
+@time test_feature_step_size_larger_than_1()
