@@ -176,9 +176,9 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 # sample continuous values from the discrete assignments
                 values = rand(gen.prop_assignment_sampler, a)
 
-                # inspect the relative probabilities of the variables in the 
-                # assignment
-                # if gen.weights[veh_id] > 5.
+                # # inspect the relative probabilities of the variables in the 
+                # # assignment
+                # if gen.weights[veh_id] > 0.
                 #     println(gen.weights[veh_id])
                 #     println("values")
                 #     println(values)

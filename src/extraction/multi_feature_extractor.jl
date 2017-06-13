@@ -2,7 +2,8 @@ export
     MultiFeatureExtractor,
     length,
     pull_features!,
-    feature_names
+    feature_names,
+    feature_info
 
 type MultiFeatureExtractor <: AbstractFeatureExtractor
     extractors::Vector{AbstractFeatureExtractor}
@@ -63,6 +64,13 @@ function feature_names(ext::MultiFeatureExtractor)
         push!(fs, feature_names(subext)...)
     end
     return fs
+end
+function feature_info(ext::MultiFeatureExtractor)
+    info = Dict{String, Dict{String, Any}}()
+    for subext in ext.extractors
+        merge!(info, feature_info(subext))
+    end
+    return info
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::MultiFeatureExtractor, 

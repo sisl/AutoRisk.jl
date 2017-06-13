@@ -182,7 +182,29 @@ function test_feature_step_size_larger_than_1()
     @test all(features[vel_idx,:,3] .- (init_v_id_3 + [0 .6 1.2]) .< 0.0001)
 end
 
+function test_feature_info()
+    ext = CoreFeatureExtractor()
+    info = feature_info(ext)
+
+    @test in("length", keys(info))
+    @test info["length"]["high"] == 30.
+    @test info["length"]["low"] == 2.
+
+    ext = MultiFeatureExtractor()
+    info = feature_info(ext)
+
+    @test in("length", keys(info))
+    @test info["length"]["high"] == 30.
+    @test info["length"]["low"] == 2.
+
+    for (k,v) in info
+        @test typeof(v["high"]) == Float64
+        @test typeof(v["low"]) == Float64
+    end
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
 @time test_neighbor_and_temporal_feature_extractors()
 @time test_feature_step_size_larger_than_1()
+@time test_feature_info()

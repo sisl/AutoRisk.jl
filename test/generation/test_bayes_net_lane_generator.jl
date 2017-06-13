@@ -217,6 +217,20 @@ function test_scene_features_align_with_bounds()
     @test 1. <= features[6, 3] <= 10.
 end
 
+function test_valid_weights()
+    num_veh_per_lane = 3
+    gen = build_simple_realistic_base_net_lane_gen(
+        num_veh_per_lane = num_veh_per_lane
+    )
+    gen.prop_bn = gen.base_bn
+    roadway = gen_straight_roadway(1)
+    scene = Scene(num_veh_per_lane)
+    models = Dict{Int,DriverModel}()
+    rand!(gen, roadway, scene, models, 2)
+    @test all(get_weights(gen) .== 1.)
+end
+
 @time test_bayes_net_lane_gen_sampling()
 @time test_bayes_net_data_collection()
 @time test_scene_features_align_with_bounds()
+@time test_valid_weights()

@@ -16,7 +16,8 @@ export
     EmptyExtractor,
     pull_features!,
     length,
-    feature_names
+    feature_names,
+    feature_info
 
 ##################### Helper methods #####################
 
@@ -80,6 +81,19 @@ function feature_names(ext::CoreFeatureExtractor)
     return String["relative_offset","relative_heading","velocity","length",
         "width","lane_curvature","markerdist_left","markerdist_right"]
 end
+
+function feature_info(ext::CoreFeatureExtractor)
+    return Dict{String, Dict{String, Any}}(
+        "relative_offset"   =>  Dict("high"=>1.,    "low"=>-1.),
+        "relative_heading"  =>  Dict("high"=>.05,    "low"=>-.05),
+        "velocity"          =>  Dict("high"=>40.,    "low"=>-5.),
+        "length"            =>  Dict("high"=>30.,    "low"=>2.),
+        "width"             =>  Dict("high"=>3.,     "low"=>.9),
+        "lane_curvature"    =>  Dict("high"=>.1,     "low"=>-.1),
+        "markerdist_left"   =>  Dict("high"=>3.,     "low"=>0.),
+        "markerdist_right"  =>  Dict("high"=>3.,     "low"=>0.),
+    )
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::CoreFeatureExtractor, 
         rec::SceneRecord,
@@ -118,6 +132,20 @@ function feature_names(ext::TemporalFeatureExtractor)
         "turn_rate_frenet", "angular_rate_frenet",
         "timegap", "timegap_is_avail",
         "time_to_collision","time_to_collision_is_avail"]
+end
+function feature_info(ext::TemporalFeatureExtractor)
+    return Dict{String, Dict{String, Any}}(
+        "accel"                         =>  Dict("high"=>9.,    "low"=>-9.),
+        "jerk"                          =>  Dict("high"=>70.,  "low"=>-70.),
+        "turn_rate_global"              =>  Dict("high"=>.5,   "low"=>-.5),
+        "angular_rate_global"           =>  Dict("high"=>3.,   "low"=>-3.),
+        "turn_rate_frenet"              =>  Dict("high"=>.1,   "low"=>-.1),
+        "angular_rate_frenet"           =>  Dict("high"=>3.,    "low"=>-3.),
+        "timegap"                       =>  Dict("high"=>30.,  "low"=>0.),
+        "timegap_is_avail"              =>  Dict("high"=>1.,   "low"=>0.),
+        "time_to_collision"             =>  Dict("high"=>30.,  "low"=>0.),
+        "time_to_collision_is_avail"    =>  Dict("high"=>1.,   "low"=>0.),
+    )
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::TemporalFeatureExtractor, 
@@ -174,6 +202,13 @@ Base.length(ext::WellBehavedFeatureExtractor) = ext.num_features
 function feature_names(ext::WellBehavedFeatureExtractor)
     return String["is_colliding", "out_of_lane", "negative_velocity"]
 end
+function feature_info(ext::WellBehavedFeatureExtractor)
+    return Dict{String, Dict{String, Any}}(
+        "is_colliding"          =>  Dict("high"=>1.,    "low"=>0.),
+        "out_of_lane"           =>  Dict("high"=>1.,    "low"=>0.),
+        "negative_velocity"     =>  Dict("high"=>1.,    "low"=>0.),
+    )
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::WellBehavedFeatureExtractor, 
         rec::SceneRecord,
@@ -216,6 +251,28 @@ function feature_names(ext::NeighborFeatureExtractor)
         push!(fs, "$(name)_is_avail")
     end
     return fs
+end
+function feature_info(ext::NeighborFeatureExtractor)
+    info = Dict{String, Dict{String, Any}}(
+        "lane_offset_left"              =>  Dict("high"=>0.,    "low"=>-3.5),
+        "lane_offset_left_is_avail"     =>  Dict("high"=>1.,    "low"=>0.),
+        "lane_offset_right"             =>  Dict("high"=>3.5,    "low"=>0.),
+        "lane_offset_right_is_avail"    =>  Dict("high"=>1.,    "low"=>0.),
+    )
+    for name in feature_names(ext)
+        if contains(name, "dist")
+            info[name] = Dict("high"=>100., "low"=>-2.)
+        elseif contains(name, "vel")
+            info[name] = Dict("high"=>40., "low"=>-5.)
+        elseif contains(name, "accel")
+            info[name] = Dict("high"=>9., "low"=>-9.)
+        elseif contains(name, "jerk")
+            info[name] = Dict("high"=>70., "low"=>-70.)
+        elseif contains(name, "is_avail")
+            info[name] = Dict("high"=>1., "low"=>-0.)
+        end
+    end
+    return info
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::NeighborFeatureExtractor, 
@@ -306,6 +363,26 @@ function feature_names(ext::BehavioralFeatureExtractor)
         "beh_lane_politeness",
         "beh_advantage_threshold",
         "beh_safe_decel"]
+end
+function feature_info(ext::BehavioralFeatureExtractor)
+    return Dict{String, Dict{String, Any}}(
+        "beh_is_attentive"                      =>  Dict("high"=>1.,    "low"=>0.),
+        "beh_prob_attentive_to_inattentive"     =>  Dict("high"=>1.,    "low"=>0.),
+        "beh_prob_inattentive_to_attentive"     =>  Dict("high"=>1.,    "low"=>0.),
+        "beh_overall_reaction_time"             =>  Dict("high"=>1.,    "low"=>0.),
+        "beh_lon_k_spd"                         =>  Dict("high"=>1.5,   "low"=>.5),
+        "beh_lon_δ"                             =>  Dict("high"=>1.,    "low"=>6.),
+        "beh_lon_T"                             =>  Dict("high"=>4.,    "low"=>0.),
+        "beh_lon_s_min"                         =>  Dict("high"=>6.,    "low"=>0.),
+        "beh_lon_a_max"                         =>  Dict("high"=>6.,    "low"=>0.),
+        "beh_lon_d_cmf"                         =>  Dict("high"=>4.,    "low"=>0.),
+        "beh_lat_kp"                            =>  Dict("high"=>5.,    "low"=>0.),
+        "beh_lat_kd"                            =>  Dict("high"=>5.,    "low"=>0.),
+        "beh_lon_desired_velocity"              =>  Dict("high"=>40.,   "low"=>20.),
+        "beh_lane_politeness"                   =>  Dict("high"=>2.,    "low"=>0.),
+        "beh_advantage_threshold"               =>  Dict("high"=>1.,    "low"=>0.),
+        "beh_safe_decel"                        =>  Dict("high"=>5.,    "low"=>0.),
+    )
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::BehavioralFeatureExtractor,  
@@ -412,6 +489,18 @@ function feature_names(ext::NeighborBehavioralFeatureExtractor)
     end
     return fs
 end
+function feature_info(ext::NeighborBehavioralFeatureExtractor)
+    neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
+        "fore_fore_m"]
+    subinfo = feature_info(ext.subext)
+    info = Dict{String, Dict{String, Any}}()
+    for name in neigh_names
+        for subname in feature_names(ext.subext)
+            info["$(name)_$(subname)"] = subinfo[subname]
+        end
+    end
+    return info
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::NeighborBehavioralFeatureExtractor,  
         rec::SceneRecord,
@@ -485,6 +574,17 @@ function feature_names(ext::CarLidarFeatureExtractor)
     end
     return fs
 end
+function feature_info(ext::CarLidarFeatureExtractor)
+    info = Dict{String, Dict{String, Any}}()
+    for name in feature_names(ext)
+        if contains(name, "rangerate")
+            info[name] = Dict("high"=>30., "low"=>-30.)
+        else
+            info[name] = Dict("high"=>ext.carlidar.max_range, "low"=>0.)
+        end
+    end
+    return info
+end
 function AutomotiveDrivingModels.pull_features!(
         ext::CarLidarFeatureExtractor, 
         rec::SceneRecord,
@@ -537,6 +637,13 @@ function feature_names(ext::RoadLidarFeatureExtractor)
         end
     end
     return fs
+end
+function feature_info(ext::RoadLidarFeatureExtractor)
+    info = Dict{String, Dict{String, Any}}()
+    for name in feature_names(ext)
+        info[name] = Dict("high"=>ext.roadlidar.max_range, "low"=>0.)
+    end
+    return info
 end
 function AutomotiveDrivingModels.pull_features!(
         ext::RoadLidarFeatureExtractor, 
