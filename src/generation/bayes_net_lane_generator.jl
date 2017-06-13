@@ -205,13 +205,16 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
             # set velocity if not yet set
             # subsequently update this velocity, discretizing it to do sampling 
             # but do not take the resampled value, instead use the true value
-            # not that this means the values[:forevelocity] will be invalid
+            # note that this means the values[:forevelocity] will be invalid
             # after the initial sample, so set inside if just for accuracy
             if vel == Inf
                 vel = values[:forevelocity] + values[:relvelocity]
             else
                 values[:forevelocity] = vel
                 vel += values[:relvelocity]
+                # negative velocities prohibited, but are possible given 
+                # sufficiently large relvelocity values
+                vel = max(vel, 0.)
             end
             # propagate forward the variables of this car to be evidence for 
             # the next vehicle
