@@ -175,13 +175,16 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
                 # sample continuous values from the discrete assignments
                 values = rand(gen.prop_assignment_sampler, a)
-
+                
                 # # inspect the relative probabilities of the variables in the 
                 # # assignment
-                # if gen.weights[veh_id] > 0.
+                # if gen.weights[veh_id] >= 0.
                 #     println(gen.weights[veh_id])
                 #     println("values")
                 #     println(values)
+                #     base_values = rand(gen.base_assignment_sampler, base_a)
+                #     println("base values")
+                #     println(base_values)
                 #     println()
                 #     for (k,v) in base_a
                 #         println("key: $(k)")
@@ -192,6 +195,11 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
 
                 #         println("base prob: $(pdf(base_cpd, base_a))")
                 #         println("prop prob: $(pdf(prop_cpd, a))")
+
+                #         if k == :vehwidth
+                #             println(prop_cpd.distributions)
+                #             println(base_cpd.distributions)
+                #         end
                 #     end
                 #     readline()
                 # end

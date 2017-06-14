@@ -226,9 +226,11 @@ function build_vehicle(gen::HeuristicSceneGenerator, roadway::Roadway,
 
     # build vehicle definition and vehicle
     base = rand(gen.rng)
-    veh_length = gen.min_vehicle_length + base * (
+    width_base = (base + rand(gen.rng)) / 2.
+    length_base = (base + rand(gen.rng)) / 2.
+    veh_length = gen.min_vehicle_length + length_base * (
         gen.max_vehicle_length - gen.min_vehicle_length)
-    veh_width = gen.min_vehicle_width + base * (
+    veh_width = gen.min_vehicle_width + width_base * (
         gen.max_vehicle_width - gen.min_vehicle_width)
     veh_def = VehicleDef(AgentClass.CAR, veh_length, veh_width)
 
