@@ -17,7 +17,7 @@ using Reexport
 
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
-    get_name, show
+    get_name, show, nlanes
 import Base: display, show, rand, rand!, ==
 import Distributions: rand, pdf, logpdf
 import Discretizers: encode, decode
@@ -35,7 +35,6 @@ include("behaviors/delayed_driver_model.jl")
 include("behaviors/gaussian_mlp_driver.jl")
 
 # extraction
-include("extraction/lidar_sensors.jl")
 include("extraction/target_extractor.jl")
 include("extraction/feature_extractors.jl")
 include("extraction/multi_feature_extractor.jl")
