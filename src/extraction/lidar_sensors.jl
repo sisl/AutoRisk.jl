@@ -108,7 +108,8 @@ function RoadlineLidarSensor(nbeams::Int;
     RoadlineLidarSensor(angles, ranges, max_range, ConvexPolygon(4))
 end
 function _update_lidar!(lidar::RoadlineLidarSensor, ray::VecSE2, beam_index::Int, p_lo::VecE2, p_hi::VecE2)
-    test_range = get_collision_time(ray, AutomotiveDrivingModels.LineSegment(p_lo, p_hi), 1.0)
+    test_range = get_intersection_time(Projectile(ray, 1.0), 
+        AutomotiveDrivingModels.LineSegment(p_lo, p_hi))
 
     if !isnan(test_range)
         n_ranges = size(lidar.ranges, 1)

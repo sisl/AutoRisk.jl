@@ -187,6 +187,13 @@ function write_attrs(dataset::Dataset)
         if typeof(v) == Bool
             v = string(v)
         end
+        if typeof(v) == String
+            # write string types twice, once for regular use
+            # and once becuase conversion to python type does not seem 
+            # to work otherwise
+            utf8_k = string("utf8_", k)
+            attrs(dataset.file["risk"])[utf8_k] = convert(Vector{UInt8}, v)
+        end
         attrs(dataset.file["risk"])[k] = v
     end
 end

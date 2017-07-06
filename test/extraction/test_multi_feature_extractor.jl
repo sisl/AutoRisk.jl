@@ -1,5 +1,5 @@
-using Base.Test
-using AutoRisk
+# using Base.Test
+# using AutoRisk
 
 function test_multi_feature_extractor_heuristic()
     # add three vehicles and specifically check neighbor features
