@@ -32,17 +32,18 @@ type HeuristicSceneGenerator <: SceneGenerator
     max_init_dist::Float64
     rng::MersenneTwister
     total_roadway_length::Float64
+    mode::String
 
     function HeuristicSceneGenerator(min_num_vehicles, max_num_vehicles, 
             min_base_speed, max_base_speed, min_vehicle_length, 
             max_vehicle_length, min_vehicle_width,  max_vehicle_width, 
-            min_init_dist,  max_init_dist = 0, rng = MersenneTwister(1),
-            total_roadway_length = 0)
+            min_init_dist;  max_init_dist = 0, rng = MersenneTwister(1),
+            total_roadway_length = 0, mode = "const_spaced")
         return new(min_num_vehicles, max_num_vehicles, 
             min_base_speed, max_base_speed, min_vehicle_length, 
             max_vehicle_length, min_vehicle_width,  max_vehicle_width, 
             min_init_dist,  max_init_dist, rng, 
-            total_roadway_length)
+            total_roadway_length, mode)
     end
 end
 
@@ -201,6 +202,53 @@ function generate_road_positions(gen::HeuristicSceneGenerator,
     return positions
 end
 
+
+"""
+# Description:
+    - Generates road positions for vehicles based on their lanes
+
+# Args:
+    - gen: generator to use
+    - lanes: lanes of the vehicles to generate
+
+# Returns:
+    - positions
+"""
+function generate_const_spaced(gen::HeuristicSceneGenerator, 
+            num_vehicles::Int, roadway::Roadway)
+    num_lanes = nlanes(roadway) 
+    lane_width = roadway.segments[1].lanes[1].width
+    # precompute possible offsets
+    offsets = [-l * lane_width for l in 0:(num_lanes - 1)]
+    num_veh_per_lane = Int(ceil(num_vehicles / num_lanes))
+    # distance between vehicles to maximally space around track
+    spacing = gen.total_roadway_length / num_veh_per_lane
+    # check if valid placement possible
+    if gen.min_init_dist > spacing
+        throw(ArgumentError(
+            "Roadway too small for requested num vehicles: $(num_vehicles)"))
+    end
+
+    road_idxs = RoadIndex[]
+    positions = Float64[]
+
+    for lane_idx in 1:num_lanes
+        lane_offset = offsets[lane_idx]
+        pos_x = 0
+        if lane_idx == num_lanes
+            # last lane only generates remaining vehicles
+            num_veh_per_lane = num_vehicles - length(road_idxs)
+            spacing = gen.total_roadway_length / num_veh_per_lane
+        end
+        for _ in 1:num_veh_per_lane
+            push!(positions, pos_x)
+            push!(road_idxs, RoadIndex(proj(VecSE2(0.0, lane_offset, 0.0), roadway)))
+            pos_x += spacing
+        end
+    end
+    return road_idxs, positions
+end
+
 """
 # Description:
     - Builds a vehicle.
@@ -263,12 +311,18 @@ function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene,
     # remove old contents of scene and models
     empty!(scene)
 
-    # get initial road indices, positions, vehicles
     num_vehicles = rand(gen.rng, gen.min_num_vehicles:gen.max_num_vehicles)
-    init_road_idxs = generate_init_road_idxs(gen, roadway, num_vehicles)
-    lanes = [road_idx.tag.lane for road_idx in init_road_idxs]
-    road_positions = generate_road_positions(
-        gen, lanes, get_roadway_type(roadway))
+
+    # get initial road indices, positions, vehicles
+    if gen.mode == "const_spaced"
+        init_road_idxs, road_positions = generate_const_spaced(
+            gen, num_vehicles, roadway)
+    else
+        init_road_idxs = generate_init_road_idxs(gen, roadway, num_vehicles)
+        lanes = [road_idx.tag.lane for road_idx in init_road_idxs]
+        road_positions = generate_road_positions(
+            gen, lanes, get_roadway_type(roadway))
+    end
 
     # add vehicles to scene
     for (idx, (road_idx, road_pos)) in enumerate(

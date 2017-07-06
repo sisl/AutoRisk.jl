@@ -47,8 +47,8 @@ function build_debug_dataset_collector(;
         min_vehicle_width, 
         max_vehicle_width,
         min_init_dist, 
-        max_init_dist,
-        rng)
+        max_init_dist = max_init_dist,
+        rng = rng)
 
     # behavior gen
     params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]

@@ -1,10 +1,5 @@
-using Base.Test
-using AutoRisk
-
-# push!(LOAD_PATH, "../../../src")
-# include("../../../src/utils/automotive.jl")
-# include("../../../src/generation/scene/scene_generator.jl")
-# include("../../../src/generation/scene/heuristic_scene_generator.jl")
+# using Base.Test
+# using AutoRisk
 
 function build_debug_heuristic_scene_generator(;
         min_num_vehicles = 4, 
@@ -17,7 +12,8 @@ function build_debug_heuristic_scene_generator(;
         max_vehicle_width = 3.0,
         min_init_dist = 10., 
         max_init_dist = 30.,
-        rng = MersenneTwister(1))
+        rng = MersenneTwister(1),
+        mode = "ego")
     return HeuristicSceneGenerator(
         min_num_vehicles, 
         max_num_vehicles, 
@@ -28,8 +24,9 @@ function build_debug_heuristic_scene_generator(;
         min_vehicle_width, 
         max_vehicle_width,
         min_init_dist, 
-        max_init_dist,
-        rng)
+        max_init_dist = max_init_dist,
+        rng = rng,
+        mode = mode)
 end
 
 function test_heuristic_scene_generator_constructor()
@@ -188,9 +185,22 @@ function test_heuristic_scene_reset()
    
 end
 
+function test_const_spaced_mode()
+    roadway = gen_stadium_roadway(5, length = 100., radius = 50.)
+    num_vehicles = 20
+    gen = build_debug_heuristic_scene_generator(min_init_dist = 10., 
+        min_num_vehicles = num_vehicles, max_num_vehicles = num_vehicles, 
+        mode = "const_spaced")
+    seed = 1
+    scene = rand!(gen, Scene(num_vehicles), roadway, seed)
+    println(scene.entities[1])
+    println(scene.entities[end])
+end
+
 @time test_heuristic_scene_generator_constructor()
 @time test_generate_init_road_idxs()
 @time test_is_valid()
 @time test_generate_road_positions()
 @time test_build_vehicle()
 @time test_heuristic_scene_reset()
+@time test_const_spaced_mode()
