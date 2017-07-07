@@ -37,7 +37,7 @@ type BayesNetLaneGenerator <: Generator
     prop_assignment_sampler::AssignmentSampler
     weights::Array{Float64}
     num_veh_per_lane::Int
-    beh_gen::CorrelatedBehaviorGenerator
+    beh_gen::BehaviorGenerator
     target_veh_id::Int
     rng::MersenneTwister
     """
@@ -173,6 +173,17 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 # will have a weight != 1
                 gen.weights[veh_id] = pdf(gen.base_bn, base_a) / pdf(gen.prop_bn, a)
 
+                # forevelocity should not be considered in the likelihood ratio
+                # because the proposal network does not at all influence the 
+                # value of the forevelocity considered here (though it clearly
+                # does influence the next value).
+                # to counteract this multiply by the inverted likelihood ratio
+                p_base_fore_vel = pdf(get(gen.base_bn, :forevelocity), base_a)
+                p_prop_fore_vel = pdf(get(gen.prop_bn, :forevelocity), a)
+                if p_base_fore_vel > 0
+                    gen.weights[veh_id] *= p_prop_fore_vel / p_base_fore_vel
+                end
+
                 # sample continuous values from the discrete assignments
                 values = rand(gen.prop_assignment_sampler, a)
                 
@@ -193,12 +204,17 @@ function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene,
                 #         base_cpd = get(gen.base_bn, k)
                 #         prop_cpd = get(gen.prop_bn, k)
 
-                #         println("base prob: $(pdf(base_cpd, base_a))")
+                #         base_cpd_prob = pdf(base_cpd, base_a)
+
+                #         println("base prob: $(base_cpd_prob)")
                 #         println("prop prob: $(pdf(prop_cpd, a))")
 
-                #         if k == :vehwidth
+                #         if base_cpd_prob <= 0.
+                #             println("base prob 0")
                 #             println(prop_cpd.distributions)
+                #             println()
                 #             println(base_cpd.distributions)
+                #             println()
                 #         end
                 #     end
                 #     readline()
