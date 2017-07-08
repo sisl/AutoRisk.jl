@@ -138,8 +138,11 @@ function test_monte_carlo_evaluator()
     @test eval.features[65, 1] == k_spd
     @test eval.features[65, 2] == k_spd
 
-    @test eval.features[74, 1] == politeness
-    @test eval.features[74, 2] == politeness
+    feature_names_list = feature_names(ext)
+    politeness_idx = find(feature_names_list .== "beh_lane_politeness")[1]
+
+    @test eval.features[politeness_idx, 1] == politeness
+    @test eval.features[politeness_idx, 2] == politeness
 
 end
 
