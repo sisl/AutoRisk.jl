@@ -232,7 +232,7 @@ type NeighborFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function NeighborFeatureExtractor()
-        num_neighbors = 9
+        num_neighbors = 13
         num_features = num_neighbors * 5 + 4
         return new(zeros(Float64, num_features), num_features)
     end
@@ -241,8 +241,13 @@ Base.length(ext::NeighborFeatureExtractor) = ext.num_features
 function feature_names(ext::NeighborFeatureExtractor)
     fs = String["lane_offset_left", "lane_offset_left_is_avail",
         "lane_offset_right", "lane_offset_right_is_avail"]
-    neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
-        "fore_fore_m", "fore_fore_fore_m", "fore_fore_fore_fore_m"]
+    neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r"]
+
+    fore_name = "fore_fore_m"
+    for i in 1:7
+        push!(neigh_names, fore_name)
+        fore_name = string("fore_", fore_name)
+    end
     for name in neigh_names
         push!(fs, "$(name)_dist")
         push!(fs, "$(name)_vel")
@@ -298,27 +303,18 @@ function AutomotiveDrivingModels.pull_features!(
     rear_R = get_neighbor_rear_along_right_lane(
         scene, veh_idx, roadway, vtpr, vtpf, vtpr)
 
-    if fore_M.ind != 0
-        fore_fore_M = get_neighbor_fore_along_lane(     
-            scene, fore_M.ind, roadway, vtpr, vtpf, vtpr)        
-    else        
-        fore_fore_M = NeighborLongitudinalResult(0, 0.)     
+    fore_neigh = fore_M
+    fore_neighs = NeighborLongitudinalResult[]
+    for i in 1:7
+        if fore_neigh.ind != 0
+            next_fore_neigh = get_neighbor_fore_along_lane(     
+            scene, fore_neigh.ind, roadway, vtpr, vtpf, vtpr)
+        else
+            next_fore_neigh = NeighborLongitudinalResult(0, 0.)
+        end
+        push!(fore_neighs, next_fore_neigh)
+        fore_neigh = next_fore_neigh
     end
-
-    if fore_fore_M.ind != 0
-        fore_fore_fore_M = get_neighbor_fore_along_lane(     
-            scene, fore_fore_M.ind, roadway, vtpr, vtpf, vtpr)        
-    else        
-        fore_fore_fore_M = NeighborLongitudinalResult(0, 0.)     
-    end
-
-    if fore_fore_fore_M.ind != 0
-        fore_fore_fore_fore_M = get_neighbor_fore_along_lane(     
-            scene, fore_fore_fore_M.ind, roadway, vtpr, vtpf, vtpr)        
-    else        
-        fore_fore_fore_fore_M = NeighborLongitudinalResult(0, 0.)     
-    end
-
 
     idx = 0
     set_dual_feature!(ext.features, idx+=1, get(
@@ -346,15 +342,12 @@ function AutomotiveDrivingModels.pull_features!(
     set_neighbor_features!(ext.features, idx+=1, rear_R, scene, rec, roadway,
         pastframe)
     idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_fore_M, scene, rec, 
+
+    for fore_neigh in fore_neighs
+        set_neighbor_features!(ext.features, idx+=1, fore_neigh, scene, rec, 
         roadway, pastframe)
-    idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_fore_fore_M, scene, rec, 
-        roadway, pastframe)
-    idx+=4
-    set_neighbor_features!(ext.features, idx+=1, fore_fore_fore_fore_M, scene, rec, 
-        roadway, pastframe)
-    idx+=4
+        idx+=4
+    end
     return ext.features
 end
 
