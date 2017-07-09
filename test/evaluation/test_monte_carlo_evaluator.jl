@@ -1,12 +1,11 @@
 # using Base.Test
 # using AutoRisk
 
-# using AutoViz
-# using Reel
-# Reel.set_output_type("gif")
+# # using AutoViz
+# # using Reel
+# # Reel.set_output_type("gif")
 
-
-# NUM_FEATURES = 268
+# NUM_FEATURES = 324
 # NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
@@ -126,6 +125,8 @@ function test_monte_carlo_evaluator()
 
     evaluate!(eval, scene, models, roadway, 1)
 
+    feature_names_list = feature_names(ext)
+
     @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 1.0, 1.0]
     @test eval.agg_targets[1:NUM_TARGETS, 2] == [0.0, 1.0, 0.0, 0.0, 0.0]
 
@@ -135,10 +136,11 @@ function test_monte_carlo_evaluator()
     @test eval.features[17, 1] ≈ 1. / 6.12903225806451
     @test eval.features[17, 2] ≈ 30.0
 
-    @test eval.features[65, 1] == k_spd
-    @test eval.features[65, 2] == k_spd
+    k_spd_idx = find(feature_names_list .== "beh_lon_k_spd")[1]
 
-    feature_names_list = feature_names(ext)
+    @test eval.features[k_spd_idx, 1] == k_spd
+    @test eval.features[k_spd_idx, 2] == k_spd
+
     politeness_idx = find(feature_names_list .== "beh_lane_politeness")[1]
 
     @test eval.features[politeness_idx, 1] == politeness
