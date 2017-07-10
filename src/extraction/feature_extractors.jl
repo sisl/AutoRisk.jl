@@ -61,10 +61,12 @@ function set_neighbor_features!(features::Vector{Float64}, i::Int,
             pastframe))
         features[i+4] = scene[neigh.ind].def.length
         features[i+5] = scene[neigh.ind].def.width
-        features[i+6] = 0.0
+        features[i+6] = scene[neigh.ind].state.posF.t
+        features[i+7] = scene[neigh.ind].state.posF.ϕ
+        features[i+8] = 0.0
     else
-        features[i:i+5] = 0.0
-        features[i+6] = 1.0 
+        features[i:i+7] = 0.0
+        features[i+8] = 1.0 
     end
 end
 
@@ -235,7 +237,7 @@ type NeighborFeatureExtractor <: AbstractFeatureExtractor
     num_features::Int64
     function NeighborFeatureExtractor()
         num_neighbors = 13
-        num_features = num_neighbors * 7 + 4
+        num_features = num_neighbors * 9 + 4
         return new(zeros(Float64, num_features), num_features)
     end
 end
@@ -257,6 +259,8 @@ function feature_names(ext::NeighborFeatureExtractor)
         push!(fs, "$(name)_jerk")
         push!(fs, "$(name)_length")
         push!(fs, "$(name)_width")
+        push!(fs, "$(name)relative_offset")
+        push!(fs, "$(name)relative_heading")
         push!(fs, "$(name)_is_avail")
     end
     return fs
@@ -281,6 +285,10 @@ function feature_info(ext::NeighborFeatureExtractor)
             info[name] = Dict("high"=>30., "low"=>2.)
         elseif contains(name, "width")
             info[name] = Dict("high"=>3., "low"=>.9)
+        elseif contains(name, "relative_offset")
+            info[name] = Dict("high"=>1., "low"=>-1.)
+        elseif contains(name, "relative_heading")
+            info[name] = Dict("high"=>.05, "low"=>-.05)
         elseif contains(name, "is_avail")
             info[name] = Dict("high"=>1., "low"=>-0.)
         end
@@ -334,31 +342,30 @@ function AutomotiveDrivingModels.pull_features!(
 
     set_neighbor_features!(ext.features, idx+=1, fore_M, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
     set_neighbor_features!(ext.features, idx+=1, fore_L, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
     set_neighbor_features!(ext.features, idx+=1, fore_R, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
     set_neighbor_features!(ext.features, idx+=1, rear_M, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
     set_neighbor_features!(ext.features, idx+=1, rear_L, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
     set_neighbor_features!(ext.features, idx+=1, rear_R, scene, rec, roadway,
         pastframe)
-    idx+=6
+    idx+=8
 
     for fore_neigh in fore_neighs
         set_neighbor_features!(ext.features, idx+=1, fore_neigh, scene, rec, 
         roadway, pastframe)
-        idx+=6
+        idx+=8
     end
     return ext.features
 end
-
 type BehavioralFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
