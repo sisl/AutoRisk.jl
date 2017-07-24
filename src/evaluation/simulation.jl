@@ -1,6 +1,31 @@
 export 
     simulate!
 
+function correct_vehicle_states(
+        scene::Scene; 
+        ϕ_low::Float64 = -pi/2, 
+        ϕ_high::Float64 = pi/2
+    )
+
+    for (i, vehicle) in enumerate(scene)
+        if !(ϕ_low < vehicle.state.posF.ϕ < ϕ_high)
+
+            new_state = VehicleState(
+                    vehicle.state.posG, 
+                    Frenet(
+                        vehicle.state.posF.roadind,
+                        vehicle.state.posF.s,
+                        vehicle.state.posF.t,
+                        clamp(vehicle.state.posF.ϕ, ϕ_low, ϕ_high), 
+                    ), 
+                    vehicle.state.v
+                )
+            new_vehicle = Vehicle(new_state, vehicle.def, vehicle.id)
+            scene[i] = new_vehicle
+        end
+    end
+end
+
 """
 # Description:
     - Simulate a scene for a period of time.
@@ -28,6 +53,7 @@ function simulate!{S,D,I,A,R,M<:DriverModel}(
     for t in 0:rec.timestep:(T - rec.timestep)
         get_actions!(actions, scene, roadway, models)
         tick!(scene, roadway, actions, rec.timestep)
+        correct_vehicle_states(scene)
         update!(rec, scene)
     end
     return rec

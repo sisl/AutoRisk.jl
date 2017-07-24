@@ -1,11 +1,11 @@
 # using Base.Test
 # using AutoRisk
 
-# # using AutoViz
-# # using Reel
-# # Reel.set_output_type("gif")
+# using AutoViz
+# using Reel
+# Reel.set_output_type("gif")
 
-# NUM_FEATURES = 324
+# NUM_FEATURES = 350
 # NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
@@ -39,7 +39,7 @@ function test_monte_carlo_evaluator_debug()
     # 3: thrid vehicle, in the front, moving backward
     mlon = StaticLaneFollowingDriver(-4.5)
     models[3] = Tim2DDriver(.1, mlon = mlon)
-    base_speed = 0.
+    base_speed = 30.
     road_pos = 200.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
@@ -49,7 +49,7 @@ function test_monte_carlo_evaluator_debug()
     # frames = Frames(MIME("image/png"), fps=2)
     # frame = render(scene, roadway)
     # push!(frames, frame)
-    # write("/Users/wulfebw/Desktop/stuff.gif", frames)
+    # write("/Users/wulfebw/Desktop/stuff1.gif", frames)
 
     num_runs::Int64 = 10
     prime_time::Float64 = 1.
@@ -68,6 +68,11 @@ function test_monte_carlo_evaluator_debug()
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
+
+    # frames = Frames(MIME("image/png"), fps=2)
+    # frame = render(scene, roadway)
+    # push!(frames, frame)
+    # write("/Users/wulfebw/Desktop/stuff2.gif", frames)
 
     # first two collisions in each, last decel in each
     @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 0.0, 1.0]

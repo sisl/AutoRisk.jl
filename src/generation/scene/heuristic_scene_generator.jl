@@ -222,7 +222,7 @@ function generate_const_spaced(gen::HeuristicSceneGenerator,
     offsets = [-l * lane_width for l in 0:(num_lanes - 1)]
     num_veh_per_lane = Int(ceil(num_vehicles / num_lanes))
     # distance between vehicles to maximally space around track
-    spacing = gen.total_roadway_length / num_veh_per_lane
+    spacing = (gen.total_roadway_length - gen.min_init_dist) / num_veh_per_lane
     # check if valid placement possible
     if gen.min_init_dist > spacing
         throw(ArgumentError(
@@ -238,7 +238,7 @@ function generate_const_spaced(gen::HeuristicSceneGenerator,
         if lane_idx == num_lanes
             # last lane only generates remaining vehicles
             num_veh_per_lane = num_vehicles - length(road_idxs)
-            spacing = gen.total_roadway_length / num_veh_per_lane
+            spacing = (gen.total_roadway_length - gen.min_init_dist) / num_veh_per_lane
         end
         for _ in 1:num_veh_per_lane
             push!(positions, pos_x)
@@ -323,7 +323,7 @@ function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene,
         road_positions = generate_road_positions(
             gen, lanes, get_roadway_type(roadway))
     end
-
+    
     # add vehicles to scene
     for (idx, (road_idx, road_pos)) in enumerate(
             zip(init_road_idxs, road_positions))
