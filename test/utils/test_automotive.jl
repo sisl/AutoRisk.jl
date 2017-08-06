@@ -1,5 +1,5 @@
-# using Base.Test
-# using AutoRisk
+using Base.Test
+using AutoRisk
 
 function test_inverse_ttc_to_ttc()
     # missing
@@ -62,7 +62,6 @@ function test_executed_hard_brake()
     @test executed == true
 
     # did not
-    println("pay attention")
     scene = Scene()
     state = VehicleState(VecSE2(), 8.)
     push!(scene, Vehicle(state, VehicleDef(), 1))

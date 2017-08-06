@@ -319,7 +319,13 @@ function executed_hard_brake(rec::SceneRecord, roadway::Roadway,
                 ACCFS, rec, roadway, vehicle_index, pastframe - dt))
             frame_accel = convert(Float64, get(
                 ACC, rec, roadway, vehicle_index, pastframe - dt))
-            frame_accel = min(frame_accel, frame_accelfs)
+            if isnan(frame_accelfs)
+                frame_accel = frame_accel
+            elseif isnan(frame_accel)
+                frame_accel = frame_accelfs
+            else
+                frame_accel = min(frame_accel, frame_accelfs)
+            end
             if frame_accel > hard_brake_threshold
                 hard_brake = false
                 break
