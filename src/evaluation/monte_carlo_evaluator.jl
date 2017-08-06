@@ -161,6 +161,11 @@ function evaluate!(eval::Evaluator, scene::Scene,
         copy!(temp_scene, scene)
         push_forward_records!(eval.rec, -pastframe)
 
+        # reset any hidden state present in the model
+        for (id, model) in models
+            prime_with_history!(model, eval.rec, roadway, id)
+        end
+
         # simulate starting from the final burn-in scene
         simulate!(Any, eval.rec, temp_scene, roadway, models, 
             eval.sampling_time, update_first_scene = false)
@@ -233,6 +238,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     pastframe = 0 # first iteration, don't alter record
     terminals = Bool[]
     for idx in 1:eval.num_runs
+
         # reset
         copy!(temp_scene, scene)
         push_forward_records!(eval.rec, -pastframe)
