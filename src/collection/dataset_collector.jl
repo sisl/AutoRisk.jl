@@ -105,5 +105,6 @@ function generate_dataset(pcol::ParallelDatasetCollector)
     pmap(generate_dataset, pcol.cols)
     filepaths = [c.dataset.filepath for c in pcol.cols]
     aggregate_datasets(filepaths, pcol.output_filepath)
+    [rm(f) for f in filepaths]
 end
 

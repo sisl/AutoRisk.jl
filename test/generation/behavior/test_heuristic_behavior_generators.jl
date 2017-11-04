@@ -107,7 +107,61 @@ function test_correlated_behavior_generator()
     @test params_2 != params_3
 end
 
+function test_correlated_gaussian_behavior_generator()
+    min_p = get_passive_behavior_params()
+    max_p = get_aggressive_behavior_params()
+    gen = CorrelatedGaussianBehaviorGenerator(min_p, max_p)
+    srand(gen.rng, 1)
+    params_1 = rand(gen)
+    srand(gen.rng, 1)
+    params_2 = rand(gen)
+    srand(gen.rng, 2)
+    params_3 = rand(gen)
+    @test params_1 == params_2
+    @test params_2 != params_3
+end
+
+function test_truncated_gaussian_sample()
+    mu = 0.
+    σ = 1.
+    high = .5
+    low = -5.
+    rng = MersenneTwister()
+    n_samples = 1000
+    for i in 1:n_samples
+        x = tuncated_gaussian_sample(rng, mu, σ, high, low)
+        @test x > low && x < high
+    end
+end
+
+function test_truncated_gaussian_sample_from_agg()
+    rng = MersenneTwister()
+    relative_σ = .1
+    n_samples = 10000
+
+    high = 1.3
+    low = -.7
+    xs = zeros(n_samples)
+    for i in 1:n_samples
+        agg = rand()
+        xs[i] = truncated_gaussian_sample_from_agg(rng, agg, relative_σ, high, low)
+        @test xs[i] > low && xs[i] < high
+    end
+
+    high = -1.3
+    low = .7
+    xs = zeros(n_samples)
+    for i in 1:n_samples
+        agg = rand()
+        xs[i] = truncated_gaussian_sample_from_agg(rng, agg, relative_σ, high, low, flip=true)
+        @test xs[i] < low && xs[i] > high
+    end
+end
+
 @time test_predefined_behavior_generator()
 @time test_predefined_behavior_generator_non_determinism()
 @time test_uniform_behavior_generator()
 @time test_correlated_behavior_generator()
+@time test_truncated_gaussian_sample()
+@time test_truncated_gaussian_sample_from_agg()
+@time test_correlated_gaussian_behavior_generator()

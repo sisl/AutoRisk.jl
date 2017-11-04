@@ -302,6 +302,9 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
+    # reset features
+    fill!(ext.features, 0)
+
     scene = rec[pastframe]
 
     vtpf = VehicleTargetPointFront()
@@ -420,6 +423,9 @@ function AutomotiveDrivingModels.pull_features!(
         veh_idx::Int,  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
+    # reset features
+    fill!(ext.features, 0)
+
     # if vehicle does not exist then leave features as zeros
     if veh_idx == 0
         return ext.features
@@ -501,7 +507,7 @@ type NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
     num_features::Int64
     function NeighborBehavioralFeatureExtractor()
         subext = BehavioralFeatureExtractor()
-        num_neighbors = 7
+        num_neighbors = 10
         num_features = length(subext) * num_neighbors
         return new(subext, zeros(Float64, num_features), num_features)
     end
@@ -509,7 +515,7 @@ end
 Base.length(ext::NeighborBehavioralFeatureExtractor) = ext.num_features
 function feature_names(ext::NeighborBehavioralFeatureExtractor)
     neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
-        "fore_fore_m"]
+        "fore_fore_m", "fore_fore_fore_m", "fore_fore_fore_fore_m", "fore_fore_fore_fore_fore_m"]
     fs = String[]
     for name in neigh_names
         for subname in feature_names(ext.subext)
@@ -520,7 +526,7 @@ function feature_names(ext::NeighborBehavioralFeatureExtractor)
 end
 function feature_info(ext::NeighborBehavioralFeatureExtractor)
     neigh_names = ["fore_m", "fore_l", "fore_r", "rear_m", "rear_l", "rear_r",
-        "fore_fore_m"]
+        "fore_fore_m", "fore_fore_fore_m", "fore_fore_fore_fore_m", "fore_fore_fore_fore_fore_m"]
     subinfo = feature_info(ext.subext)
     info = Dict{String, Dict{String, Any}}()
     for name in neigh_names
@@ -555,15 +561,23 @@ function AutomotiveDrivingModels.pull_features!(
     rear_R = get_neighbor_rear_along_right_lane(
         scene, veh_idx, roadway, vtpr, vtpf, vtpr)
 
-    if fore_M.ind != 0      
-        fore_fore_M = get_neighbor_fore_along_lane(
-            scene, fore_M.ind, roadway, vtpf, vtpr, vtpf)        
-    else        
-        fore_fore_M = NeighborLongitudinalResult(0, 0.)     
+    fore_neigh = fore_M
+    fore_neighs = NeighborLongitudinalResult[]
+    for i in 1:4
+        if fore_neigh.ind != 0
+            next_fore_neigh = get_neighbor_fore_along_lane(     
+            scene, fore_neigh.ind, roadway, vtpr, vtpf, vtpr)
+        else
+            next_fore_neigh = NeighborLongitudinalResult(0, 0.)
+        end
+        push!(fore_neighs, next_fore_neigh)
+        fore_neigh = next_fore_neigh
     end
 
     idxs::Vector{Int64} = [fore_M.ind, fore_L.ind, fore_R.ind, rear_M.ind, 
-        rear_L.ind, rear_R.ind, fore_fore_M.ind]
+        rear_L.ind, rear_R.ind]
+    idxs = vcat(idxs, [n.ind for n in fore_neighs])
+
     fidx = 0
     num_neigh_features = length(ext.subext)
     for neigh_veh_idx in idxs

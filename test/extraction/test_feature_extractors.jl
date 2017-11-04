@@ -203,8 +203,42 @@ function test_feature_info()
     end
 end
 
+function test_neighbor_behavioral_feature_extractor()
+    # add three vehicles and specifically check neighbor features
+    num_veh = 5
+    # one lane roadway
+    roadway = gen_straight_roadway(1, 1000.)
+    scene = Scene(num_veh)
+    min_p = get_passive_behavior_params()
+    max_p = get_aggressive_behavior_params()
+    gen = CorrelatedGaussianBehaviorGenerator(min_p, max_p)
+    models = Dict{Int, DriverModel}()
+
+    for i in 1:num_veh
+        params = rand(gen)
+        models[i] = build_driver(params, length(scene))
+
+        road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
+        veh_state = VehicleState(Frenet(road_idx, roadway), roadway, 10.)
+        veh_state = move_along(veh_state, roadway, 100. * i)
+        veh_def = VehicleDef(AgentClass.CAR, 5., 2.)
+        push!(scene, Vehicle(veh_state, veh_def, i))
+    end
+
+    rec = SceneRecord(1, .1, num_veh)
+    update!(rec, scene)
+
+    ext = NeighborBehavioralFeatureExtractor()
+    features = pull_features!(ext, rec, roadway, 1, models)
+    for (f, fn) in zip(features, feature_names(ext))
+        #println("$(fn): $(f)")
+    end
+
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
 @time test_neighbor_and_temporal_feature_extractors()
 @time test_feature_step_size_larger_than_1()
 @time test_feature_info()
+@time test_neighbor_behavioral_feature_extractor()
