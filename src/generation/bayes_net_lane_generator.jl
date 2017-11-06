@@ -110,7 +110,7 @@ function get_target_vehicle_index(gen::BayesNetLaneGenerator, roadway::Roadway)
     target_veh_id = Int(ceil(
         floor(nlanes(roadway) / 2) 
         * gen.num_veh_per_lane 
-        + gen.num_veh_per_lane - 1))
+        + gen.num_veh_per_lane - 5))
     return target_veh_id
 end
 

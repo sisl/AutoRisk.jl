@@ -54,7 +54,7 @@ function build_debug_base_net_lane_gen()
     )
     
     sampler = AssignmentSampler(discs)
-    num_veh_per_lane = 2
+    num_veh_per_lane = 7
     min_p = get_passive_behavior_params(err_p_a_to_i = .5)
     max_p = get_aggressive_behavior_params(err_p_a_to_i = .5)
     behgen = CorrelatedBehaviorGenerator(min_p, max_p)
@@ -66,21 +66,23 @@ end
 function test_bayes_net_lane_gen_sampling()
     gen = build_debug_base_net_lane_gen()
     roadway = gen_straight_roadway(1)
-    scene = Scene(2)
+    scene = Scene(7)
     models = Dict{Int,DriverModel}()
     rand!(gen, roadway, scene, models, 1)
 
     # proposal car is the first one
-    @test get_weights(gen)[1] < 1.
-    @test models[1].is_attentive == false
-    @test get_weights(gen)[2] ≈ 1.
-    @test models[2].is_attentive == true
+    @test get_weights(gen)[2] < 1.
+    @test models[2].is_attentive == false
+    @test get_weights(gen)[1] ≈ 1.
+    @test models[1].is_attentive == true
+    @test get_weights(gen)[3] ≈ 1.
+    @test models[3].is_attentive == true
 end
 
 function run_bayes_net_collection()
     gen = build_debug_base_net_lane_gen()
     roadway = gen_straight_roadway(1)
-    scene = Scene(2)
+    scene = Scene(7)
     models = Dict{Int,DriverModel}()
 
     ext = MultiFeatureExtractor()
@@ -90,7 +92,7 @@ function run_bayes_net_collection()
     seeds = collect(1:num_samples)
     prime_time = .5
     sampling_time = .5
-    max_num_veh = 2
+    max_num_veh = 7
     target_dim = NUM_TARGETS
     feature_dim = NUM_FEATURES
     veh_idx_can_change = false
@@ -129,9 +131,9 @@ function test_bayes_net_data_collection()
     srand(1)
     features_1, targets_1, weights_1 = run_bayes_net_collection()
 
-    @test size(features_1) == (NUM_FEATURES, 1, 4)
-    @test size(targets_1) == (NUM_TARGETS, 5, 4)
-    @test size(weights_1) == (1, 4)
+    @test size(features_1) == (NUM_FEATURES, 1, 14)
+    @test size(targets_1) == (NUM_TARGETS, 5, 14)
+    @test size(weights_1) == (1, 14)
     @test !any(isnan(features_1))
     @test !any(isnan(targets_1))
     @test !any(isnan(weights_1))
@@ -195,7 +197,7 @@ function build_simple_realistic_base_net_lane_gen(;
 end
 
 function test_scene_features_align_with_bounds()
-    num_veh_per_lane = 3
+    num_veh_per_lane = 7
     gen = build_simple_realistic_base_net_lane_gen(
         num_veh_per_lane = num_veh_per_lane
     )
