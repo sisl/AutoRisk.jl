@@ -18,6 +18,7 @@ type Dataset
     features::HDF5Dataset
 
     target_dim::Int64
+    target_timesteps::Int64
     targets::HDF5Dataset
 
     weights::HDF5Dataset
@@ -45,16 +46,23 @@ type Dataset
         - use_weights: wether or not likelihood weights should be included 
             with the dataset
     """
-    function Dataset(filepath::String, feature_dim::Int64, 
-            feature_timesteps::Int64, target_dim::Int64,
-            max_num_samples::Int64; chunk_dim::Int64 = 100, 
-            init_file::Bool = true, attrs::Dict = Dict(), 
+    function Dataset(
+            filepath::String, 
+            feature_dim::Int64, 
+            feature_timesteps::Int64, 
+            target_dim::Int64,
+            target_timesteps::Int64,
+            max_num_samples::Int64; 
+            chunk_dim::Int64 = 100, 
+            init_file::Bool = true, 
+            attrs::Dict = Dict(), 
             use_weights::Bool = false)
         retval = new()
         retval.filepath = filepath
         retval.feature_dim = feature_dim
         retval.feature_timesteps = feature_timesteps
         retval.target_dim = target_dim
+        retval.target_timesteps = target_timesteps
         retval.chunk_dim = chunk_dim
         retval.max_num_samples = max_num_samples
         retval.next_idx = 1
@@ -100,8 +108,8 @@ function initialize!(dataset::Dataset)
                 "chunk", (dataset.feature_dim, dataset.feature_timesteps, dataset.chunk_dim))
     
     targets = d_create(risk_dataset, "targets", datatype(Float64), 
-                dataspace(dataset.target_dim, dataset.max_num_samples), 
-                "chunk", (dataset.target_dim, dataset.chunk_dim))
+                dataspace(dataset.target_dim, dataset.target_timesteps, dataset.max_num_samples), 
+                "chunk", (dataset.target_dim, dataset.target_timesteps, dataset.chunk_dim))
 
     # set the file in the dataset for easier access later
     dataset.file = h5file
@@ -145,7 +153,7 @@ function update!(dataset::Dataset, features::Array{Float64},
 
     # update features and targets
     dataset.features[:, :, s:e] = features
-    dataset.targets[:, s:e] = targets
+    dataset.targets[:, :, s:e] = targets
     dataset.next_idx = e + 1
 
     # batch_idxs are where batches end
@@ -212,7 +220,7 @@ function finalize!(dataset::Dataset)
     # reduce feature and target size
     set_dims!(dataset.features, (dataset.feature_dim, dataset.feature_timesteps, 
         dataset.next_idx - 1))
-    set_dims!(dataset.targets, (dataset.target_dim, dataset.next_idx - 1))
+    set_dims!(dataset.targets, (dataset.target_dim, dataset.target_timesteps, dataset.next_idx - 1))
 
     if dataset.use_weights
         set_dims!(dataset.weights, (1, dataset.next_idx - 1))
@@ -247,7 +255,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
 
     # compute aggregate size of dataset and feature and target 
     # size by iterating through the input files first
-    num_features, num_targets, feature_timesteps = -1, -1, -1
+    num_features, num_targets, feature_timesteps, target_timesteps = -1, -1, -1, -1
     num_samples = 0
     attributes = Dict{String, Any}()
     use_weights = false
@@ -258,13 +266,14 @@ function aggregate_datasets(input_filepaths::Vector{String},
                 num_features = size(proc_file["risk/features"], 1)
                 feature_timesteps = size(proc_file["risk/features"], 2)
                 num_targets = size(proc_file["risk/targets"], 1)
+                target_timesteps = size(proc_file["risk/targets"], 2)
                 attributes = h5readattr(filepath, "risk")
                 use_weights = exists(proc_file, "risk/weights")
             end
 
             num_proc_features, num_proc_timesteps, num_proc_samples = size(
                 proc_file["risk/features"])
-            num_proc_targets = size(proc_file["risk/targets"], 1)
+            num_proc_targets, num_proc_timesteps, _ = size(proc_file["risk/targets"])
 
             # check that feature and target dims match across sets
             if num_proc_features != num_features
@@ -288,7 +297,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
     feature_set = d_create(risk_dataset, "features", 
         datatype(Float64), dataspace(num_features, feature_timesteps, num_samples))
     target_set = d_create(risk_dataset, "targets", 
-        datatype(Float64), dataspace(num_targets, num_samples))
+        datatype(Float64), dataspace(num_targets, target_timesteps, num_samples))
     if use_weights
         weight_set = d_create(risk_dataset, "weights", 
         datatype(Float64), dataspace(1, num_samples))
@@ -304,7 +313,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
         num_proc_samples = size(proc_file["risk/features"], 3)
         eidx = sidx + num_proc_samples
         feature_set[:, :, sidx + 1:eidx] = read(proc_file["risk/features"])
-        target_set[:, sidx + 1:eidx] = read(proc_file["risk/targets"])
+        target_set[:, :, sidx + 1:eidx] = read(proc_file["risk/targets"])
         if use_weights
             weight_set[:, sidx + 1:eidx] = read(proc_file["risk/weights"])
         end

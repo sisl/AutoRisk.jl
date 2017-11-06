@@ -18,8 +18,8 @@ end
 # the indexing here is to ensure that the dimension is not dropped
 get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
 get_features(eval::Evaluator, veh_idx::Int) = eval.features[:, 1:eval.feature_timesteps, veh_idx]
-get_targets(eval::Evaluator) = eval.agg_targets[:, :]
-get_targets(eval::Evaluator, veh_idx::Int) = eval.agg_targets[:, veh_idx]
+get_targets(eval::Evaluator) = eval.agg_targets[:, :, :]
+get_targets(eval::Evaluator, veh_idx::Int) = eval.agg_targets[:, :, veh_idx]
 
 """
 # Description:
@@ -186,7 +186,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
         bootstrap_targets!(eval, models, roadway)
 
         # add targets to aggregate targets
-        eval.agg_targets[:, 1:eval.num_veh] += eval.targets[:, 1:eval.num_veh]  
+        eval.agg_targets[:, :, 1:eval.num_veh] += eval.targets[:, :, 1:eval.num_veh]  
     end
 
     ## compute confidence intervals for each target

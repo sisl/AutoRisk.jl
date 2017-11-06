@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 268
+# const NUM_FEATURES = 398
 # const NUM_TARGETS = 5
 # const BASE_TEST_DIR = ".."
 
@@ -35,7 +35,7 @@ function test_generate_dataset_parallel()
 
         targets = file["risk/targets"]
         @test !any(isnan(mean(read(targets), 3)))
-        @test size(targets, 2) == 12
+        @test size(targets, 3) == 12
 
         seeds = read(file["risk/seeds"])
         @test length(seeds) == 3
@@ -44,9 +44,7 @@ function test_generate_dataset_parallel()
         batch_idxs = read(file["risk/batch_idxs"])
         @test batch_idxs == collect(4:4:12)
     end
-
-    [rm(f) for f in filepaths]
     rm(output_filepath)
 end
 
-# @time test_generate_dataset_parallel()
+@time test_generate_dataset_parallel()

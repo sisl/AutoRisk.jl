@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 268
+# const NUM_FEATURES = 398
 # const NUM_TARGETS = 5
 # const BASE_TEST_DIR = ".."
 
@@ -116,7 +116,7 @@ function test_generate_multi_timestep_dataset()
     targets = read(file["risk/targets"])
     
     @test size(features) == (NUM_FEATURES, 2, 8)
-    @test size(targets) == (NUM_TARGETS, 8)
+    @test size(targets) == (NUM_TARGETS, 30, 8)
     @test !any(isnan(features))
     @test !any(isnan(targets))
 

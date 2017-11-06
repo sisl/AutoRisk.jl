@@ -88,6 +88,8 @@ end
         already collided
     - pastframe: the (negative) index of the frame in the record to extract 
         targets for
+    - timestep_idx: the index in targets where these target values should be 
+        placed. These should be in chronological order in the array.
 """
 function extract_frame_targets!(
         ext::AbstractFeatureExtractor,
@@ -97,7 +99,8 @@ function extract_frame_targets!(
         veh_id_to_idx::Dict{Int,Int}, 
         veh_idx_can_change::Bool, 
         done::Set{Int}, 
-        pastframe::Int64
+        pastframe::Int64,
+        timestep_idx::Int64
     )
 
     scene = rec[pastframe]
@@ -125,9 +128,9 @@ function extract_frame_targets!(
         # extract target values for this vehicle in the current 
         # frame, provided it has not left the scene
         if in_scene
-            targets[:, orig_veh_idx] += pull_features!(ext, rec, 
+            targets[:, timestep_idx, orig_veh_idx] = pull_features!(ext, rec, 
                 roadway, veh_idx, pastframe)
-            in_collision = any(targets[1:3, orig_veh_idx] .> 0)
+            in_collision = any(targets[1:3, :, orig_veh_idx] .> 0)
         end
 
         # if the vehicle has left the scene or been in a collision
@@ -176,9 +179,18 @@ function extract_targets!(
     # move forward in time through each scene in the record, 
     # computing target values for every car in veh_id_to_idx
     # at each frame
-    for pastframe in -start_frame:0
-        extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
-            veh_idx_can_change, done, pastframe)
+    for (timestep_idx, pastframe) in enumerate(-start_frame:0)
+        extract_frame_targets!(
+            ext, 
+            rec, 
+            roadway, 
+            targets, 
+            veh_id_to_idx, 
+            veh_idx_can_change, 
+            done, 
+            pastframe,
+            timestep_idx
+        )
     end
 
     # clamp the values because we are interested in the occurence or lack of 

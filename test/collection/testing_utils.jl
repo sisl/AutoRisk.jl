@@ -30,6 +30,9 @@ function build_debug_dataset_collector(;
     seeds = collect(1:num_samples)
     max_num_samples = num_samples * max_num_veh
 
+    # compute number of target timesteps
+    target_timesteps = Int(ceil(sampling_time / .1))
+
     # roadway gen
     roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 
         radius = roadway_radius)
@@ -69,14 +72,19 @@ function build_debug_dataset_collector(;
     rec::SceneRecord = SceneRecord(max_num_scenes, .1, max_num_veh)
     features::Array{Float64} = Array{Float64}(feature_dim, feature_timesteps,
         max_num_veh)
-    targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
+    target_timesteps = Int(ceil(sampling_time * 10))
+    targets::Array{Float64} = Array{Float64}(target_dim, 
+        target_timesteps,
+        max_num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(target_dim, 
+        target_timesteps,
+        max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset
-    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
+    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim, target_timesteps,
         max_num_samples, chunk_dim = chunk_dim, init_file = init_file,
         use_weights = use_weights)
 

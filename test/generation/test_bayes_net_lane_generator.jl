@@ -1,7 +1,7 @@
 # using Base.Test
 # using AutoRisk
 
-# const NUM_FEATURES = 268
+# const NUM_FEATURES = 398
 # const NUM_TARGETS = 5
 # BASE_TEST_DIR = ".."
 
@@ -100,15 +100,15 @@ function run_bayes_net_collection()
     max_num_scenes = Int((prime_time + sampling_time) / .1)
     rec = SceneRecord(max_num_scenes, .1, max_num_veh)
     features = Array{Float64}(feature_dim, feature_timesteps, max_num_veh)
-    targets = Array{Float64}(target_dim, max_num_veh)
-    agg_targets = Array{Float64}(target_dim, max_num_veh)
+    targets = Array{Float64}(target_dim, 5, max_num_veh)
+    agg_targets = Array{Float64}(target_dim, 5, max_num_veh)
     rng = MersenneTwister(1)
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset
     output_filepath = joinpath(BASE_TEST_DIR, "data/test_dataset_collector.h5")
-    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim,
+    dataset = Dataset(output_filepath, feature_dim, feature_timesteps, target_dim, 5,
         max_num_samples, chunk_dim = chunk_dim, use_weights = true)
 
     # collector
@@ -130,7 +130,7 @@ function test_bayes_net_data_collection()
     features_1, targets_1, weights_1 = run_bayes_net_collection()
 
     @test size(features_1) == (NUM_FEATURES, 1, 4)
-    @test size(targets_1) == (NUM_TARGETS, 4)
+    @test size(targets_1) == (NUM_TARGETS, 5, 4)
     @test size(weights_1) == (1, 4)
     @test !any(isnan(features_1))
     @test !any(isnan(targets_1))

@@ -91,15 +91,14 @@ function test_extract_frame_targets()
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
-    targets = Array{Float64}(NUM_TARGETS, 2)
+    targets = Array{Float64}(NUM_TARGETS, 10, 2)
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
     veh_idx_can_change = false
     done = Set{Int64}()
     pastframe = 0
     extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
-        veh_idx_can_change, done, pastframe)
-
+        veh_idx_can_change, done, pastframe, 1)
     @test all(abs(targets) .< 1e-8)
 
     T = .9
@@ -108,14 +107,14 @@ function test_extract_frame_targets()
 
     fill!(targets, 0)
     extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
-        veh_idx_can_change, done, pastframe)
+        veh_idx_can_change, done, pastframe, 1)
 
-    @test targets[2,1] == 1.0
-    @test abs(targets[4,1]) < 1e-8
-    @test abs(targets[5,1]) < 1e-8
-    @test targets[3,2] == 1.0
-    @test abs(targets[4,2]) < 1e-8
-    @test targets[5,2] == 1.0
+    @test sum(targets[2,:,1]) >= 1.0
+    @test abs(sum(targets[4,:,1])) < 1e-8
+    @test abs(sum(targets[5,:,1])) < 1e-8
+    @test sum(targets[3,:,2]) >= 1.0
+    @test abs(sum(targets[4,:,2])) < 1e-8
+    @test sum(targets[5,:,2]) >= 1.0
     @test done == Set([1,2])
 
     # with changing index
@@ -125,12 +124,12 @@ function test_extract_frame_targets()
     veh_idx_can_change = true
     fill!(targets, 0)
     extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
-        veh_idx_can_change, done, pastframe)
+        veh_idx_can_change, done, pastframe, 1)
 
-    @test targets[2,1] == 1.0
-    @test abs(targets[4,1]) < 1e-8
-    @test targets[3,2] == 1.0
-    @test abs(targets[4,2]) < 1e-8
+    @test sum(targets[2,:,1]) >= 1.0
+    @test sum(abs(targets[4,:,1])) < 1e-8
+    @test sum(targets[3,:,2]) >= 1.0
+    @test abs(sum(targets[4,:,2])) < 1e-8
     @test done == Set([1,2])
 end
 
@@ -157,23 +156,24 @@ function test_extract_targets()
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
-    targets = Array{Float64}(NUM_TARGETS,2)
+    targets = Array{Float64}(NUM_TARGETS,10,2)
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
     veh_idx_can_change = true
-    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
+    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change, 9)
 
-    @test abs(targets[1,1]) < 1e-8
-    @test abs(targets[2,1]) < 1e-8
-    @test abs(targets[1,2]) < 1e-8
-    @test abs(targets[2,2]) < 1e-8
+    @test abs(sum(targets[1,:,1])) < 1e-8
+    @test abs(sum(targets[2,:,1])) < 1e-8
+    @test abs(sum(targets[1,:,2])) < 1e-8
+    @test abs(sum(targets[2,:,2])) < 1e-8
 
     fill!(targets, 0)
-    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 9.5), veh_def, 2)
+    scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 7.), veh_def, 2)
+
     models[1] = Tim2DDriver(.1, mlon = StaticLaneFollowingDriver(-5.))
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
-    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change)
+    extract_targets!(ext, rec, roadway, targets, veh_id_to_idx, veh_idx_can_change, 9)
 
     # frames = Frames(MIME("image/png"), fps=2)
     # frame = render(scene, roadway)
@@ -182,10 +182,11 @@ function test_extract_targets()
     # println(targets[:,1])
     # println(targets[:,2])
 
-    @test targets[2,1] == 1.0
-    @test targets[4,1] == 1.0
-    @test targets[3,2] == 1.0
-    @test abs(targets[4,2]) < 1e-8
+    @test targets[2,end,1] == 1.0
+    @test sum(targets[4,:,1]) >= 1.0
+    @test targets[3,end,2] == 1.0
+    @test sum(targets[4,:,2]) < 1e-8
+    @test mean(targets[5,:,2]) == 1.0
 end
 
 function test_pull_features()

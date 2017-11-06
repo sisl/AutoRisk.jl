@@ -1,12 +1,12 @@
-# using Base.Test
-# using AutoRisk
+using Base.Test
+using AutoRisk
 
-# using AutoViz
-# using Reel
-# Reel.set_output_type("gif")
+using AutoViz
+using Reel
+Reel.set_output_type("gif")
 
-# NUM_FEATURES = 350
-# NUM_TARGETS = 5
+NUM_FEATURES = 398
+NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
@@ -58,8 +58,8 @@ function test_monte_carlo_evaluator_debug()
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
     features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1,num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
+    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10,num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
     ext = MultiFeatureExtractor()
@@ -75,9 +75,9 @@ function test_monte_carlo_evaluator_debug()
     # write("/Users/wulfebw/Desktop/stuff2.gif", frames)
 
     # first two collisions in each, last decel in each
-    @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 0.0, 1.0]
-    @test eval.agg_targets[1:NUM_TARGETS, 2] == [0.0, 1.0, 0.0, 0.0, 0.0]
-    @test eval.agg_targets[1:NUM_TARGETS, 3] == [0.0, 0.0, 0.0, 1.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 0.0, 4.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,3], 2), 5) == [0.0, 0.0, 0.0, 10.0, 0.0]
 end
 
 function test_monte_carlo_evaluator()
@@ -118,8 +118,8 @@ function test_monte_carlo_evaluator()
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
     features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1, num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, num_veh)
+    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
 
@@ -132,8 +132,8 @@ function test_monte_carlo_evaluator()
 
     feature_names_list = feature_names(ext)
 
-    @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 1.0, 1.0]
-    @test eval.agg_targets[1:NUM_TARGETS, 2] == [0.0, 1.0, 0.0, 0.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 2.0, 2.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
 
     @test eval.features[15, 1] ≈ 0.151219512195122
     @test eval.features[15, 2] ≈ 30.
@@ -194,8 +194,8 @@ function test_multi_timestep_monte_carlo_evaluator()
 
     features::Array{Float64} = Array{Float64}(length(ext), feature_timesteps,
         num_veh)
-    targets::Array{Float64} = Array{Float64}(length(target_ext), num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(length(target_ext), num_veh)
+    targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
 
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
@@ -203,7 +203,7 @@ function test_multi_timestep_monte_carlo_evaluator()
     evaluate!(eval, scene, models, roadway, 1)
 
     @test size(eval.features) == (length(ext), feature_timesteps, 2)
-    @test size(eval.targets) == (length(target_ext), 2)
+    @test size(eval.targets) == (length(target_ext), 10, 2)
 
     # check velocity over time
     @test eval.features[3,1,1] ≈ .2
@@ -236,7 +236,7 @@ function test_multi_timestep_monte_carlo_evaluator()
     evaluate!(eval, original_scene, models, roadway, 1)
 
     @test size(eval.features) == (length(ext), feature_timesteps, 2)
-    @test size(eval.targets) == (length(target_ext), 2)
+    @test size(eval.targets) == (length(target_ext), 10, 2)
 
     # check velocity over time
     @test eval.features[3,1,1] ≈ .6

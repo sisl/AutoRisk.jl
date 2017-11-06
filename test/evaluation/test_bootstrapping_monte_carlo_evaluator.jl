@@ -76,4 +76,4 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     @test eval.agg_targets[1:NUM_TARGETS, 3] == [1.0, 1.0, 1.0, 1.0, 1.0]
 end
 
-@time test_bootstrapping_monte_carlo_evaluator_debug()
+# @time test_bootstrapping_monte_carlo_evaluator_debug()
