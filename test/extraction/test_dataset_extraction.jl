@@ -1,10 +1,10 @@
-# using Base.Test
-# using AutoRisk
-# using AutoViz
-# using Reel
-# Reel.set_output_type("gif")
+using Base.Test
+using AutoRisk
+using AutoViz
+using Reel
+Reel.set_output_type("gif")
 
-# const NUM_TARGETS = 5
+const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
     num_veh = 2
@@ -186,7 +186,7 @@ function test_extract_targets()
     @test sum(targets[4,:,1]) >= 1.0
     @test targets[3,end,2] == 1.0
     @test sum(targets[4,:,2]) < 1e-8
-    @test mean(targets[5,:,2]) == 1.0
+    @test mean(targets[5,:,2]) > 0.0
 end
 
 function test_pull_features()

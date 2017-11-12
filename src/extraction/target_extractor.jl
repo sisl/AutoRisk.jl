@@ -193,8 +193,17 @@ function extract_targets!(
         )
     end
 
-    # clamp the values because we are interested in the occurence or lack of 
-    # occurence of targets so that they can be interpreted as probabilities
-    # before this point, we've just inremented
-    clamp!(targets, 0, 1)
+    # we are interested in probabilities of {0/1} events, so only keep the 
+    # first occurrence in the array
+    for i in 1:size(targets, 1)
+        for j in 1:size(targets, 3)
+            for k in 1:size(targets, 2)
+                if targets[i,k,j] == 1
+                    targets[i,k+1:end,j] = 0
+                    break
+                end
+            end
+        end
+    end
+    return targets
 end
