@@ -156,6 +156,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.entities))
     pastframe = 0 # first iteration, don't alter record
+    pastframe_start = -Int(min(5, eval.prime_time)) # number of replay scenes for driver models
     for idx in 1:eval.num_runs
         # reset
         copy!(temp_scene, scene)
@@ -163,7 +164,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # reset any hidden state present in the model
         for (id, model) in models
-            prime_with_history!(model, eval.rec, roadway, id)
+            prime_with_history!(model, eval.rec, roadway, id, pastframe_start=pastframe_start)
         end
 
         # simulate starting from the final burn-in scene
