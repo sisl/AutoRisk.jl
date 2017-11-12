@@ -75,9 +75,9 @@ function test_monte_carlo_evaluator_debug()
     # write("/Users/wulfebw/Desktop/stuff2.gif", frames)
 
     # first two collisions in each, last decel in each
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 0.0, 4.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 0.0, 1.0]
     @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,3], 2), 5) == [0.0, 0.0, 0.0, 10.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,3], 2), 5) == [0.0, 0.0, 0.0, 1.0, 0.0]
 end
 
 function test_monte_carlo_evaluator()
@@ -132,7 +132,7 @@ function test_monte_carlo_evaluator()
 
     feature_names_list = feature_names(ext)
 
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 2.0, 2.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 1.0, 1.0]
     @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
 
     @test eval.features[15, 1] ≈ 0.151219512195122

@@ -1,10 +1,10 @@
-using Base.Test
-using AutoRisk
-using AutoViz
-using Reel
-Reel.set_output_type("gif")
+# using Base.Test
+# using AutoRisk
+# using AutoViz
+# using Reel
+# Reel.set_output_type("gif")
 
-const NUM_TARGETS = 5
+# const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
     num_veh = 2
