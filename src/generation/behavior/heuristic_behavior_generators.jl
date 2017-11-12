@@ -148,7 +148,7 @@ type CorrelatedGaussianBehaviorGenerator <: BehaviorGenerator
             min_p, 
             max_p, 
             rng = MersenneTwister(1),
-            σ = .1)
+            σ = .03)
         return new(min_p, max_p, rng, σ)
     end
 end
