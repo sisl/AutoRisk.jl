@@ -16,9 +16,9 @@ function bootstrap_targets!(eval::Evaluator, models::Dict{Int, DriverModel},
 end
 
 # the indexing here is to ensure that the dimension is not dropped
-get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, :]
+get_features(eval::Evaluator) = eval.features[:, 1:eval.feature_timesteps, 1:eval.num_veh]
 get_features(eval::Evaluator, veh_idx::Int) = eval.features[:, 1:eval.feature_timesteps, veh_idx]
-get_targets(eval::Evaluator) = eval.agg_targets[:, :, :]
+get_targets(eval::Evaluator) = eval.agg_targets[:, :, 1:eval.num_veh]
 get_targets(eval::Evaluator, veh_idx::Int) = eval.agg_targets[:, :, veh_idx]
 
 """
@@ -156,6 +156,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     # repeatedly simulate, starting from the final burn-in scene 
     temp_scene = Scene(length(scene.entities))
     pastframe = 0 # first iteration, don't alter record
+    pastframe_start = -Int(min(5, eval.prime_time)) # number of replay scenes for driver models
     for idx in 1:eval.num_runs
         # reset
         copy!(temp_scene, scene)
@@ -163,7 +164,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
         # reset any hidden state present in the model
         for (id, model) in models
-            prime_with_history!(model, eval.rec, roadway, id)
+            prime_with_history!(model, eval.rec, roadway, id, pastframe_start=pastframe_start)
         end
 
         # simulate starting from the final burn-in scene
