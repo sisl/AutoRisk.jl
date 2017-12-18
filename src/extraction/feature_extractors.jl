@@ -598,7 +598,7 @@ type CarLidarFeatureExtractor <: AbstractFeatureExtractor
             carlidar_nbeams::Int = 20; 
             extract_carlidar_rangerate::Bool = true,
             carlidar_max_range::Float64 = 50.0)
-        carlidar = LidarSensor(carlidar_nbeams, max_range=carlidar_max_range, angle_offset=-π)
+        carlidar = LidarSensor(carlidar_nbeams, max_range=carlidar_max_range, angle_offset=0.)
         num_features = nbeams(carlidar) * (1 + extract_carlidar_rangerate)
         return new(zeros(Float64, num_features), num_features, carlidar,
             extract_carlidar_rangerate)

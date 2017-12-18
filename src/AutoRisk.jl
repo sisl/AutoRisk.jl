@@ -8,7 +8,6 @@ using Reexport
 @reexport using DataStructures
 @reexport using Discretizers
 @reexport using Distributions
-# @reexport using ForwardNets
 @reexport using HDF5
 @reexport using JLD
 @reexport using Parameters
@@ -30,9 +29,9 @@ include("utils/assignment_sampler.jl")
 
 # # behaviors
 include("behaviors/errorable_driver_model.jl")
-# include("behaviors/delayed_intelligent_driver_model.jl")
 include("behaviors/delayed_driver_model.jl")
 # include("behaviors/gaussian_mlp_driver.jl")
+# include("behaviors/delayed_intelligent_driver_model.jl")
 
 # extraction
 include("extraction/target_extractor.jl")
