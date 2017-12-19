@@ -6,7 +6,7 @@ export
 # Description:
     - SceneGenerator is the abstract type underlying the scene generators.
 """
-abstract SceneGenerator
+abstract type SceneGenerator end
 
 Base.rand!(scene_generator::SceneGenerator, scene::Scene, roadway::Roadway, 
     seed::Int64) = error("rand! not implemented for $(scene_generator)")

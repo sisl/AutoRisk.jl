@@ -109,7 +109,7 @@ function step(predictor::TDPredictor, x::Array{Float64}, a::Array{Float64},
     end
 
     # store td-error associated with this state for later use as feedback
-    predictor.td_errors[x] = sum(abs(total_td_error))
+    predictor.td_errors[x] = sum(abs.(total_td_error))
 end
 
 function mydictcopy(src::Dict{Array{Float64},Float64}, dest::Dict{Array{Float64},Float64})

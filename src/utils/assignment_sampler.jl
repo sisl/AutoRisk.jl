@@ -7,7 +7,7 @@ export
     get_disc_types,
     LinCatDiscretizer
 
-typealias LinCatDiscretizer Union{LinearDiscretizer{Float64,Int},CategoricalDiscretizer{Int,Int}}
+const LinCatDiscretizer Union{LinearDiscretizer{Float64,Int},CategoricalDiscretizer{Int,Int}}
 
 """
 # Description: 

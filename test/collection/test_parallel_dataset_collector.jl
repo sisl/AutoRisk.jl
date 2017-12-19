@@ -30,11 +30,11 @@ function test_generate_dataset_parallel()
 
     h5open(output_filepath, "r") do file
         features = file["risk/features"]
-        @test !any(isnan(mean(read(features), 3)))
+        @test !any(isnan.(mean(read(features), 3)))
         @test size(features, 3) == 12
 
         targets = file["risk/targets"]
-        @test !any(isnan(mean(read(targets), 3)))
+        @test !any(isnan.(mean(read(targets), 3)))
         @test size(targets, 3) == 12
 
         seeds = read(file["risk/seeds"])

@@ -6,7 +6,7 @@ export
     normalize_input!,
     fprop_network
 
-abstract PredictionModel
+abstract type PredictionModel end
 
 predict(model::PredictionModel, input::Array{Float64}) = error(
     "predict not implemented for $(model)")

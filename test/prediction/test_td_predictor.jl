@@ -47,7 +47,7 @@ function test_simple_learning()
         end
     end
 
-    @test all(abs(v[1,:,:] - .5) .< 1e-2)
+    @test all(abs.(v[1,:,:] - .5) .< 1e-2)
     @test all(v[2,:,:] .> 0)
     @test v[2,1,1] < v[2,end,end]
 

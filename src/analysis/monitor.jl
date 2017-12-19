@@ -4,7 +4,7 @@ export
     ScenarioRecorderMonitor,
     monitor
 
-abstract Submonitor
+abstract type Submonitor end
 
 # wrapper around a collection of submonitors
 type Monitor

@@ -79,8 +79,8 @@ function test_generate_dataset()
     targets = read(file["risk/targets"])
     
     # check for valid targets
-    @test !any(isnan(features))
-    @test !any(isnan(targets))
+    @test !any(isnan.(features))
+    @test !any(isnan.(targets))
 
     # check that some targets are between 0 and 1 in order to ensure that 
     # monte carlo runs are being accounted for
@@ -117,8 +117,8 @@ function test_generate_multi_timestep_dataset()
     
     @test size(features) == (NUM_FEATURES, 2, 8)
     @test size(targets) == (NUM_TARGETS, 30, 8)
-    @test !any(isnan(features))
-    @test !any(isnan(targets))
+    @test !any(isnan.(features))
+    @test !any(isnan.(targets))
 
     rm(filepath)
 end

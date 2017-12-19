@@ -1,10 +1,10 @@
-# using Base.Test
-# using AutoRisk
-# using AutoViz
-# using Reel
-# Reel.set_output_type("gif")
+using Base.Test
+using AutoRisk
+using AutoViz
+using Reel
+Reel.set_output_type("gif")
 
-# const NUM_TARGETS = 5
+const NUM_TARGETS = 5
 
 function test_extract_vehicle_frame_targets()
     num_veh = 2
@@ -42,7 +42,7 @@ function test_extract_vehicle_frame_targets()
     targets[:, t_idx] = pull_features!(ext, rec, roadway, veh_idx, 0)
     #extract_vehicle_frame_targets!(rec, roadway, targets, veh_idx, t_idx, 0)
 
-    @test all(abs(targets) .< 1e-8)
+    @test all(abs.(targets) .< 1e-8)
 
     # then in a collision
     scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 12.), veh_def, 2)
@@ -99,7 +99,7 @@ function test_extract_frame_targets()
     pastframe = 0
     extract_frame_targets!(ext, rec, roadway, targets, veh_id_to_idx, 
         veh_idx_can_change, done, pastframe, 1)
-    @test all(abs(targets) .< 1e-8)
+    @test all(abs.(targets) .< 1e-8)
 
     T = .9
     scene[2] = Vehicle(VehicleState(Frenet(road_idx, roadway), roadway, 12.), veh_def, 2)
@@ -127,7 +127,7 @@ function test_extract_frame_targets()
         veh_idx_can_change, done, pastframe, 1)
 
     @test sum(targets[2,:,1]) >= 1.0
-    @test sum(abs(targets[4,:,1])) < 1e-8
+    @test sum(abs.(targets[4,:,1])) < 1e-8
     @test sum(targets[3,:,2]) >= 1.0
     @test abs(sum(targets[4,:,2])) < 1e-8
     @test done == Set([1,2])
@@ -236,6 +236,7 @@ function test_pull_features()
     ext = MultiFeatureExtractor()
     features = Array{Float64}(length(ext), 1, num_veh)
     pull_features!(ext, rec, roadway, models, features)
+    features = reshape(features, (length(ext), num_veh))
 
     @test features[3,1] ≈ 4.
     @test features[4,1] == 5.

@@ -7,7 +7,7 @@ export
 # Description: 
     - RoadwayGenerator is the abstract type underlying the roadway generators.
 """
-abstract RoadwayGenerator
+abstract type RoadwayGenerator end
 
 Base.rand!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
     "rand! not implemented for $(scene_generator)")

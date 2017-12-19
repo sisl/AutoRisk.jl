@@ -126,7 +126,7 @@ function test_truncated_gaussian_sample()
     σ = 1.
     high = .5
     low = -5.
-    rng = MersenneTwister()
+    rng = MersenneTwister(1)
     n_samples = 1000
     for i in 1:n_samples
         x = tuncated_gaussian_sample(rng, mu, σ, high, low)
@@ -135,7 +135,7 @@ function test_truncated_gaussian_sample()
 end
 
 function test_truncated_gaussian_sample_from_agg()
-    rng = MersenneTwister()
+    rng = MersenneTwister(1)
     relative_σ = .1
     n_samples = 10000
 

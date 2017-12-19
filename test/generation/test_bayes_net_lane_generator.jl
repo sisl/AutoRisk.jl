@@ -134,9 +134,9 @@ function test_bayes_net_data_collection()
     @test size(features_1) == (NUM_FEATURES, 1, 14)
     @test size(targets_1) == (NUM_TARGETS, 5, 14)
     @test size(weights_1) == (1, 14)
-    @test !any(isnan(features_1))
-    @test !any(isnan(targets_1))
-    @test !any(isnan(weights_1))
+    @test !any(isnan.(features_1))
+    @test !any(isnan.(targets_1))
+    @test !any(isnan.(weights_1))
 
     # check deterministic
     srand(1)

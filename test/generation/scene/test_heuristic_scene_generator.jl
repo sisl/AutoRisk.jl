@@ -193,8 +193,8 @@ function test_const_spaced_mode()
         mode = "const_spaced")
     seed = 1
     scene = rand!(gen, Scene(num_vehicles), roadway, seed)
-    println(scene.entities[1])
-    println(scene.entities[end])
+    # println(scene.entities[1])
+    # println(scene.entities[end])
 end
 
 @time test_heuristic_scene_generator_constructor()

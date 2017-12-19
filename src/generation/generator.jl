@@ -5,7 +5,7 @@ export
     get_weights,
     get_target_vehicle_id
 
-abstract Generator
+abstract type Generator end
 
 get_weights(gen::Generator) = nothing
 get_target_vehicle_id(gen::Generator) = nothing

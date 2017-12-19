@@ -1,12 +1,12 @@
-using Base.Test
-using AutoRisk
+# using Base.Test
+# using AutoRisk
 
-using AutoViz
-using Reel
-Reel.set_output_type("gif")
+# using AutoViz
+# using Reel
+# Reel.set_output_type("gif")
 
-NUM_FEATURES = 398
-NUM_TARGETS = 5
+# NUM_FEATURES = 398
+# NUM_TARGETS = 5
 
 function test_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
@@ -135,21 +135,23 @@ function test_monte_carlo_evaluator()
     @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 1.0, 1.0]
     @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
 
-    @test eval.features[15, 1] ≈ 0.151219512195122
-    @test eval.features[15, 2] ≈ 30.
+    features = reshape(eval.features, (NUM_FEATURES, num_veh))
 
-    @test eval.features[17, 1] ≈ 1. / 6.12903225806451
-    @test eval.features[17, 2] ≈ 30.0
+    @test features[15, 1] ≈ 0.151219512195122
+    @test features[15, 2] ≈ 30.
+
+    @test features[17, 1] ≈ 1. / 6.12903225806451
+    @test features[17, 2] ≈ 30.0
 
     k_spd_idx = find(feature_names_list .== "beh_lon_k_spd")[1]
 
-    @test eval.features[k_spd_idx, 1] == k_spd
-    @test eval.features[k_spd_idx, 2] == k_spd
+    @test features[k_spd_idx, 1] == k_spd
+    @test features[k_spd_idx, 2] == k_spd
 
     politeness_idx = find(feature_names_list .== "beh_lane_politeness")[1]
 
-    @test eval.features[politeness_idx, 1] == politeness
-    @test eval.features[politeness_idx, 2] == politeness
+    @test features[politeness_idx, 1] == politeness
+    @test features[politeness_idx, 2] == politeness
 
 end
 

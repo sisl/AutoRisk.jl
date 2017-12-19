@@ -7,7 +7,7 @@ export
 # Description:
     - BehaviorGenerator is the abstract type underlying the behavior generators.
 """
-abstract BehaviorGenerator
+abstract type BehaviorGenerator end
 
 Base.rand(gen::BehaviorGenerator) = error("rand not implemented for $(gen)")
 

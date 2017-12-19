@@ -7,7 +7,7 @@ export
     get_targets,
     reset!
 
-abstract Evaluator
+abstract type Evaluator end
 
 # default performs no bootstrapping 
 function bootstrap_targets!(eval::Evaluator, models::Dict{Int, DriverModel},

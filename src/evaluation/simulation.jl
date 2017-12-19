@@ -49,7 +49,7 @@ function simulate!{S,D,I,A,R,M<:DriverModel}(
     if update_first_scene
         update!(rec, scene)
     end
-    actions = Array(A, length(scene))
+    actions = Array{A}(length(scene))
     for t in 0:rec.timestep:(T - rec.timestep)
         get_actions!(actions, scene, roadway, models)
         tick!(scene, roadway, actions, rec.timestep)
