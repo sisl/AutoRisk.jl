@@ -18,7 +18,7 @@ type MultiFeatureExtractor <: AbstractFeatureExtractor
     end
 end
 # convenience constructor
-function MultiFeatureExtractor(;
+function Convert(MultiFeatureExtractor;
         extract_core::Bool = true,
         extract_temporal::Bool = true,
         extract_well_behaved::Bool = true,
