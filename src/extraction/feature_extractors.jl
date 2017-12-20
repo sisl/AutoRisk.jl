@@ -727,12 +727,12 @@ type ForeForeFeatureExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::ForeForeFeatureExtractor) = ext.num_features
 feature_names(ext::ForeForeFeatureExtractor) = String[
-    "fore_fore_dist", "fore_fore_vel", "fore_fore_accel"]    
+    "fore_fore_dist", "fore_fore_relative_vel", "fore_fore_accel"]    
 function feature_info(ext::ForeForeFeatureExtractor)
     info = Dict{String, Dict{String, Any}}(
-        "fore_fore_dist"    =>  Dict("high"=>50.,   "low"=>0),
-        "fore_fore_relative_vel"     =>  Dict("high"=>40.,   "low"=>-5.),
-        "fore_fore_accel"   =>  Dict("high"=>9.,    "low"=>-9.),
+        "fore_fore_dist"            =>  Dict("high"=>50.,   "low"=>0),
+        "fore_fore_relative_vel"    =>  Dict("high"=>40.,   "low"=>-20.),
+        "fore_fore_accel"           =>  Dict("high"=>9.,    "low"=>-9.),
     )
     return info
 end
@@ -760,8 +760,6 @@ function AutomotiveDrivingModels.pull_features!(
     else
         fore_fore_M = NeighborLongitudinalResult(0, 0.)
     end
-
-    println(fore_fore_M)
 
     if fore_fore_M.ind != 0 
         # total distance from ego vehicle
