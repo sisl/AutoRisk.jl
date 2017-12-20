@@ -237,9 +237,39 @@ function test_neighbor_behavioral_feature_extractor()
 
 end
 
+function test_fore_fore_feature_extractor()
+    num_veh = 3
+    ego_index = 1
+    roadway = gen_straight_roadway(1, 400.)
+    scene = Scene(num_veh)
+    # order: ego, fore, fore_fore
+    speeds = [10., 15., 20.]
+    positions = [200., 220., 280.]
+    lanes = [1,1,1]
+    for i in 1:num_veh
+        lane = roadway.segments[1].lanes[lanes[i]]
+        road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), lane, roadway))
+        veh_state = VehicleState(Frenet(road_idx, roadway), roadway, speeds[i])
+        veh_state = move_along(veh_state, roadway, positions[i])
+        veh_def = VehicleDef(AgentClass.CAR, 2., 2.)
+        push!(scene, Vehicle(veh_state, veh_def, i))
+    end
+
+    ext = ForeForeFeatureExtractor()
+    features = zeros(length(ext))
+    rec = SceneRecord(2, .1, num_veh)
+    update!(rec, scene)
+    features[:] = pull_features!(ext, rec, roadway, 1)
+
+    @test isapprox(features[1], 80., atol=4)
+    @test isapprox(features[2], 10., atol=4)
+
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
 @time test_neighbor_and_temporal_feature_extractors()
 @time test_feature_step_size_larger_than_1()
 @time test_feature_info()
 @time test_neighbor_behavioral_feature_extractor()
+@time test_fore_fore_feature_extractor()

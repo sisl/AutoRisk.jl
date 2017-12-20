@@ -12,6 +12,7 @@ export
     NeighborBehavioralFeatureExtractor,
     CarLidarFeatureExtractor,
     RoadLidarFeatureExtractor,
+    ForeForeFeatureExtractor,
     NormalizingExtractor,
     EmptyExtractor,
     pull_features!,
@@ -710,6 +711,71 @@ function AutomotiveDrivingModels.pull_features!(
             length(ext.roadlidar.ranges))
         idx += length(ext.roadlidar.ranges) - 1
     end
+    return ext.features
+end
+
+type ForeForeFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    Δs_censor_hi::Float64
+    function ForeForeFeatureExtractor(;
+            Δs_censor_hi::Float64 = 100.
+        )
+        num_features = 3
+        return new(zeros(Float64, num_features), num_features, Δs_censor_hi)
+    end
+end
+Base.length(ext::ForeForeFeatureExtractor) = ext.num_features
+feature_names(ext::ForeForeFeatureExtractor) = String[
+    "fore_fore_dist", "fore_fore_vel", "fore_fore_accel"]    
+function feature_info(ext::ForeForeFeatureExtractor)
+    info = Dict{String, Dict{String, Any}}(
+        "fore_fore_dist"    =>  Dict("high"=>50.,   "low"=>0),
+        "fore_fore_relative_vel"     =>  Dict("high"=>40.,   "low"=>-5.),
+        "fore_fore_accel"   =>  Dict("high"=>9.,    "low"=>-9.),
+    )
+    return info
+end
+function AutomotiveDrivingModels.pull_features!(
+        ext::ForeForeFeatureExtractor, 
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int, 
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        pastframe::Int = 0)
+    # reset features
+    fill!(ext.features, 0)
+
+    scene = rec[pastframe]
+
+    ego_vel = scene[veh_idx].state.v
+
+    vtpf = VehicleTargetPointFront()
+    vtpr = VehicleTargetPointRear()
+    fore_M = get_neighbor_fore_along_lane(
+        scene, veh_idx, roadway, vtpf, vtpr, vtpf)
+    if fore_M.ind != 0
+        fore_fore_M = get_neighbor_fore_along_lane(     
+            scene, fore_M.ind, roadway, vtpr, vtpf, vtpr)
+    else
+        fore_fore_M = NeighborLongitudinalResult(0, 0.)
+    end
+
+    println(fore_fore_M)
+
+    if fore_fore_M.ind != 0 
+        # total distance from ego vehicle
+        ext.features[1] = fore_fore_M.Δs + fore_M.Δs
+        # relative velocity to ego vehicle
+        ext.features[2] = scene[fore_fore_M.ind].state.v - ego_vel
+        # absolute acceleration
+        ext.features[3] = convert(Float64, get(ACCFS, rec, roadway, fore_fore_M.ind, pastframe))
+    else
+        ext.features[1] = ext.Δs_censor_hi
+        ext.features[2] = 0.
+        ext.features[3] = 0.
+    end
+
     return ext.features
 end
 
