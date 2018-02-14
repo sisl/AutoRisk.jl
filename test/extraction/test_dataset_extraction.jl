@@ -242,7 +242,6 @@ function test_pull_features()
     @test features[4,1] == 5.
     @test features[9,1] ≈ 2.
     @test features[21,1] == 0.
-    @test features[22,1] == 0.
     @test features[15,1] ≈ 3.5 / 4.
     @test features[17,1] ≈ 3.5 / 2.
 

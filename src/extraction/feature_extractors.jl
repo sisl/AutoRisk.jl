@@ -199,19 +199,27 @@ type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function WellBehavedFeatureExtractor()
-        num_features = 3
+        num_features = 5
         return new(zeros(Float64, num_features), num_features)
     end
 end
 Base.length(ext::WellBehavedFeatureExtractor) = ext.num_features
 function feature_names(ext::WellBehavedFeatureExtractor)
-    return String["is_colliding", "out_of_lane", "negative_velocity"]
+    return String[
+        "is_colliding", 
+        "out_of_lane", 
+        "negative_velocity",
+        "distance_road_edge_left",
+        "distance_road_edge_right"
+    ]
 end
 function feature_info(ext::WellBehavedFeatureExtractor)
     return Dict{String, Dict{String, Any}}(
-        "is_colliding"          =>  Dict("high"=>1.,    "low"=>0.),
-        "out_of_lane"           =>  Dict("high"=>1.,    "low"=>0.),
-        "negative_velocity"     =>  Dict("high"=>1.,    "low"=>0.),
+        "is_colliding"              =>  Dict("high"=>1.,    "low"=>0.),
+        "out_of_lane"               =>  Dict("high"=>1.,    "low"=>0.),
+        "negative_velocity"         =>  Dict("high"=>1.,    "low"=>0.),
+        "distance_road_edge_left"   =>  Dict("high"=>50.,    "low"=>-50.),
+        "distance_road_edge_right"   =>  Dict("high"=>50.,    "low"=>-50.),
     )
 end
 function AutomotiveDrivingModels.pull_features!(
@@ -230,6 +238,12 @@ function AutomotiveDrivingModels.pull_features!(
         IS_COLLIDING, rec, roadway, veh_idx, pastframe))
     ext.features[idx+=1] = convert(Float64, d_ml < -1.0 || d_mr < -1.0)
     ext.features[idx+=1] = convert(Float64, veh_ego.state.v < 0.0)
+    ext.features[idx+=1] = convert(Float64, get(
+        ROADEDGEDIST_LEFT, rec, roadway, veh_idx, pastframe
+    ))
+    ext.features[idx+=1] = convert(Float64, get(
+        ROADEDGEDIST_RIGHT, rec, roadway, veh_idx, pastframe
+    ))
     return ext.features
 end
 

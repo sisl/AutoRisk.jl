@@ -129,7 +129,7 @@ function test_multi_feature_extractor()
         RoadLidarFeatureExtractor()
     ]
     ext = MultiFeatureExtractor(subexts)
-    @test length(ext) == 222
+    @test length(ext) == 224
     features = Array{Float64}(length(ext), num_veh)
 
     features[:,1] = pull_features!(ext, rec, roadway, 1, models)

@@ -4,7 +4,7 @@ using AutoRisk
 include("collection/testing_utils.jl")
 
 # testing constants
-const NUM_FEATURES = 398
+const NUM_FEATURES = 400
 const NUM_TARGETS = 5
 const BASE_TEST_DIR = "."
 

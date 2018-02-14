@@ -266,6 +266,44 @@ function test_fore_fore_feature_extractor()
 
 end
 
+function test_well_behaved_feature_extractor()
+    num_veh = 3
+    ego_index = 1
+    roadway = gen_straight_roadway(3, 400.)
+    scene = Scene(num_veh)
+    # order: ego, fore, fore_fore
+    speeds = [10., 15., 20.]
+    positions = [200., 220., 280.]
+    lanes = [1,2,3]
+    for i in 1:num_veh
+        lane = roadway.segments[1].lanes[lanes[i]]
+        road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), lane, roadway))
+        veh_state = VehicleState(Frenet(road_idx, roadway), roadway, speeds[i])
+        veh_state = move_along(veh_state, roadway, positions[i])
+        veh_def = VehicleDef(AgentClass.CAR, 2., 2.)
+        push!(scene, Vehicle(veh_state, veh_def, i))
+    end
+
+    ext = WellBehavedFeatureExtractor()
+    features = zeros(length(ext))
+    rec = SceneRecord(2, .1, num_veh)
+    update!(rec, scene)
+
+    fns = feature_names(ext)
+    distance_road_edge_left_idx = find(fn -> fn == "distance_road_edge_left", fns)
+    distance_road_edge_right_idx = find(fn -> fn == "distance_road_edge_right", fns)
+
+    features[:] = pull_features!(ext, rec, roadway, 1)
+    @test features[distance_road_edge_left_idx,1][1] == 7.5
+    @test features[distance_road_edge_right_idx,1][1] == 1.5
+    features[:] = pull_features!(ext, rec, roadway, 2)
+    @test features[distance_road_edge_left_idx,1][1] == 4.5
+    @test features[distance_road_edge_right_idx,1][1] == 4.5
+    features[:] = pull_features!(ext, rec, roadway, 3)
+    @test features[distance_road_edge_left_idx,1][1] == 1.5
+    @test features[distance_road_edge_right_idx,1][1] == 7.5
+end
+
 @time test_car_lidar_feature_extractor()
 @time test_normalizing_feature_extractor()
 @time test_neighbor_and_temporal_feature_extractors()
@@ -273,3 +311,4 @@ end
 @time test_feature_info()
 @time test_neighbor_behavioral_feature_extractor()
 @time test_fore_fore_feature_extractor()
+@time test_well_behaved_feature_extractor()
