@@ -4,31 +4,12 @@
 
 [![codecov.io](http://codecov.io/github/wulfebw/AutoRisk.jl/coverage.svg?branch=master)](http://codecov.io/github/wulfebw/AutoRisk.jl?branch=master)
 
-<!-- MarkdownTOC -->
-
-- [quickstart](#quickstart)
-    - [install](#install)
-- [package outline](#package-outline)
-    - [src](#src)
-        - [generation](#generation)
-            - [roadway](#roadway)
-            - [scene](#scene)
-            - [behavior](#behavior)
-        - [evaluation](#evaluation)
-        - [collection](#collection-1)
-        - [analysis](#analysis)
-    - [scripts](#scripts)
-    - [test](#test)
-    - [data](#data)
-
-<!-- /MarkdownTOC -->
-
 # quickstart
 
 ## install
 - First install the julia components of AutoRisk
 ```julia
-Pkg.clone("https://github.com/wulfebw/AutoRisk.jl.git")
+Pkg.clone("https://github.com/sisl/AutoRisk.jl.git")
 Pkg.build("AutoRisk")
 
 # check that AutoRisk can be imported
