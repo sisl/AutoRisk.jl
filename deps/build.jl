@@ -1,12 +1,11 @@
 # clone
 urls = [
-    "https://github.com/tawheeler/Vec.jl.git",
-    "https://github.com/tawheeler/AutomotiveDrivingModels.jl.git",
-    "https://github.com/tawheeler/AutoViz.jl.git",
+    "https://github.com/sisl/Vec.jl.git",
+    "https://github.com/sisl/AutomotiveDrivingModels.jl.git",
+    "https://github.com/sisl/AutoViz.jl.git",
     "https://github.com/tawheeler/ForwardNets.jl.git",
     "https://github.com/sisl/BayesNets.jl.git",
     "https://github.com/sisl/GridInterpolations.jl.git",
-    "https://github.com/wulfebw/CommandLineFlags.jl.git"
 ]
 
 packages = keys(Pkg.installed())
