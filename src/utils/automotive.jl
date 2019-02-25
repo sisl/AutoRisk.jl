@@ -92,12 +92,15 @@ function Base.:(==)(c1::CurvePt, c2::CurvePt)
         && (c1.kd == c2.kd || (isnan(c1.kd) && isnan(c2.kd))))
 end 
 
+#=
+Deprecated overwrite of AutomotiveDrivingModels' version
 function Base.:(==)(l1::Lane, l2::Lane)
     return (l1.tag == l2.tag 
         && all(pt1 == pt2 for (pt1, pt2) in zip(l1.curve, l2.curve))
         && l1.width == l2.width
         && l1.speed_limit == l2.speed_limit)
 end
+=#
 
 function Base.:(==)(r1::RoadSegment, r2::RoadSegment)
     return (r1.id == r2.id 
@@ -173,11 +176,14 @@ function Base.:(==)(s1::Scene, s2::Scene)
     return true
 end
 
+#=
+Deprecated overwrite of AutomotiveDrivingModels' version
 function Base.show(io::IO, scene::Scene)
     for (i, veh) in enumerate(scene)
         println(io, "vehicle $(i):\n$(veh)")
     end
 end
+=#
 
 ### SceneRecord
 """
