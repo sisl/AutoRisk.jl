@@ -66,7 +66,7 @@ function set_neighbor_features!(features::Vector{Float64}, i::Int,
         features[i+7] = scene[neigh.ind].state.posF.ϕ
         features[i+8] = 0.0
     else
-        features[i:i+7] = 0.0
+        features[i:i+7] .= 0.0
         features[i+8] = 1.0 
     end
 end
