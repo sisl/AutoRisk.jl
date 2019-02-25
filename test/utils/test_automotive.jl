@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using AutoRisk
 
 function test_inverse_ttc_to_ttc()

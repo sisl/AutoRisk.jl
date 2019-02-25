@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using AutoRisk
 
 include("collection/testing_utils.jl")
