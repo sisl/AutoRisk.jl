@@ -1,6 +1,7 @@
 __precompile__(true)
 module AutoRisk
 
+using Random
 using Reexport
 
 @reexport using AutomotiveDrivingModels
