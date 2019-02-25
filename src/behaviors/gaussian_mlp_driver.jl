@@ -4,7 +4,7 @@ export
     reset_hidden_state!,
     observe!
 
-type GaussianMLPDriver{A, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A}
+mutable struct GaussianMLPDriver{A, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A}
     net::ForwardNet
     rec::SceneRecord
     pass::ForwardPass

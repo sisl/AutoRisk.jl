@@ -26,7 +26,7 @@ bernoulli_sample(rng::MersenneTwister, p::Float64) = rand(rng) < p
 Description:
     - Basic errorable driver model. Suffers from inattentiveness.
 """
-type ErrorableDriverModel <: DriverModel{LatLonAccel}
+mutable struct ErrorableDriverModel <: DriverModel{LatLonAccel}
     driver::DriverModel
     is_attentive::Bool
     p_a_to_i::Float64 # p(true) = p(attentive -> inattentive)

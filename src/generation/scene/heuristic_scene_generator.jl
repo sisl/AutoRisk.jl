@@ -13,7 +13,7 @@ export
         just uses rules that align with expectation, but that do not reflect 
         any learned model, for example. 
 """
-type HeuristicSceneGenerator <: SceneGenerator
+mutable struct HeuristicSceneGenerator <: SceneGenerator
     min_num_vehicles::Int64
     max_num_vehicles::Int64
 

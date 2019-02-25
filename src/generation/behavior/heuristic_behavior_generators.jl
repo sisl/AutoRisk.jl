@@ -11,7 +11,7 @@ export
 # Description:
     - A BehaviorGenerator that selects from a set of predefined behaviors.
 """
-type PredefinedBehaviorGenerator <: BehaviorGenerator
+mutable struct PredefinedBehaviorGenerator <: BehaviorGenerator
     params::Vector{BehaviorParams}
     weights::StatsBase.Weights
     rng::MersenneTwister
@@ -36,7 +36,7 @@ Base.rand(gen::PredefinedBehaviorGenerator) = sample(gen.params, gen.weights)
     - A BehaviorGenerator that generates behavior params uniformly randomly 
         between a minimum and maximum set of params
 """
-type UniformBehaviorGenerator <: BehaviorGenerator
+mutable struct UniformBehaviorGenerator <: BehaviorGenerator
     min_p::BehaviorParams
     max_p::BehaviorParams
     rng::MersenneTwister
@@ -131,7 +131,7 @@ end
         aggressiveness, and then stochastically sampling other parameters 
         conditionally on the aggressiveness value from truncated gaussians.
 """
-type CorrelatedGaussianBehaviorGenerator <: BehaviorGenerator
+mutable struct CorrelatedGaussianBehaviorGenerator <: BehaviorGenerator
     min_p::BehaviorParams
     max_p::BehaviorParams
     rng::MersenneTwister

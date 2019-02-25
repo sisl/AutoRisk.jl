@@ -397,7 +397,7 @@ end
 Random.srand(model::DriverModel, seed::Int) = model
 
 # adding σ to static longitudinal 
-type StaticLongitudinalDriver <: LaneFollowingDriver
+mutable struct StaticLongitudinalDriver <: LaneFollowingDriver
     a::Float64
     σ::Float64
     StaticLongitudinalDriver(a::Float64=0.0, σ::Float64=0.0) = new(a, σ)

@@ -9,7 +9,7 @@ export
 # Description:
     - Dataset type is used as an abstraction over an HDF5 file
 """
-type Dataset
+mutable struct Dataset
     filepath::String
     file::HDF5File
 

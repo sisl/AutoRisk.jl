@@ -3,7 +3,7 @@ export
     LearnedBehaviorGenerator,
     rand!
 
-type LearnedBehaviorGenerator <: BehaviorGenerator
+mutable struct LearnedBehaviorGenerator <: BehaviorGenerator
     filepath::String
 end
 function Random.rand!(gen::LearnedBehaviorGenerator, models::Dict{Int, DriverModel}, 

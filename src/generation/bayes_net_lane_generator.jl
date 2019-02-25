@@ -30,7 +30,7 @@ function Random.rand!(a::Assignment, bn::BayesNet, evidence::Assignment)
     return a
 end
 
-type BayesNetLaneGenerator <: Generator
+mutable struct BayesNetLaneGenerator <: Generator
     base_bn::BayesNet
     base_assignment_sampler::AssignmentSampler
     prop_bn::BayesNet

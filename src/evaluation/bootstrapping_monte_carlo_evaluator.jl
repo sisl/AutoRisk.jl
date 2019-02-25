@@ -8,7 +8,7 @@ export
         by simulating them together many times and deriving features and 
         targets from the results.
 """
-type BootstrappingMonteCarloEvaluator <: Evaluator
+mutable struct BootstrappingMonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     target_ext::AbstractFeatureExtractor
     num_runs::Int64

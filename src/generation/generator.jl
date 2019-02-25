@@ -10,7 +10,7 @@ abstract type Generator end
 get_weights(gen::Generator) = nothing
 get_target_vehicle_id(gen::Generator) = nothing
 
-type FactoredGenerator <: Generator
+mutable struct FactoredGenerator <: Generator
     roadway_gen::RoadwayGenerator
     scene_gen::SceneGenerator
     behavior_gen::BehaviorGenerator

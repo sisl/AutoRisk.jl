@@ -8,7 +8,7 @@ export
 # Description:
     - DatasetCollector orchestrates the serial collection of a dataset.
 """
-type DatasetCollector
+mutable struct DatasetCollector
     seeds::Vector{Int64}
 
     gen::Generator
@@ -73,7 +73,7 @@ end
     - ParallelDatasetCollector orchestrates the parallel generation 
         of a dataset.
 """
-type ParallelDatasetCollector
+mutable struct ParallelDatasetCollector
     cols::Vector{DatasetCollector}
     output_filepath::String
 

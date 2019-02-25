@@ -16,7 +16,7 @@ Random.rand!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
 # Description:
     - StaticRoadwayGenerator has a single roadway that it always returns.
 """
-type StaticRoadwayGenerator <: RoadwayGenerator
+mutable struct StaticRoadwayGenerator <: RoadwayGenerator
     roadway::Roadway
 end
 

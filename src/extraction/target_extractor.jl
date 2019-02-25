@@ -6,7 +6,7 @@ export
     extract_frame_targets!,
     extract_targets!
 
-type TargetExtractor <: AbstractFeatureExtractor
+mutable struct TargetExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     hard_brake_threshold::Float64

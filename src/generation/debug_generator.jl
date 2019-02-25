@@ -3,7 +3,7 @@ export
     DebugBehaviorGenerator,
     rand!
 
-@with_kw type DebugSceneGenerator <: SceneGenerator
+@with_kw mutable struct DebugSceneGenerator <: SceneGenerator
     # Δs = (fore_s - rear_s)
     lo_Δs::Float64 = 0.
     hi_Δs::Float64 = 10.
@@ -46,7 +46,7 @@ function Random.rand!(gen::DebugSceneGenerator, scene::Scene,
     return scene
 end
 
-@with_kw type DebugBehaviorGenerator <: BehaviorGenerator
+@with_kw mutable struct DebugBehaviorGenerator <: BehaviorGenerator
     Δt::Float64 = .1
     rear_lon_σ::Float64 = 0.0
     fore_lon_σ::Float64 = 0.0  

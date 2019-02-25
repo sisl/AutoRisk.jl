@@ -20,7 +20,7 @@ const LinCatDiscretizer = Union{LinearDiscretizer{Float64,Int},CategoricalDiscre
     - sampling_methods: variable -> sampling method
 
 """
-type AssignmentSampler
+mutable struct AssignmentSampler
     discs::Dict{Symbol, LinCatDiscretizer}
     sampling_methods::Dict{Symbol, AbstractSampleMethod}
     rng::MersenneTwister

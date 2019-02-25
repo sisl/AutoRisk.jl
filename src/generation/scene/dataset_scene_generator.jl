@@ -2,7 +2,7 @@ export
     DatasetSceneGenerator,
     rand!
 
-type DatasetSceneGenerator <: SceneGenerator
+mutable struct DatasetSceneGenerator <: SceneGenerator
     trajdata::Trajdata
     veh_ids::Vector{Int64}
     next_idx::Int64

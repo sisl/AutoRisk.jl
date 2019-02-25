@@ -73,7 +73,7 @@ end
 
 ##################### Specific Feature Extractors #####################
 
-type CoreFeatureExtractor <: AbstractFeatureExtractor
+mutable struct CoreFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function CoreFeatureExtractor()
@@ -123,7 +123,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
     
-type TemporalFeatureExtractor <: AbstractFeatureExtractor
+mutable struct TemporalFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function TemporalFeatureExtractor()
@@ -195,7 +195,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
+mutable struct WellBehavedFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function WellBehavedFeatureExtractor()
@@ -247,7 +247,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type NeighborFeatureExtractor <: AbstractFeatureExtractor
+mutable struct NeighborFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function NeighborFeatureExtractor()
@@ -384,7 +384,7 @@ function AutomotiveDrivingModels.pull_features!(
     end
     return ext.features
 end
-type BehavioralFeatureExtractor <: AbstractFeatureExtractor
+mutable struct BehavioralFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function BehavioralFeatureExtractor()
@@ -516,7 +516,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
+mutable struct NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
     subext::BehavioralFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
@@ -604,7 +604,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type CarLidarFeatureExtractor <: AbstractFeatureExtractor
+mutable struct CarLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     carlidar::LidarSensor
@@ -669,7 +669,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
+mutable struct RoadLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     roadlidar::RoadlineLidarSensor
@@ -728,7 +728,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type ForeForeFeatureExtractor <: AbstractFeatureExtractor
+mutable struct ForeForeFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     Δs_censor_hi::Float64
@@ -793,7 +793,7 @@ end
 
 ##################### Feature Extractor Wrappers #####################
 
-type NormalizingExtractor <: AbstractFeatureExtractor
+mutable struct NormalizingExtractor <: AbstractFeatureExtractor
     μ::Vector{Float64}
     σ::Vector{Float64}
     extractor::AbstractFeatureExtractor
@@ -812,7 +812,7 @@ function AutomotiveDrivingModels.pull_features!(
         pastframe) .- ext.μ) ./ ext.σ)
 end
 
-type EmptyExtractor <: AbstractFeatureExtractor
+mutable struct EmptyExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::EmptyExtractor) = 0
 function AutomotiveDrivingModels.pull_features!(

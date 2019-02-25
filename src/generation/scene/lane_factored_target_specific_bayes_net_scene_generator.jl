@@ -23,7 +23,7 @@ function Random.rand!(a::Assignment, bn::BayesNet, sampler::DirectSampler,
     a
 end
 
-type LaneFactoredTargetSpecificBayesNetSceneGenerator <: SceneGenerator
+mutable struct LaneFactoredTargetSpecificBayesNetSceneGenerator <: SceneGenerator
     bn::BayesNet
     sampler::BayesNetSampler
     target_evidence::Dict{Symbol,Int}

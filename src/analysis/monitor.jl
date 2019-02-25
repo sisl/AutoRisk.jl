@@ -7,7 +7,7 @@ export
 abstract type Submonitor end
 
 # wrapper around a collection of submonitors
-type Monitor
+mutable struct Monitor
     output_directory::String
     submonitors::Array{Submonitor}
     function Monitor(output_directory::String = "", 

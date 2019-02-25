@@ -10,7 +10,7 @@ export
 Description:
     - predictor that uses TD-learning for learning.
 """
-type TDPredictor <: PredictionModel
+mutable struct TDPredictor <: PredictionModel
     grid::RectangleGrid # for intepolating continuous states
     values::Array{Float64} # for maintaining state values (target dim, num unique states)
     targets::Array{Float64} # temp container for returning target values

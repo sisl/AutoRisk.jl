@@ -27,7 +27,7 @@ get_targets(eval::Evaluator, veh_idx::Int) = eval.agg_targets[:, :, veh_idx]
         by simulating them together many times and deriving features and 
         targets from the results.
 """
-type MonteCarloEvaluator <: Evaluator
+mutable struct MonteCarloEvaluator <: Evaluator
     ext::AbstractFeatureExtractor
     target_ext::AbstractFeatureExtractor
     num_runs::Int64
