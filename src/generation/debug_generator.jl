@@ -18,7 +18,7 @@ export
 
     rng::MersenneTwister = MersenneTwister(1)
 end
-function Base.rand!(gen::DebugSceneGenerator, scene::Scene, 
+function Random.rand!(gen::DebugSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
     srand(gen.rng, seed)
@@ -52,7 +52,7 @@ end
     fore_lon_σ::Float64 = 0.0  
     rng::MersenneTwister = MersenneTwister(1)
 end
-function Base.rand!(gen::DebugBehaviorGenerator, models::Dict{Int, DriverModel}, 
+function Random.rand!(gen::DebugBehaviorGenerator, models::Dict{Int, DriverModel}, 
         scene::Scene, seed::Int64)
     # zero acceleration models with variable std dev
     models[1] = Tim2DDriver(gen.Δt, mlon = StaticLongitudinalDriver(

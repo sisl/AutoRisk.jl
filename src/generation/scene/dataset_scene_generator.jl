@@ -9,7 +9,7 @@ type DatasetSceneGenerator <: SceneGenerator
     rng::MersenneTwister
 end
 
-function Base.rand!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
+function Random.rand!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
         seed::Int64)
     # remove old contents of scene and models
     empty!(scene)

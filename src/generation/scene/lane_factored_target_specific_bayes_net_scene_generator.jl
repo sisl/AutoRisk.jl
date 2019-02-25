@@ -3,7 +3,7 @@
 # requires running inference to get the posterior
 # but if we know that the evidence is in a root node (i.e., node without 
 # parents), then we can easily sample from the posterior.
-function Base.rand!(a::Assignment, bn::BayesNet, sampler::DirectSampler, 
+function Random.rand!(a::Assignment, bn::BayesNet, sampler::DirectSampler, 
         evidence::Assignment)
     # check that the evidence variables do not have parents, or that if they 
     # do have parents that they are all also in the evidence
@@ -92,7 +92,7 @@ end
     - roadway: on which to place vehicles
     - seed: random seed to use for generation
 """
-function Base.rand!(gen::LaneFactoredTargetSpecificBayesNetSceneGenerator, 
+function Random.rand!(gen::LaneFactoredTargetSpecificBayesNetSceneGenerator, 
         scene::Scene, roadway::Roadway, seed::Int64) 
     # set random seed
     srand(gen.rng, seed)

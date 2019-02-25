@@ -22,7 +22,7 @@ Base.rand(gen::BehaviorGenerator) = error("rand not implemented for $(gen)")
     - scene: scene that contains vehicles which correspond to the driver models
     - seed: random seed to use in populating the models
 """
-function Base.rand!(gen::BehaviorGenerator, models::Dict{Int, DriverModel}, 
+function Random.rand!(gen::BehaviorGenerator, models::Dict{Int, DriverModel}, 
         scene::Scene, seed::Int64)
     srand(seed)
     srand(gen.rng, seed)

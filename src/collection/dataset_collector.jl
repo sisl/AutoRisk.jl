@@ -38,7 +38,7 @@ end
     - col: the collector being used
     - seed: the random seed uniquely identifying the resulting state
 """
-function Base.rand!(col::DatasetCollector, seed::Int64)
+function Random.rand!(col::DatasetCollector, seed::Int64)
     info("id $(col.id) collecting seed $(seed)")
     rand!(col.gen, col.roadway, col.scene, col.models, seed)
 end
