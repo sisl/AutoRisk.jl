@@ -76,11 +76,11 @@ function BayesNetLaneGenerator(
         beh_gen::CorrelatedBehaviorGenerator,
         rng::MersenneTwister = MersenneTwister(1)
     )
-    d = JLD.load(base_bn_filepath) 
+    d = JLD2.load(base_bn_filepath) 
     base_bn = d["bn"]
     base_sampler = AssignmentSampler(d["discs"])
 
-    d = JLD.load(prop_bn_filepath) 
+    d = JLD2.load(prop_bn_filepath) 
     prop_bn = d["bn"]
     prop_sampler = AssignmentSampler(d["discs"])
     return BayesNetLaneGenerator(base_bn, base_sampler, prop_bn, prop_sampler,

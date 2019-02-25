@@ -9,7 +9,7 @@ using Reexport
 @reexport using Discretizers
 @reexport using Distributions
 @reexport using HDF5
-@reexport using JLD
+@reexport using JLD2
 @reexport using Parameters
 @reexport using GridInterpolations
 @reexport using StatsBase
