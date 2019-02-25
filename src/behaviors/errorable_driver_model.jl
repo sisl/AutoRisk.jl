@@ -47,7 +47,7 @@ get_driver(model::ErrorableDriverModel) = get_driver(model.driver)
 function set_is_attentive!(model::ErrorableDriverModel, v::Bool)
     model.is_attentive = v
 end
-Base.srand(model::ErrorableDriverModel, seed::Int) = srand(model.rng, seed)
+Random.srand(model::ErrorableDriverModel, seed::Int) = srand(model.rng, seed)
 function can_become_inattentive(model::ErrorableDriverModel)
     base_driver = get_driver(model)
     if :mlane in fieldnames(base_driver)
