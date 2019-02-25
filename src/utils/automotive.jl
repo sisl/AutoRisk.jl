@@ -14,8 +14,6 @@ export
 """
 AutomotiveDrivingModels Core additional functionality
 """
-
-### Roadway
 function nlanes(roadway::Roadway)
     return length(roadway.segments[1].lanes)
 end

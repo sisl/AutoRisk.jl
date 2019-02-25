@@ -147,7 +147,6 @@ end
 """ 
 Standard parameter sets
 """
-
 function get_aggressive_behavior_params(;
         lon_σ = 0.0, 
         lat_σ = 0.0, 
