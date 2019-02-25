@@ -204,7 +204,7 @@ function push_forward_records!(rec::SceneRecord, pastframe::Int)
     end
     s, e = 1 - pastframe, rec.nframes
     for (i, past_index) in enumerate(s:e)
-        copy!(rec.frames[i], rec.frames[past_index])
+        copyto!(rec.frames[i], rec.frames[past_index])
     end
     rec.nframes = e - s + 1
     return rec
