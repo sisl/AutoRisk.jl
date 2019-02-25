@@ -19,7 +19,8 @@ using Reexport
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
     get_name, show, nlanes
-import Base: display, show, rand, rand!, ==
+import Base: display, show, ==
+#import Random: rand, rand!
 import Distributions: rand, pdf, logpdf
 import Discretizers: encode, decode
 
