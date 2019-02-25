@@ -1,6 +1,7 @@
 __precompile__(true)
 module AutoRisk
 
+using Printf
 using Random
 using Reexport
 
