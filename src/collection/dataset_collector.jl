@@ -48,7 +48,7 @@ Description:
     - need this because it is possible that monitoring will not be available, 
     and when that is the case the montior with be a nothing object. 
 """
-monitor(mon::Void, col::DatasetCollector, seed::Int) = col
+monitor(mon::Nothing, col::DatasetCollector, seed::Int) = col
 
 """
 # Description:

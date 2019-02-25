@@ -185,7 +185,7 @@ end
 # this allows for a unified interface between collector and dataset
 # is weights is void, then dataset is not using weights
 function update!(dataset::Dataset, features::Array{Float64}, 
-        targets::Array{Float64}, weights::Void, seed::Int64)
+        targets::Array{Float64}, weights::Nothing, seed::Int64)
     update!(dataset::Dataset, features::Array{Float64}, targets::Array{Float64},
         seed::Int64)
 end
