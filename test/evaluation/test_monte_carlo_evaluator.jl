@@ -143,12 +143,12 @@ function test_monte_carlo_evaluator()
     @test features[17, 1] ≈ 1. / 6.12903225806451
     @test features[17, 2] ≈ 30.0
 
-    k_spd_idx = find(feature_names_list .== "beh_lon_k_spd")[1]
+    k_spd_idx = findall(feature_names_list .== "beh_lon_k_spd")[1]
 
     @test features[k_spd_idx, 1] == k_spd
     @test features[k_spd_idx, 2] == k_spd
 
-    politeness_idx = find(feature_names_list .== "beh_lane_politeness")[1]
+    politeness_idx = findall(feature_names_list .== "beh_lane_politeness")[1]
 
     @test features[politeness_idx, 1] == politeness
     @test features[politeness_idx, 2] == politeness

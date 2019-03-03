@@ -211,7 +211,7 @@ function test_no_prime_extraction()
     features[:,3] = pull_features!(ext, rec, roadway, 3, models)
 
     feature_names_list = feature_names(ext)
-    politeness_index = find(feature_names_list .== "beh_lane_politeness")
+    politeness_index = findall(feature_names_list .== "beh_lane_politeness")
     politeness_values = features[politeness_index,:]
     @test politeness_values[1] ≈ .35
     agg_values = infer_correlated_aggressiveness(politeness_values)
