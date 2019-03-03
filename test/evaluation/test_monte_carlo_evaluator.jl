@@ -57,9 +57,9 @@ function test_monte_carlo_evaluator_debug()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1,num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10,num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10, num_veh)
+    features::Array{Float64} = Array{Float64}(undef, NUM_FEATURES, 1,num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 10,num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 10, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
     ext = MultiFeatureExtractor()
@@ -117,9 +117,9 @@ function test_monte_carlo_evaluator()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1, num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
+    features::Array{Float64} = Array{Float64}(undef, NUM_FEATURES, 1, num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 30, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 30, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
 
@@ -194,10 +194,10 @@ function test_multi_timestep_monte_carlo_evaluator()
     ext = MultiFeatureExtractor()
     target_ext = TargetExtractor()
 
-    features::Array{Float64} = Array{Float64}(length(ext), feature_timesteps,
+    features::Array{Float64} = Array{Float64}(undef, length(ext), feature_timesteps,
         num_veh)
-    targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, length(target_ext), 10, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, length(target_ext), 10, num_veh)
 
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
@@ -230,7 +230,7 @@ function test_multi_timestep_monte_carlo_evaluator()
     # now check for step_size case
     step_size = 2
     feature_timesteps = 2
-    features = Array{Float64}(length(ext), feature_timesteps,
+    features = Array{Float64}(undef, length(ext), feature_timesteps,
         num_veh)
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng, 

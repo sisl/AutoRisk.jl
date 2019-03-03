@@ -61,7 +61,7 @@ end
 """
 function generate_init_road_idxs(gen::HeuristicSceneGenerator, 
         roadway::Roadway, num_vehicles::Int64)
-    init_road_idxs = Vector{RoadIndex}(num_vehicles)
+    init_road_idxs = Vector{RoadIndex}(undef, num_vehicles)
 
     # use the number of lanes in the first roadway segment
     num_lanes = length(roadway.segments[1].lanes)

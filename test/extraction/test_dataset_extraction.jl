@@ -31,7 +31,7 @@ function test_extract_vehicle_frame_targets()
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
-    targets = Array{Float64}(NUM_TARGETS, 2)
+    targets = Array{Float64}(undef, NUM_TARGETS, 2)
     fill!(targets, 0)
     veh_idx = 1
     t_idx = 1
@@ -91,7 +91,7 @@ function test_extract_frame_targets()
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
 
-    targets = Array{Float64}(NUM_TARGETS, 10, 2)
+    targets = Array{Float64}(undef, NUM_TARGETS, 10, 2)
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
     veh_idx_can_change = false
@@ -156,7 +156,7 @@ function test_extract_targets()
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
-    targets = Array{Float64}(NUM_TARGETS,10,2)
+    targets = Array{Float64}(undef, NUM_TARGETS,10,2)
     fill!(targets, 0)
     veh_id_to_idx = Dict(1=>1,2=>2)
     veh_idx_can_change = true
@@ -234,7 +234,7 @@ function test_pull_features()
     # simulate here because some features need priming
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
     ext = MultiFeatureExtractor()
-    features = Array{Float64}(length(ext), 1, num_veh)
+    features = Array{Float64}(undef, length(ext), 1, num_veh)
     pull_features!(ext, rec, roadway, models, features)
     features = reshape(features, (length(ext), num_veh))
 
@@ -294,7 +294,7 @@ function test_pull_features_multitimestep()
     push!(scene, Vehicle(veh_state, veh_def, 2))
     update!(rec, scene)
 
-    features = Array{Float64}(length(ext), timesteps, num_veh)
+    features = Array{Float64}(undef, length(ext), timesteps, num_veh)
     models = Dict{Int, DriverModel}()
     pull_features!(ext, rec, roadway, models, features, timesteps)
 

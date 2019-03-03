@@ -46,7 +46,7 @@ function test_multi_feature_extractor_heuristic()
     # simulate here because some features need priming
     simulate!(LatLonAccel, rec, scene, roadway, models, T)
     ext = MultiFeatureExtractor()
-    features = Array{Float64}(length(ext), num_veh)
+    features = Array{Float64}(undef, length(ext), num_veh)
 
     features[:, 1] = pull_features!(ext, rec, roadway, 1, models)
 
@@ -130,7 +130,7 @@ function test_multi_feature_extractor()
     ]
     ext = MultiFeatureExtractor(subexts)
     @test length(ext) == 224
-    features = Array{Float64}(length(ext), num_veh)
+    features = Array{Float64}(undef, length(ext), num_veh)
 
     features[:,1] = pull_features!(ext, rec, roadway, 1, models)
     features[:,2] = pull_features!(ext, rec, roadway, 2, models)
@@ -204,7 +204,7 @@ function test_no_prime_extraction()
         BehavioralFeatureExtractor()
     ]
     ext = MultiFeatureExtractor(subexts)
-    features = Array{Float64}(length(ext), num_veh)
+    features = Array{Float64}(undef, length(ext), num_veh)
 
     features[:,1] = pull_features!(ext, rec, roadway, 1, models)
     features[:,2] = pull_features!(ext, rec, roadway, 2, models)
