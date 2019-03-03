@@ -6,8 +6,8 @@ function test_simple_learning()
     minpos = 0
     maxpos = 5
     nbins = 6
-    bins = linspace(minpos, maxpos, nbins)
-    null_bin = linspace(0,2,2) # mocking feature not considered
+    bins = range(minpos, maxpos, nbins)
+    null_bin = range(0,2,2) # mocking feature not considered
     grid = RectangleGrid(bins, bins, null_bin)
     target_dim = 2
     predictor = TDPredictor(grid, target_dim, discount = 0.5)
@@ -39,7 +39,7 @@ function test_simple_learning()
 
     # visualize
     num_steps = 10
-    steps = linspace(minpos, maxpos, num_steps)
+    steps = range(minpos, maxpos, num_steps)
     v = zeros(target_dim, num_steps, num_steps)
     for (i, x) in enumerate(steps)
         for (j, y) in enumerate(steps)
@@ -73,7 +73,7 @@ function test_step()
     minpos = 0
     maxpos = 5
     nbins = 6
-    bins = linspace(minpos, maxpos, nbins)
+    bins = range(minpos, maxpos, nbins)
     grid = RectangleGrid(bins, bins)
     target_dim = 2
     predictor = TDPredictor(grid, target_dim, lr = 1., discount = 0.5)
