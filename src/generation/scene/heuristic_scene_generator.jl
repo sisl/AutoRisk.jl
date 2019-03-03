@@ -298,7 +298,7 @@ end
 function Random.rand!(gen::HeuristicSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
-    srand(gen.rng, seed)
+    Random.seed!(gen.rng, seed)
 
     # heuristic generator assumes stadium roadway
     gen.total_roadway_length = get_total_roadway_length(roadway)

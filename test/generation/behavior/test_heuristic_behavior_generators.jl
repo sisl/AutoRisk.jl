@@ -11,10 +11,10 @@ function test_predefined_behavior_generator()
     weights = StatsBase.Weights([.5, .5])
     gen = PredefinedBehaviorGenerator(params, weights)
 
-    srand(1)
+    Random.seed!(1)
     samp_params = rand(gen)
     @test samp_params == params[1]
-    srand(3)
+    Random.seed!(3)
     samp_params = rand(gen)
     @test samp_params == params[2]
 end
@@ -36,16 +36,16 @@ function test_predefined_behavior_generator_non_determinism()
     push!(scene, veh)
     observe!(driver, scene, roadway, 1)
     
-    srand(1)
+    Random.seed!(1)
     act_1 = rand(driver)
 
     observe!(driver, scene, roadway, 1)
-    srand(1)
+    Random.seed!(1)
     act_2 = rand(driver)
 
     @test act_1 == act_2
 
-    srand(2)
+    Random.seed!(2)
     observe!(driver, scene, roadway, 1)
     observe!(driver, scene, roadway, 1)
     observe!(driver, scene, roadway, 1)
@@ -59,11 +59,11 @@ function test_predefined_behavior_generator_non_determinism()
     driver = build_driver(params, num_vehicles)
     observe!(driver, scene, roadway, 1)
 
-    srand(1)
+    Random.seed!(1)
     act_1 = rand(driver)
 
     observe!(driver, scene, roadway, 1)
-    srand(2)
+    Random.seed!(2)
     act_2 = rand(driver)
 
     @test act_1 == act_2
@@ -79,7 +79,7 @@ function test_uniform_behavior_generator()
     lat_params = LateralParams(12., 13., 14.)
     max_params = BehaviorParams(idm_params, mobil_params, lat_params)
     gen = UniformBehaviorGenerator(min_params, min_params)
-    srand(1)
+    Random.seed!(1)
     samp_params_min = rand(gen)
     @test samp_params_min == min_params
 
@@ -97,11 +97,11 @@ function test_correlated_behavior_generator()
     min_p = get_passive_behavior_params()
     max_p = get_aggressive_behavior_params()
     gen = CorrelatedBehaviorGenerator(min_p, max_p)
-    srand(gen.rng, 1)
+    Random.seed!(gen.rng, 1)
     params_1 = rand(gen)
-    srand(gen.rng, 1)
+    Random.seed!(gen.rng, 1)
     params_2 = rand(gen)
-    srand(gen.rng, 2)
+    Random.seed!(gen.rng, 2)
     params_3 = rand(gen)
     @test params_1 == params_2
     @test params_2 != params_3
@@ -111,11 +111,11 @@ function test_correlated_gaussian_behavior_generator()
     min_p = get_passive_behavior_params()
     max_p = get_aggressive_behavior_params()
     gen = CorrelatedGaussianBehaviorGenerator(min_p, max_p)
-    srand(gen.rng, 1)
+    Random.seed!(gen.rng, 1)
     params_1 = rand(gen)
-    srand(gen.rng, 1)
+    Random.seed!(gen.rng, 1)
     params_2 = rand(gen)
-    srand(gen.rng, 2)
+    Random.seed!(gen.rng, 2)
     params_3 = rand(gen)
     @test params_1 == params_2
     @test params_2 != params_3

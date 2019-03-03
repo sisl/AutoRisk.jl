@@ -95,7 +95,7 @@ end
 function Random.rand!(gen::LaneFactoredTargetSpecificBayesNetSceneGenerator, 
         scene::Scene, roadway::Roadway, seed::Int64) 
     # set random seed
-    srand(gen.rng, seed)
+    Random.seed!(gen.rng, seed)
 
     # reallocate weight vector if it is different
     total_num_veh = nlanes(roadway) * gen.num_veh_per_lane

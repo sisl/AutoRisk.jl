@@ -128,9 +128,9 @@ end
 function Random.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene, 
         models::Dict{Int, DriverModel}, seed::Int64) 
     # set random seed
-    srand(seed)
-    srand(gen.rng, seed)
-    srand(gen.beh_gen.rng, seed)
+    Random.seed!(seed)
+    Random.seed!(gen.rng, seed)
+    Random.seed!(gen.beh_gen.rng, seed)
     empty!(models)
     empty!(scene)
 

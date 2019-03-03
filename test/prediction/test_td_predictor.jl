@@ -2,7 +2,7 @@
 # using AutoRisk
 
 function test_simple_learning()
-    srand(0)
+    Random.seed!(0)
     minpos = 0
     maxpos = 5
     nbins = 6
@@ -69,7 +69,7 @@ function test_simple_learning()
 end
 
 function test_step()
-    srand(0)
+    Random.seed!(0)
     minpos = 0
     maxpos = 5
     nbins = 6

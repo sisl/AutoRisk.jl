@@ -114,8 +114,8 @@ end
     - seed: random seed with which to reset the evaluator
 """
 function reset!(eval::Evaluator, scene::Scene, seed::Int64)
-    srand(seed)
-    srand(eval.rng, seed)
+    Random.seed!(seed)
+    Random.seed!(eval.rng, seed)
     fill!(eval.agg_targets, 0)
     eval.num_veh = length(scene)
     empty!(eval.veh_id_to_idx)
@@ -211,8 +211,8 @@ end
 
 
 function Random.srand(eval::Evaluator, seed::Int)
-    srand(seed)
-    srand(eval.rng, seed)
+    Random.seed!(seed)
+    Random.seed!(eval.rng, seed)
 end
 
 """

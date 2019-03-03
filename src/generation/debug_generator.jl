@@ -21,7 +21,7 @@ end
 function Random.rand!(gen::DebugSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
-    srand(gen.rng, seed)
+    Random.seed!(gen.rng, seed)
 
     # remove old contents of scene
     empty!(scene)

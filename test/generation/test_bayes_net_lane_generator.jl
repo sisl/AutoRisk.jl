@@ -128,7 +128,7 @@ function run_bayes_net_collection()
 end
 
 function test_bayes_net_data_collection()
-    srand(1)
+    Random.seed!(1)
     features_1, targets_1, weights_1 = run_bayes_net_collection()
 
     @test size(features_1) == (NUM_FEATURES, 1, 14)
@@ -139,7 +139,7 @@ function test_bayes_net_data_collection()
     @test !any(isnan.(weights_1))
 
     # check deterministic
-    srand(1)
+    Random.seed!(1)
     features_2, targets_2, weights_2 = run_bayes_net_collection()
 
     @test features_1 ≈ features_2
