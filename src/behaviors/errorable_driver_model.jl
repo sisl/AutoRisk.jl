@@ -50,7 +50,7 @@ end
 Random.srand(model::ErrorableDriverModel, seed::Int) = Random.seed!(model.rng, seed)
 function can_become_inattentive(model::ErrorableDriverModel)
     base_driver = get_driver(model)
-    if :mlane in fieldnames(base_driver)
+    if :mlane in fieldnames(typeof(base_driver))
         return base_driver.mlane.dir == DIR_MIDDLE
     end
     return true
