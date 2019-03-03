@@ -9,7 +9,7 @@ function build_debug_base_net_lane_gen()
     num_samples = 1000
     num_vars = 7
     data = ones(Int, num_vars, num_samples) * 2
-    data[:,1] = 1
+    data[:,1] .= 1
     training_data = DataFrame(
             relvelocity = data[1,:],
             forevelocity = data[2,:],
@@ -154,7 +154,7 @@ function build_simple_realistic_base_net_lane_gen(;
     num_vars = 7
     # each variable equally split between bins
     data = ones(Int, num_vars, num_samples)
-    data[:,Int(ceil(end/2)):end] = 2
+    data[:,Int(ceil(end/2)):end] .= 2
 
     training_data = DataFrame(
             relvelocity = data[1,:],

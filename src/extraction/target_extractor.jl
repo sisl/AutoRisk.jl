@@ -199,7 +199,7 @@ function extract_targets!(
         for j in 1:size(targets, 3)
             for k in 1:size(targets, 2)
                 if targets[i,k,j] == 1
-                    targets[i,k+1:end,j] = 0
+                    targets[i,k+1:end,j] .= 0
                     break
                 end
             end
