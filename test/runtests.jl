@@ -1,4 +1,5 @@
 using Test
+using Random
 using AutoRisk
 
 include("collection/testing_utils.jl")
