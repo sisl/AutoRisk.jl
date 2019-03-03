@@ -1,4 +1,6 @@
-using Base.Test
+using Test
+using Random
+using LinearAlgebra
 using AutoRisk
 
 include("collection/testing_utils.jl")

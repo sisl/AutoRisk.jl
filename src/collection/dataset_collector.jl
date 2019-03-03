@@ -8,7 +8,7 @@ export
 # Description:
     - DatasetCollector orchestrates the serial collection of a dataset.
 """
-type DatasetCollector
+mutable struct DatasetCollector
     seeds::Vector{Int64}
 
     gen::Generator
@@ -38,8 +38,8 @@ end
     - col: the collector being used
     - seed: the random seed uniquely identifying the resulting state
 """
-function Base.rand!(col::DatasetCollector, seed::Int64)
-    info("id $(col.id) collecting seed $(seed)")
+function Random.rand!(col::DatasetCollector, seed::Int64)
+    @info("id $(col.id) collecting seed $(seed)")
     rand!(col.gen, col.roadway, col.scene, col.models, seed)
 end
 
@@ -48,7 +48,7 @@ Description:
     - need this because it is possible that monitoring will not be available, 
     and when that is the case the montior with be a nothing object. 
 """
-monitor(mon::Void, col::DatasetCollector, seed::Int) = col
+monitor(mon::Nothing, col::DatasetCollector, seed::Int) = col
 
 """
 # Description:
@@ -73,7 +73,7 @@ end
     - ParallelDatasetCollector orchestrates the parallel generation 
         of a dataset.
 """
-type ParallelDatasetCollector
+mutable struct ParallelDatasetCollector
     cols::Vector{DatasetCollector}
     output_filepath::String
 

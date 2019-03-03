@@ -128,7 +128,7 @@ function test_neighbor_and_temporal_feature_extractors()
         for v in ["fore", "rear"]]
     fns_to_test = [fns_to_test[1] ; fns_to_test[2]]
     for fn in fns_to_test
-        fidx = find(fns .== fn)
+        fidx = findall(fns .== fn)
         try
             @test features[fidx,1,2] != features[fidx,2,2]
         catch e
@@ -139,10 +139,10 @@ function test_neighbor_and_temporal_feature_extractors()
     end
 
     # temporal
-    fidx = find(fns .== "timegap")
+    fidx = findall(fns .== "timegap")
     @test features[fidx,1,1] != features[fidx,2,1]
     @test features[fidx,1,2] != features[fidx,2,2]
-    # fidx = find(fns .== "time_to_collision")
+    # fidx = findall(fns .== "time_to_collision")
     # println(features[fidx,:,1])
     # println(features[fidx,:,2])
     # println(features[fidx,:,3])
@@ -176,11 +176,11 @@ function test_feature_step_size_larger_than_1()
     step_size = 2
     features = zeros(length(ext), timesteps, num_veh)
     pull_features!(ext, rec, roadway, models, features, timesteps, step_size = 2)
-    vel_idx = find(feature_names(ext) .== "velocity")
+    vel_idx = findall(feature_names(ext) .== "velocity")
 
-    @test all(features[vel_idx,:,1] .- (init_v_id_1 + [0 .2 .4]) .< 0.0001)
-    @test all(features[vel_idx,:,2] .- (init_v_id_2 + [0 .4 .8]) .< 0.0001)
-    @test all(features[vel_idx,:,3] .- (init_v_id_3 + [0 .6 1.2]) .< 0.0001)
+    @test all(features[vel_idx,:,1] .- (init_v_id_1 .+ [0 .2 .4]) .< 0.0001)
+    @test all(features[vel_idx,:,2] .- (init_v_id_2 .+ [0 .4 .8]) .< 0.0001)
+    @test all(features[vel_idx,:,3] .- (init_v_id_3 .+ [0 .6 1.2]) .< 0.0001)
 end
 
 function test_feature_info()
@@ -290,8 +290,8 @@ function test_well_behaved_feature_extractor()
     update!(rec, scene)
 
     fns = feature_names(ext)
-    distance_road_edge_left_idx = find(fn -> fn == "distance_road_edge_left", fns)
-    distance_road_edge_right_idx = find(fn -> fn == "distance_road_edge_right", fns)
+    distance_road_edge_left_idx = findall(fn -> fn == "distance_road_edge_left", fns)
+    distance_road_edge_right_idx = findall(fn -> fn == "distance_road_edge_right", fns)
 
     features[:] = pull_features!(ext, rec, roadway, 1)
     @test features[distance_road_edge_left_idx,1][1] == 7.5

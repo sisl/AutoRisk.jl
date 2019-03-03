@@ -2,14 +2,14 @@ export
     DatasetSceneGenerator,
     rand!
 
-type DatasetSceneGenerator <: SceneGenerator
+mutable struct DatasetSceneGenerator <: SceneGenerator
     trajdata::Trajdata
     veh_ids::Vector{Int64}
     next_idx::Int64
     rng::MersenneTwister
 end
 
-function Base.rand!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
+function Random.rand!(gen::DatasetSceneGenerator, scene::Scene, roadway::Roadway, 
         seed::Int64)
     # remove old contents of scene and models
     empty!(scene)

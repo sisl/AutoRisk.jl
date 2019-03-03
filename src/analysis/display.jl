@@ -21,7 +21,7 @@ function Base.display(col::DatasetCollector, seed::Int64)
 end
 
 function Base.show(col::DatasetCollector)
-in_collision_veh_idxs = find(col.eval.targets[1,:] .== 1.)
+in_collision_veh_idxs = findall(col.eval.targets[1,:] .== 1.)
     @manipulate for follow_veh_idx in in_collision_veh_idxs,
                 zoom in collect(1.:2:20.),
                 i in 0:(col.eval.rec.nframes - 1)

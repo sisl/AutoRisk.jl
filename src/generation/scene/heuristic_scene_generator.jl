@@ -13,7 +13,7 @@ export
         just uses rules that align with expectation, but that do not reflect 
         any learned model, for example. 
 """
-type HeuristicSceneGenerator <: SceneGenerator
+mutable struct HeuristicSceneGenerator <: SceneGenerator
     min_num_vehicles::Int64
     max_num_vehicles::Int64
 
@@ -61,7 +61,7 @@ end
 """
 function generate_init_road_idxs(gen::HeuristicSceneGenerator, 
         roadway::Roadway, num_vehicles::Int64)
-    init_road_idxs = Vector{RoadIndex}(num_vehicles)
+    init_road_idxs = Vector{RoadIndex}(undef, num_vehicles)
 
     # use the number of lanes in the first roadway segment
     num_lanes = length(roadway.segments[1].lanes)
@@ -295,10 +295,10 @@ end
     - roadway: on which to place vehicles
     - seed: random seed to use for generation
 """
-function Base.rand!(gen::HeuristicSceneGenerator, scene::Scene, 
+function Random.rand!(gen::HeuristicSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
-    srand(gen.rng, seed)
+    Random.seed!(gen.rng, seed)
 
     # heuristic generator assumes stadium roadway
     gen.total_roadway_length = get_total_roadway_length(roadway)

@@ -66,14 +66,14 @@ function set_neighbor_features!(features::Vector{Float64}, i::Int,
         features[i+7] = scene[neigh.ind].state.posF.ϕ
         features[i+8] = 0.0
     else
-        features[i:i+7] = 0.0
+        features[i:i+7] .= 0.0
         features[i+8] = 1.0 
     end
 end
 
 ##################### Specific Feature Extractors #####################
 
-type CoreFeatureExtractor <: AbstractFeatureExtractor
+mutable struct CoreFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function CoreFeatureExtractor()
@@ -123,7 +123,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
     
-type TemporalFeatureExtractor <: AbstractFeatureExtractor
+mutable struct TemporalFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function TemporalFeatureExtractor()
@@ -195,7 +195,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type WellBehavedFeatureExtractor <: AbstractFeatureExtractor
+mutable struct WellBehavedFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function WellBehavedFeatureExtractor()
@@ -247,7 +247,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type NeighborFeatureExtractor <: AbstractFeatureExtractor
+mutable struct NeighborFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function NeighborFeatureExtractor()
@@ -288,23 +288,23 @@ function feature_info(ext::NeighborFeatureExtractor)
         "lane_offset_right_is_avail"    =>  Dict("high"=>1.,    "low"=>0.),
     )
     for name in feature_names(ext)
-        if contains(name, "dist")
+        if occursin("dist", name)
             info[name] = Dict("high"=>100., "low"=>-2.)
-        elseif contains(name, "vel")
+        elseif occursin("vel", name)
             info[name] = Dict("high"=>40., "low"=>-5.)
-        elseif contains(name, "accel")
+        elseif occursin("accel", name)
             info[name] = Dict("high"=>9., "low"=>-9.)
-        elseif contains(name, "jerk")
+        elseif occursin("jerk", name)
             info[name] = Dict("high"=>70., "low"=>-70.)
-        elseif contains(name, "length")
+        elseif occursin("length", name)
             info[name] = Dict("high"=>30., "low"=>2.)
-        elseif contains(name, "width")
+        elseif occursin("width", name)
             info[name] = Dict("high"=>3., "low"=>.9)
-        elseif contains(name, "relative_offset")
+        elseif occursin("relative_offset", name)
             info[name] = Dict("high"=>1., "low"=>-1.)
-        elseif contains(name, "relative_heading")
+        elseif occursin("relative_heading", name)
             info[name] = Dict("high"=>.05, "low"=>-.05)
-        elseif contains(name, "is_avail")
+        elseif occursin("is_avail", name)
             info[name] = Dict("high"=>1., "low"=>-0.)
         end
     end
@@ -384,7 +384,7 @@ function AutomotiveDrivingModels.pull_features!(
     end
     return ext.features
 end
-type BehavioralFeatureExtractor <: AbstractFeatureExtractor
+mutable struct BehavioralFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function BehavioralFeatureExtractor()
@@ -516,7 +516,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
+mutable struct NeighborBehavioralFeatureExtractor <: AbstractFeatureExtractor
     subext::BehavioralFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
@@ -604,7 +604,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type CarLidarFeatureExtractor <: AbstractFeatureExtractor
+mutable struct CarLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     carlidar::LidarSensor
@@ -635,7 +635,7 @@ end
 function feature_info(ext::CarLidarFeatureExtractor)
     info = Dict{String, Dict{String, Any}}()
     for name in feature_names(ext)
-        if contains(name, "rangerate")
+        if occursin("rangerate", name)
             info[name] = Dict("high"=>30., "low"=>-30.)
         else
             info[name] = Dict("high"=>ext.carlidar.max_range, "low"=>0.)
@@ -669,7 +669,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type RoadLidarFeatureExtractor <: AbstractFeatureExtractor
+mutable struct RoadLidarFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     roadlidar::RoadlineLidarSensor
@@ -728,7 +728,7 @@ function AutomotiveDrivingModels.pull_features!(
     return ext.features
 end
 
-type ForeForeFeatureExtractor <: AbstractFeatureExtractor
+mutable struct ForeForeFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     Δs_censor_hi::Float64
@@ -793,7 +793,7 @@ end
 
 ##################### Feature Extractor Wrappers #####################
 
-type NormalizingExtractor <: AbstractFeatureExtractor
+mutable struct NormalizingExtractor <: AbstractFeatureExtractor
     μ::Vector{Float64}
     σ::Vector{Float64}
     extractor::AbstractFeatureExtractor
@@ -812,7 +812,7 @@ function AutomotiveDrivingModels.pull_features!(
         pastframe) .- ext.μ) ./ ext.σ)
 end
 
-type EmptyExtractor <: AbstractFeatureExtractor
+mutable struct EmptyExtractor <: AbstractFeatureExtractor
 end
 Base.length(ext::EmptyExtractor) = 0
 function AutomotiveDrivingModels.pull_features!(

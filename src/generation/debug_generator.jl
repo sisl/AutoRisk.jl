@@ -3,7 +3,7 @@ export
     DebugBehaviorGenerator,
     rand!
 
-@with_kw type DebugSceneGenerator <: SceneGenerator
+@with_kw mutable struct DebugSceneGenerator <: SceneGenerator
     # Δs = (fore_s - rear_s)
     lo_Δs::Float64 = 0.
     hi_Δs::Float64 = 10.
@@ -18,10 +18,10 @@ export
 
     rng::MersenneTwister = MersenneTwister(1)
 end
-function Base.rand!(gen::DebugSceneGenerator, scene::Scene, 
+function Random.rand!(gen::DebugSceneGenerator, scene::Scene, 
         roadway::Roadway, seed::Int64) 
     # set random seed
-    srand(gen.rng, seed)
+    Random.seed!(gen.rng, seed)
 
     # remove old contents of scene
     empty!(scene)
@@ -46,13 +46,13 @@ function Base.rand!(gen::DebugSceneGenerator, scene::Scene,
     return scene
 end
 
-@with_kw type DebugBehaviorGenerator <: BehaviorGenerator
+@with_kw mutable struct DebugBehaviorGenerator <: BehaviorGenerator
     Δt::Float64 = .1
     rear_lon_σ::Float64 = 0.0
     fore_lon_σ::Float64 = 0.0  
     rng::MersenneTwister = MersenneTwister(1)
 end
-function Base.rand!(gen::DebugBehaviorGenerator, models::Dict{Int, DriverModel}, 
+function Random.rand!(gen::DebugBehaviorGenerator, models::Dict{Int, DriverModel}, 
         scene::Scene, seed::Int64)
     # zero acceleration models with variable std dev
     models[1] = Tim2DDriver(gen.Δt, mlon = StaticLongitudinalDriver(

@@ -103,6 +103,9 @@ CTestTestfile.cmake
 *tmp_*
 *.mem
 
+# julia Manifest
+Manifest.toml
+
 # venv
 *venv*
 

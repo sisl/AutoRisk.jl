@@ -9,7 +9,7 @@ export
 # Description:
     - Dataset type is used as an abstraction over an HDF5 file
 """
-type Dataset
+mutable struct Dataset
     filepath::String
     file::HDF5File
 
@@ -66,8 +66,8 @@ type Dataset
         retval.chunk_dim = chunk_dim
         retval.max_num_samples = max_num_samples
         retval.next_idx = 1
-        retval.seeds = Vector{Int64}(0)
-        retval.batch_idxs = Vector{Int64}(0)
+        retval.seeds = Vector{Int64}(undef, 0)
+        retval.batch_idxs = Vector{Int64}(undef, 0)
         retval.use_weights = use_weights
 
         # convert all the attrs keys to strings
@@ -185,7 +185,7 @@ end
 # this allows for a unified interface between collector and dataset
 # is weights is void, then dataset is not using weights
 function update!(dataset::Dataset, features::Array{Float64}, 
-        targets::Array{Float64}, weights::Void, seed::Int64)
+        targets::Array{Float64}, weights::Nothing, seed::Int64)
     update!(dataset::Dataset, features::Array{Float64}, targets::Array{Float64},
         seed::Int64)
 end

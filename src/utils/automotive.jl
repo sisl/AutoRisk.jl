@@ -14,8 +14,6 @@ export
 """
 AutomotiveDrivingModels Core additional functionality
 """
-
-### Roadway
 function nlanes(roadway::Roadway)
     return length(roadway.segments[1].lanes)
 end
@@ -94,12 +92,15 @@ function Base.:(==)(c1::CurvePt, c2::CurvePt)
         && (c1.kd == c2.kd || (isnan(c1.kd) && isnan(c2.kd))))
 end 
 
+#=
+Deprecated overwrite of AutomotiveDrivingModels' version
 function Base.:(==)(l1::Lane, l2::Lane)
     return (l1.tag == l2.tag 
         && all(pt1 == pt2 for (pt1, pt2) in zip(l1.curve, l2.curve))
         && l1.width == l2.width
         && l1.speed_limit == l2.speed_limit)
 end
+=#
 
 function Base.:(==)(r1::RoadSegment, r2::RoadSegment)
     return (r1.id == r2.id 
@@ -175,11 +176,14 @@ function Base.:(==)(s1::Scene, s2::Scene)
     return true
 end
 
+#=
+Deprecated overwrite of AutomotiveDrivingModels' version
 function Base.show(io::IO, scene::Scene)
     for (i, veh) in enumerate(scene)
         println(io, "vehicle $(i):\n$(veh)")
     end
 end
+=#
 
 ### SceneRecord
 """
@@ -200,7 +204,7 @@ function push_forward_records!(rec::SceneRecord, pastframe::Int)
     end
     s, e = 1 - pastframe, rec.nframes
     for (i, past_index) in enumerate(s:e)
-        copy!(rec.frames[i], rec.frames[past_index])
+        copyto!(rec.frames[i], rec.frames[past_index])
     end
     rec.nframes = e - s + 1
     return rec
@@ -394,10 +398,10 @@ end
 ### Behavior
 # some driver models will need to have a random seed set for reproducibility
 # so add a base method that does nothing
-Base.srand(model::DriverModel, seed::Int) = model
+Random.srand(model::DriverModel, seed::Int) = model
 
 # adding σ to static longitudinal 
-type StaticLongitudinalDriver <: LaneFollowingDriver
+mutable struct StaticLongitudinalDriver <: LaneFollowingDriver
     a::Float64
     σ::Float64
     StaticLongitudinalDriver(a::Float64=0.0, σ::Float64=0.0) = new(a, σ)

@@ -26,7 +26,7 @@ bernoulli_sample(rng::MersenneTwister, p::Float64) = rand(rng) < p
 Description:
     - Basic errorable driver model. Suffers from inattentiveness.
 """
-type ErrorableDriverModel <: DriverModel{LatLonAccel}
+mutable struct ErrorableDriverModel <: DriverModel{LatLonAccel}
     driver::DriverModel
     is_attentive::Bool
     p_a_to_i::Float64 # p(true) = p(attentive -> inattentive)
@@ -47,10 +47,10 @@ get_driver(model::ErrorableDriverModel) = get_driver(model.driver)
 function set_is_attentive!(model::ErrorableDriverModel, v::Bool)
     model.is_attentive = v
 end
-Base.srand(model::ErrorableDriverModel, seed::Int) = srand(model.rng, seed)
+Random.srand(model::ErrorableDriverModel, seed::Int) = Random.seed!(model.rng, seed)
 function can_become_inattentive(model::ErrorableDriverModel)
     base_driver = get_driver(model)
-    if :mlane in fieldnames(base_driver)
+    if :mlane in fieldnames(typeof(base_driver))
         return base_driver.mlane.dir == DIR_MIDDLE
     end
     return true

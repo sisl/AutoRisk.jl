@@ -5,7 +5,7 @@ export
     feature_names,
     feature_info
 
-type MultiFeatureExtractor <: AbstractFeatureExtractor
+mutable struct MultiFeatureExtractor <: AbstractFeatureExtractor
     extractors::Vector{AbstractFeatureExtractor}
     lengths::Vector{Int64}
     features::Vector{Float64}

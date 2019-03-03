@@ -1,6 +1,9 @@
 __precompile__(true)
 module AutoRisk
 
+using Printf
+using Random
+using LinearAlgebra
 using Reexport
 
 @reexport using AutomotiveDrivingModels
@@ -9,7 +12,7 @@ using Reexport
 @reexport using Discretizers
 @reexport using Distributions
 @reexport using HDF5
-@reexport using JLD
+@reexport using JLD2
 @reexport using Parameters
 @reexport using GridInterpolations
 @reexport using StatsBase
@@ -17,7 +20,8 @@ using Reexport
 import AutomotiveDrivingModels: 
     simulate!, update!, observe!, pull_features!, set_desired_speed!, observe!,
     get_name, show, nlanes
-import Base: display, show, rand, rand!, ==
+import Base: display, show, ==
+#import Random: rand, rand!
 import Distributions: rand, pdf, logpdf
 import Discretizers: encode, decode
 

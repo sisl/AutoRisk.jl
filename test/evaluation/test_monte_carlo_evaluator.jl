@@ -57,9 +57,9 @@ function test_monte_carlo_evaluator_debug()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1,num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10,num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 10, num_veh)
+    features::Array{Float64} = Array{Float64}(undef, NUM_FEATURES, 1,num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 10,num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 10, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
     ext = MultiFeatureExtractor()
@@ -75,9 +75,9 @@ function test_monte_carlo_evaluator_debug()
     # write("/Users/wulfebw/Desktop/stuff2.gif", frames)
 
     # first two collisions in each, last decel in each
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], 2), 5) == [0.0, 0.0, 1.0, 0.0, 1.0]
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], 2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
-    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,3], 2), 5) == [0.0, 0.0, 0.0, 1.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,1], dims=2), 5) == [0.0, 0.0, 1.0, 0.0, 1.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,2], dims=2), 5) == [0.0, 1.0, 0.0, 0.0, 0.0]
+    @test reshape(sum(eval.agg_targets[1:NUM_TARGETS,:,3], dims=2), 5) == [0.0, 0.0, 0.0, 1.0, 0.0]
 end
 
 function test_monte_carlo_evaluator()
@@ -117,9 +117,9 @@ function test_monte_carlo_evaluator()
     veh_idx_can_change::Bool = false
 
     rec::SceneRecord = SceneRecord(500, .1, num_veh)
-    features::Array{Float64} = Array{Float64}(NUM_FEATURES, 1, num_veh)
-    targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(NUM_TARGETS, 30, num_veh)
+    features::Array{Float64} = Array{Float64}(undef, NUM_FEATURES, 1, num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 30, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, NUM_TARGETS, 30, num_veh)
 
     rng::MersenneTwister = MersenneTwister(1)
 
@@ -143,12 +143,12 @@ function test_monte_carlo_evaluator()
     @test features[17, 1] ≈ 1. / 6.12903225806451
     @test features[17, 2] ≈ 30.0
 
-    k_spd_idx = find(feature_names_list .== "beh_lon_k_spd")[1]
+    k_spd_idx = findall(feature_names_list .== "beh_lon_k_spd")[1]
 
     @test features[k_spd_idx, 1] == k_spd
     @test features[k_spd_idx, 2] == k_spd
 
-    politeness_idx = find(feature_names_list .== "beh_lane_politeness")[1]
+    politeness_idx = findall(feature_names_list .== "beh_lane_politeness")[1]
 
     @test features[politeness_idx, 1] == politeness
     @test features[politeness_idx, 2] == politeness
@@ -194,14 +194,14 @@ function test_multi_timestep_monte_carlo_evaluator()
     ext = MultiFeatureExtractor()
     target_ext = TargetExtractor()
 
-    features::Array{Float64} = Array{Float64}(length(ext), feature_timesteps,
+    features::Array{Float64} = Array{Float64}(undef, length(ext), feature_timesteps,
         num_veh)
-    targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(length(target_ext), 10, num_veh)
+    targets::Array{Float64} = Array{Float64}(undef, length(target_ext), 10, num_veh)
+    agg_targets::Array{Float64} = Array{Float64}(undef, length(target_ext), 10, num_veh)
 
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
-    original_scene = copy!(Scene(num_veh), scene)
+    original_scene = copyto!(Scene(num_veh), scene)
     evaluate!(eval, scene, models, roadway, 1)
 
     @test size(eval.features) == (length(ext), feature_timesteps, 2)
@@ -230,7 +230,7 @@ function test_multi_timestep_monte_carlo_evaluator()
     # now check for step_size case
     step_size = 2
     feature_timesteps = 2
-    features = Array{Float64}(length(ext), feature_timesteps,
+    features = Array{Float64}(undef, length(ext), feature_timesteps,
         num_veh)
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng, 

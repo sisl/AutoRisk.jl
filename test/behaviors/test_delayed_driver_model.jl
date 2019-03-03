@@ -58,9 +58,9 @@ function test_delayed_driver_simulation()
 
     # the idea of this test is to confirm that using a delayed driver model 
     # with a 0.0 reaction time gives identical results to not using a delay
-    normal_scene = copy!(Scene(num_veh), scene)
-    without_delay_scene = copy!(Scene(num_veh), scene)
-    with_delay_scene = copy!(Scene(num_veh), scene)
+    normal_scene = copyto!(Scene(num_veh), scene)
+    without_delay_scene = copyto!(Scene(num_veh), scene)
+    with_delay_scene = copyto!(Scene(num_veh), scene)
 
     # normal
     models = Dict{Int, DriverModel}()

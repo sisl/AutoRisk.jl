@@ -9,7 +9,7 @@ function build_debug_base_net_lane_gen()
     num_samples = 1000
     num_vars = 7
     data = ones(Int, num_vars, num_samples) * 2
-    data[:,1] = 1
+    data[:,1] .= 1
     training_data = DataFrame(
             relvelocity = data[1,:],
             forevelocity = data[2,:],
@@ -101,9 +101,9 @@ function run_bayes_net_collection()
     max_num_samples = num_samples * max_num_veh
     max_num_scenes = Int((prime_time + sampling_time) / .1)
     rec = SceneRecord(max_num_scenes, .1, max_num_veh)
-    features = Array{Float64}(feature_dim, feature_timesteps, max_num_veh)
-    targets = Array{Float64}(target_dim, 5, max_num_veh)
-    agg_targets = Array{Float64}(target_dim, 5, max_num_veh)
+    features = Array{Float64}(undef, feature_dim, feature_timesteps, max_num_veh)
+    targets = Array{Float64}(undef, target_dim, 5, max_num_veh)
+    agg_targets = Array{Float64}(undef, target_dim, 5, max_num_veh)
     rng = MersenneTwister(1)
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
@@ -128,7 +128,7 @@ function run_bayes_net_collection()
 end
 
 function test_bayes_net_data_collection()
-    srand(1)
+    Random.seed!(1)
     features_1, targets_1, weights_1 = run_bayes_net_collection()
 
     @test size(features_1) == (NUM_FEATURES, 1, 14)
@@ -139,7 +139,7 @@ function test_bayes_net_data_collection()
     @test !any(isnan.(weights_1))
 
     # check deterministic
-    srand(1)
+    Random.seed!(1)
     features_2, targets_2, weights_2 = run_bayes_net_collection()
 
     @test features_1 ≈ features_2
@@ -154,7 +154,7 @@ function build_simple_realistic_base_net_lane_gen(;
     num_vars = 7
     # each variable equally split between bins
     data = ones(Int, num_vars, num_samples)
-    data[:,Int(ceil(end/2)):end] = 2
+    data[:,Int(ceil(end/2)):end] .= 2
 
     training_data = DataFrame(
             relvelocity = data[1,:],
@@ -208,7 +208,7 @@ function test_scene_features_align_with_bounds()
     ext = NeighborFeatureExtractor()
     rec = SceneRecord(num_veh_per_lane, .1)
     update!(rec, scene)
-    features = Array{Float64}(length(ext), num_veh_per_lane)
+    features = Array{Float64}(undef, length(ext), num_veh_per_lane)
     features[:, 1] = pull_features!(ext, rec, roadway, 1, models)
     features[:, 2] = pull_features!(ext, rec, roadway, 2, models)
     features[:, 3] = pull_features!(ext, rec, roadway, 3, models)

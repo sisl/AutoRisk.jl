@@ -37,7 +37,7 @@ end
     - rec: record where to store scenes
     - T: time for which to simulate
 """
-function simulate!{S,D,I,A,R,M<:DriverModel}(
+function simulate!(
         ::Type{A},
         rec::EntityQueueRecord{S,D,I}, 
         scene::EntityFrame{S,D,I}, 
@@ -45,11 +45,11 @@ function simulate!{S,D,I,A,R,M<:DriverModel}(
         models::Dict{I,M}, 
         T::Float64;
         update_first_scene::Bool = true
-    )
+    ) where {S,D,I,A,R,M<:DriverModel}
     if update_first_scene
         update!(rec, scene)
     end
-    actions = Array{A}(length(scene))
+    actions = Array{A}(undef, length(scene))
     for t in 0:rec.timestep:(T - rec.timestep)
         get_actions!(actions, scene, roadway, models)
         tick!(scene, roadway, actions, rec.timestep)

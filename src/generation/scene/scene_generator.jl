@@ -8,7 +8,7 @@ export
 """
 abstract type SceneGenerator end
 
-Base.rand!(scene_generator::SceneGenerator, scene::Scene, roadway::Roadway, 
+Random.rand!(scene_generator::SceneGenerator, scene::Scene, roadway::Roadway, 
     seed::Int64) = error("rand! not implemented for $(scene_generator)")
 
 pdf(scene_generator::SceneGenerator, scene::Scene) = 1.

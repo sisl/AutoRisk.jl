@@ -9,7 +9,7 @@ export
 # requires running inference to get the posterior
 # but if we know that the evidence is in a root node (i.e., node without 
 # parents), then we can easily sample from the posterior.
-function Base.rand!(a::Assignment, bn::BayesNet, evidence::Assignment)
+function Random.rand!(a::Assignment, bn::BayesNet, evidence::Assignment)
     # check that the evidence variables do not have parents, or that if they 
     # do have parents that they are all also in the evidence
     evidence_vars = keys(evidence)
@@ -30,7 +30,7 @@ function Base.rand!(a::Assignment, bn::BayesNet, evidence::Assignment)
     return a
 end
 
-type BayesNetLaneGenerator <: Generator
+mutable struct BayesNetLaneGenerator <: Generator
     base_bn::BayesNet
     base_assignment_sampler::AssignmentSampler
     prop_bn::BayesNet
@@ -76,11 +76,11 @@ function BayesNetLaneGenerator(
         beh_gen::CorrelatedBehaviorGenerator,
         rng::MersenneTwister = MersenneTwister(1)
     )
-    d = JLD.load(base_bn_filepath) 
+    d = JLD2.load(base_bn_filepath) 
     base_bn = d["bn"]
     base_sampler = AssignmentSampler(d["discs"])
 
-    d = JLD.load(prop_bn_filepath) 
+    d = JLD2.load(prop_bn_filepath) 
     prop_bn = d["bn"]
     prop_sampler = AssignmentSampler(d["discs"])
     return BayesNetLaneGenerator(base_bn, base_sampler, prop_bn, prop_sampler,
@@ -125,12 +125,12 @@ end
     - roadway: on which to place vehicles
     - seed: random seed to use for generation
 """
-function Base.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene, 
+function Random.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene, 
         models::Dict{Int, DriverModel}, seed::Int64) 
     # set random seed
-    srand(seed)
-    srand(gen.rng, seed)
-    srand(gen.beh_gen.rng, seed)
+    Random.seed!(seed)
+    Random.seed!(gen.rng, seed)
+    Random.seed!(gen.beh_gen.rng, seed)
     empty!(models)
     empty!(scene)
 

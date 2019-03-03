@@ -13,7 +13,7 @@ import AutomotiveDrivingModels:
     set_desired_speed!,
     observe!
 
-type DelayedDriver <: DriverModel{LatLonAccel}
+mutable struct DelayedDriver <: DriverModel{LatLonAccel}
     driver::DriverModel
     rec::SceneRecord
     reaction_time::Float64 # reaction time (time delay in responding) [s]

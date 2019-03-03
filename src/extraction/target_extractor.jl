@@ -6,7 +6,7 @@ export
     extract_frame_targets!,
     extract_targets!
 
-type TargetExtractor <: AbstractFeatureExtractor
+mutable struct TargetExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     hard_brake_threshold::Float64
@@ -117,7 +117,7 @@ function extract_frame_targets!(
         # because if it cannot we can save a lot of time by not 
         # recomputing it for each frame
         if veh_idx_can_change
-            veh_idx = findfirst(scene, veh_id)
+            veh_idx = findfirst(veh_id, scene)
             # if the vehicle left the scene, then we assume that 
             # it will not reenter and add it to the done set
             in_scene = veh_idx == 0 ? false : true
@@ -199,7 +199,7 @@ function extract_targets!(
         for j in 1:size(targets, 3)
             for k in 1:size(targets, 2)
                 if targets[i,k,j] == 1
-                    targets[i,k+1:end,j] = 0
+                    targets[i,k+1:end,j] .= 0
                     break
                 end
             end

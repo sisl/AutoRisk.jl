@@ -12,7 +12,7 @@ predict(model::PredictionModel, input::Array{Float64}) = error(
     "predict not implemented for $(model)")
 
 # wraps weights and biases
-type Network <: PredictionModel
+mutable struct Network <: PredictionModel
     weights::Vector{Array{Float64}}
     biases::Vector{Array{Float64}}
     nonlinearity::Function

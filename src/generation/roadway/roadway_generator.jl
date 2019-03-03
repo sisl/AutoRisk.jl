@@ -9,16 +9,16 @@ export
 """
 abstract type RoadwayGenerator end
 
-Base.rand!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
+Random.rand!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
     "rand! not implemented for $(scene_generator)")
 
 """
 # Description:
     - StaticRoadwayGenerator has a single roadway that it always returns.
 """
-type StaticRoadwayGenerator <: RoadwayGenerator
+mutable struct StaticRoadwayGenerator <: RoadwayGenerator
     roadway::Roadway
 end
 
-Base.rand!(gen::StaticRoadwayGenerator, roadway::Roadway, seed::Int64) = gen.roadway
-Base.rand!(gen::StaticRoadwayGenerator, seed::Int64) = gen.roadway
+Random.rand!(gen::StaticRoadwayGenerator, roadway::Roadway, seed::Int64) = gen.roadway
+Random.rand!(gen::StaticRoadwayGenerator, seed::Int64) = gen.roadway
