@@ -1,5 +1,3 @@
-using Base.Test
-using AutoRisk
 using AutoViz
 using Reel
 Reel.set_output_type("gif")

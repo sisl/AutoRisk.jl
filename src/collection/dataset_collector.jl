@@ -39,7 +39,7 @@ end
     - seed: the random seed uniquely identifying the resulting state
 """
 function Random.rand!(col::DatasetCollector, seed::Int64)
-    info("id $(col.id) collecting seed $(seed)")
+    @info("id $(col.id) collecting seed $(seed)")
     rand!(col.gen, col.roadway, col.scene, col.models, seed)
 end
 
