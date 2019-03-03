@@ -178,9 +178,9 @@ function test_feature_step_size_larger_than_1()
     pull_features!(ext, rec, roadway, models, features, timesteps, step_size = 2)
     vel_idx = findall(feature_names(ext) .== "velocity")
 
-    @test all(features[vel_idx,:,1] .- (init_v_id_1 + [0 .2 .4]) .< 0.0001)
-    @test all(features[vel_idx,:,2] .- (init_v_id_2 + [0 .4 .8]) .< 0.0001)
-    @test all(features[vel_idx,:,3] .- (init_v_id_3 + [0 .6 1.2]) .< 0.0001)
+    @test all(features[vel_idx,:,1] .- (init_v_id_1 .+ [0 .2 .4]) .< 0.0001)
+    @test all(features[vel_idx,:,2] .- (init_v_id_2 .+ [0 .4 .8]) .< 0.0001)
+    @test all(features[vel_idx,:,3] .- (init_v_id_3 .+ [0 .6 1.2]) .< 0.0001)
 end
 
 function test_feature_info()
