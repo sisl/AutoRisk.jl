@@ -32,9 +32,9 @@ function test_mobil_when_exiting_curve()
     rec = SceneRecord(500, .1, num_veh)
     T = 1.
 
-    no_delay_init_scene = copy!(Scene(2), scene)
-    with_delay_init_scene = copy!(Scene(2), scene)
-    idm_init_scene = copy!(Scene(2), scene)
+    no_delay_init_scene = copyto!(Scene(2), scene)
+    with_delay_init_scene = copyto!(Scene(2), scene)
+    idm_init_scene = copyto!(Scene(2), scene)
 
     # simulate the scene with 0 second time delay idm and compare with normal
     # 0 second delay simulation

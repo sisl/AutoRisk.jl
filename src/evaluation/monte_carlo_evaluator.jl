@@ -159,7 +159,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     pastframe_start = -Int(ceil(min(5, eval.prime_time))) # number of replay scenes for driver models
     for idx in 1:eval.num_runs
         # reset
-        copy!(temp_scene, scene)
+        copyto!(temp_scene, scene)
         push_forward_records!(eval.rec, -pastframe)
 
         # reset any hidden state present in the model
@@ -241,7 +241,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     for idx in 1:eval.num_runs
 
         # reset
-        copy!(temp_scene, scene)
+        copyto!(temp_scene, scene)
         push_forward_records!(eval.rec, -pastframe)
 
         # simulate starting from the final burn-in scene
@@ -270,7 +270,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 
     # copy the contents of the temp scene back into the original scene in 
     # case the final simulated scene needs to be used later
-    copy!(scene, temp_scene)
+    copyto!(scene, temp_scene)
 
     return eval.features, eval.targets, terminals
 end

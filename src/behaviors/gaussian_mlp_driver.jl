@@ -57,7 +57,7 @@ function AutomotiveDrivingModels.observe!{A,F,G,E,P}(
     o = pull_features!(model.extractor, model.features, model.rec, roadway, vehicle_index)
     model.net[:hidden_0].input = o[:,vehicle_index]
     forward!(model.pass)
-    copy!(model.mvnormal.μ, model.output[1:2])
+    copyto!(model.mvnormal.μ, model.output[1:2])
     return model
 end
 function Base.rand{A,F,G,E,P}(model::GaussianMLPDriver{A,F,G,E,P})

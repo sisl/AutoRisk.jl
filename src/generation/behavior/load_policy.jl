@@ -73,8 +73,8 @@ function load_gaussian_mlp_driver(
         layer_sym = Symbol(layer)
         W, b = _pull_W_b(filepath, joinpath(basepath, layer))
         push!(net, Affine, layer_sym, lastindex(net), size(W, 1))
-        copy!(net[layer_sym].W, W)
-        copy!(net[layer_sym].b, b)
+        copyto!(net[layer_sym].W, W)
+        copyto!(net[layer_sym].b, b)
         push!(net, ELU, Symbol(layer*"ELU"), lastindex(net))
     end
     # Add GRU layer
@@ -82,25 +82,25 @@ function load_gaussian_mlp_driver(
         # output layer
         W, b = _pull_W_b(filepath, joinpath(basepath, "output"))
         push!(net, Affine, :output_layer_mlp, lastindex(net), size(W, 1))
-        copy!(net[:output_layer_mlp].W, W)
-        copy!(net[:output_layer_mlp].b, b)
+        copyto!(net[:output_layer_mlp].W, W)
+        copyto!(net[:output_layer_mlp].b, b)
         push!(net, Variable(:output_mlp, output(net[:output_layer_mlp])), lastindex(net))
         push!(net, ELU, Symbol("output_ELU"), lastindex(net))
 
         basepath = @sprintf("iter%05d/gru_policy", iteration)
         W_x, W_h, b = _pull_W_b_h(filepath, joinpath(basepath, "mean_network", "gru"))
         push!(net, GRU, :gru, :output_mlp, size(W_h, 2))
-        copy!(net[:gru].W_x, W_x)
-        copy!(net[:gru].W_h, W_h)
-        copy!(net[:gru].b, b)
-        copy!(net[:gru].h_prev, zeros(size(W_h, 2)))
+        copyto!(net[:gru].W_x, W_x)
+        copyto!(net[:gru].W_h, W_h)
+        copyto!(net[:gru].b, b)
+        copyto!(net[:gru].h_prev, zeros(size(W_h, 2)))
         push!(net, Variable(:output_gru, output(net[:gru])), lastindex(net))
 
         # Finally, output layer from GRU
         W, b = _pull_W_b(filepath, joinpath(basepath, "mean_network", "output_flat"))
         push!(net, Affine, :output_layer, :gru, size(W, 1))
-        copy!(net[:output_layer].W, W)
-        copy!(net[:output_layer].b, b)
+        copyto!(net[:output_layer].W, W)
+        copyto!(net[:output_layer].b, b)
         push!(net, Variable(:output, output(net[:output_layer])), lastindex(net))
     else
         # Output layer
@@ -110,8 +110,8 @@ function load_gaussian_mlp_driver(
             W, b = _pull_W_b(filepath, joinpath(basepath, "output"))
         end
         push!(net, Affine, :output_layer, lastindex(net), size(W, 1))
-        copy!(net[:output_layer].W, W)
-        copy!(net[:output_layer].b, b)
+        copyto!(net[:output_layer].W, W)
+        copyto!(net[:output_layer].b, b)
         push!(net, Variable(:output, output(net[:output_layer])), lastindex(net))
         basepath = @sprintf("iter%05d/mlp_policy", iteration)
     end

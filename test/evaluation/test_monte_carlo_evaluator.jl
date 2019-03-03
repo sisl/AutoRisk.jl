@@ -201,7 +201,7 @@ function test_multi_timestep_monte_carlo_evaluator()
 
     eval = MonteCarloEvaluator(ext, target_ext, num_runs, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
-    original_scene = copy!(Scene(num_veh), scene)
+    original_scene = copyto!(Scene(num_veh), scene)
     evaluate!(eval, scene, models, roadway, 1)
 
     @test size(eval.features) == (length(ext), feature_timesteps, 2)
