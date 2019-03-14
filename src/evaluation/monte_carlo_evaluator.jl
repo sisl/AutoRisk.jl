@@ -210,7 +210,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
 end
 
 
-function Random.srand(eval::Evaluator, seed::Int)
+function Random.seed!(eval::Evaluator, seed::Int)
     Random.seed!(seed)
     Random.seed!(eval.rng, seed)
 end

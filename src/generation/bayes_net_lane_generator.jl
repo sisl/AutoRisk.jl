@@ -262,7 +262,7 @@ function Random.rand!(gen::BayesNetLaneGenerator, roadway::Roadway, scene::Scene
                 params.idm.v_des = veh.state.v
             end
             models[veh_id] = build_driver(params, total_num_vehicles)
-            srand(models[veh_id], seed + Int(rand(gen.rng, 1:1e8)))
+            Random.seed!(models[veh_id], seed + Int(rand(gen.rng, 1:1e8)))
             if typeof(models[veh_id]) == ErrorableDriverModel
                 is_attentive = values[:isattentive] == 1 ? false : true
                 set_is_attentive!(models[veh_id], is_attentive)

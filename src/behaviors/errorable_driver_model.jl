@@ -7,7 +7,7 @@ export
     rand,
     pdf,
     logpdf,
-    srand
+    seed!
 
 import AutomotiveDrivingModels: 
     LaneFollowingDriver,
@@ -47,7 +47,7 @@ get_driver(model::ErrorableDriverModel) = get_driver(model.driver)
 function set_is_attentive!(model::ErrorableDriverModel, v::Bool)
     model.is_attentive = v
 end
-Random.srand(model::ErrorableDriverModel, seed::Int) = Random.seed!(model.rng, seed)
+Random.seed!(model::ErrorableDriverModel, seed::Int) = Random.seed!(model.rng, seed)
 function can_become_inattentive(model::ErrorableDriverModel)
     base_driver = get_driver(model)
     if :mlane in fieldnames(typeof(base_driver))

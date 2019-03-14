@@ -9,7 +9,7 @@ export
     inverse_ttc_to_ttc,
     push_forward_records!,
     executed_hard_brake,
-    srand
+    seed!
 
 """
 AutomotiveDrivingModels Core additional functionality
@@ -398,7 +398,7 @@ end
 ### Behavior
 # some driver models will need to have a random seed set for reproducibility
 # so add a base method that does nothing
-Random.srand(model::DriverModel, seed::Int) = model
+Random.seed!(model::DriverModel, seed::Int) = model
 
 # adding σ to static longitudinal 
 mutable struct StaticLongitudinalDriver <: LaneFollowingDriver
