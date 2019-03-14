@@ -70,7 +70,7 @@ function update!(predictor::TDPredictor, states::Array{Float64},
         values::Array{Float64})
     state_dim, num_states = size(states)
     target_dim, num_targets = size(values)
-    assert(num_states == num_targets)
+    @assert(num_states == num_targets)
     # for each state, interpolate it, compute it's td error, perform an update
     total_td_error = 0
     for sidx in 1:num_states
@@ -93,7 +93,7 @@ function step(predictor::TDPredictor, x::Array{Float64}, a::Array{Float64},
         r::Array{Float64}, nx::Array{Float64}, done::Bool)
 
     # update 
-    total_td_error = 0
+    total_td_error = zero(r)
     inds, ws = interpolants(predictor.grid, x)
     for (ind, w) in zip(inds, ws)
         # target value
