@@ -4,6 +4,7 @@ module AutoRisk
 using Printf
 using Random
 using LinearAlgebra
+using Distributed
 using Reexport
 
 @reexport using AutomotiveDrivingModels
