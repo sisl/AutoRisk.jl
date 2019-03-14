@@ -70,13 +70,13 @@ function build_debug_dataset_collector(;
     veh_idx_can_change::Bool = false
     max_num_scenes = Int((prime_time + sampling_time) / .1)
     rec::SceneRecord = SceneRecord(max_num_scenes, .1, max_num_veh)
-    features::Array{Float64} = Array{Float64}(feature_dim, feature_timesteps,
+    features::Array{Float64} = Array{Float64}(undef, feature_dim, feature_timesteps,
         max_num_veh)
     target_timesteps = Int(ceil(sampling_time * 10))
-    targets::Array{Float64} = Array{Float64}(target_dim, 
+    targets::Array{Float64} = Array{Float64}(undef, target_dim, 
         target_timesteps,
         max_num_veh)
-    agg_targets::Array{Float64} = Array{Float64}(target_dim, 
+    agg_targets::Array{Float64} = Array{Float64}(undef, target_dim, 
         target_timesteps,
         max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
