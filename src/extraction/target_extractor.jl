@@ -120,7 +120,7 @@ function extract_frame_targets!(
             veh_idx = findfirst(veh_id, scene)
             # if the vehicle left the scene, then we assume that 
             # it will not reenter and add it to the done set
-            in_scene = veh_idx == 0 ? false : true
+            in_scene = veh_idx == nothing ? false : true
         else
             veh_idx = orig_veh_idx
         end

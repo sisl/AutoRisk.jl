@@ -27,7 +27,7 @@ in_collision_veh_idxs = findall(col.eval.targets[1,:] .== 1.)
                 i in 0:(col.eval.rec.nframes - 1)
         # set camera
         follow_veh_id = -1
-        if follow_veh_idx == 0
+        if follow_veh_idx == nothing || follow_veh_idx == 0
             cam = FitToContentCamera()
         else
             for (veh_id, veh_idx) in col.eval.veh_id_to_idx

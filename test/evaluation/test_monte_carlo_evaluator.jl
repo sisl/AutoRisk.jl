@@ -105,7 +105,7 @@ function test_monte_carlo_evaluator()
     mlon = IntelligentDriverModel(k_spd = k_spd)
     models[2] = Tim2DDriver(.1, mlane = mlane, mlon = mlon)
     base_speed = 0.
-    road_pos = 8.
+    road_pos = 15.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
     veh_def = VehicleDef(AgentClass.CAR, 5., 2.)

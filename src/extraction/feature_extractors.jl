@@ -43,17 +43,20 @@ end
 
 function set_speed_and_distance!(features::Vector{Float64}, i::Int, 
     neigh::NeighborLongitudinalResult, scene::Scene)
-    neigh.ind != 0 ? set_feature!(features, i, scene[neigh.ind].state.v) :
-                      set_feature_missing!(features, i)
-    neigh.ind != 0 ? set_feature!(features, i+2, neigh.Δs) :
-                      set_feature_missing!(features, i+2)
+    if neigh.ind != 0 && neigh.ind != nothing
+        set_feature!(features, i, scene[neigh.ind].state.v)
+        set_feature!(features, i+2, neigh.Δs)
+        else
+        set_feature_missing!(features, i)
+        set_feature_missing!(features, i+2)
+    end
     features
 end
 
 function set_neighbor_features!(features::Vector{Float64}, i::Int, 
         neigh::NeighborLongitudinalResult, scene::Scene, rec::SceneRecord, 
         roadway::Roadway, pastframe::Int = 0)
-    if neigh.ind != 0
+    if neigh.ind != 0 && neigh.ind != nothing
         features[i] = neigh.Δs
         features[i+1] = scene[neigh.ind].state.v
         features[i+2] = convert(Float64, get(ACCFS, rec, roadway, neigh.ind,
@@ -103,7 +106,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::CoreFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,  
+        veh_idx::Union{Nothing, Int64},  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     scene = rec[pastframe]
@@ -156,7 +159,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::TemporalFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int, 
+        veh_idx::Union{Nothing, Int64}, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     idx = 0
@@ -226,7 +229,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::WellBehavedFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int, 
+        veh_idx::Union{Nothing, Int64}, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     scene = rec[pastframe]
@@ -314,7 +317,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::NeighborFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int, 
+        veh_idx::Union{Nothing, Int64}, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     # reset features
@@ -340,7 +343,7 @@ function AutomotiveDrivingModels.pull_features!(
     fore_neigh = fore_M
     fore_neighs = NeighborLongitudinalResult[]
     for i in 1:7
-        if fore_neigh.ind != 0
+        if fore_neigh.ind != 0 && fore_neigh.ind != nothing
             next_fore_neigh = get_neighbor_fore_along_lane(     
             scene, fore_neigh.ind, roadway, vtpr, vtpf, vtpr)
         else
@@ -435,14 +438,14 @@ function AutomotiveDrivingModels.pull_features!(
         ext::BehavioralFeatureExtractor,  
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,  
+        veh_idx::Union{Nothing, Int64},  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     # reset features
     fill!(ext.features, 0)
 
     # if vehicle does not exist then leave features as zeros
-    if veh_idx == 0
+    if veh_idx == 0 || veh_idx == nothing
         return ext.features
     end
 
@@ -555,7 +558,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::NeighborBehavioralFeatureExtractor,  
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,  
+        veh_idx::Union{Nothing, Int64},  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
 
@@ -579,7 +582,7 @@ function AutomotiveDrivingModels.pull_features!(
     fore_neigh = fore_M
     fore_neighs = NeighborLongitudinalResult[]
     for i in 1:4
-        if fore_neigh.ind != 0
+        if fore_neigh.ind != 0 && fore_neigh.ind != nothing
             next_fore_neigh = get_neighbor_fore_along_lane(     
             scene, fore_neigh.ind, roadway, vtpr, vtpf, vtpr)
         else
@@ -589,7 +592,7 @@ function AutomotiveDrivingModels.pull_features!(
         fore_neigh = next_fore_neigh
     end
 
-    idxs::Vector{Int64} = [fore_M.ind, fore_L.ind, fore_R.ind, rear_M.ind, 
+    idxs::Vector{Union{Nothing, Int64}} = [fore_M.ind, fore_L.ind, fore_R.ind, rear_M.ind, 
         rear_L.ind, rear_R.ind]
     idxs = vcat(idxs, [n.ind for n in fore_neighs])
 
@@ -647,7 +650,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::CarLidarFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int, 
+        veh_idx::Union{Nothing, Int64}, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     scene = rec[pastframe]
@@ -707,7 +710,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::RoadLidarFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,  
+        veh_idx::Union{Nothing, Int64},  
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     scene = rec[pastframe]
@@ -754,7 +757,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::ForeForeFeatureExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int, 
+        veh_idx::Union{Nothing, Int64}, 
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
     # reset features
@@ -768,14 +771,14 @@ function AutomotiveDrivingModels.pull_features!(
     vtpr = VehicleTargetPointRear()
     fore_M = get_neighbor_fore_along_lane(
         scene, veh_idx, roadway, vtpf, vtpr, vtpf)
-    if fore_M.ind != 0
+    if fore_M.ind != 0 && fore_M.ind != nothing
         fore_fore_M = get_neighbor_fore_along_lane(     
             scene, fore_M.ind, roadway, vtpr, vtpf, vtpr)
     else
         fore_fore_M = NeighborLongitudinalResult(0, 0.)
     end
 
-    if fore_fore_M.ind != 0 
+    if fore_fore_M.ind != 0 && fore_fore_M.ind != nothing
         # total distance from ego vehicle
         ext.features[1] = fore_fore_M.Δs + fore_M.Δs
         # relative velocity to ego vehicle
@@ -803,7 +806,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::NormalizingExtractor, 
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,
+        veh_idx::Union{Nothing, Int64},
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
 
@@ -819,7 +822,7 @@ function AutomotiveDrivingModels.pull_features!(
         ext::EmptyExtractor,  
         rec::SceneRecord,
         roadway::Roadway, 
-        veh_idx::Int,
+        veh_idx::Union{Nothing, Int64},
         models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
         pastframe::Int = 0)
 end
