@@ -4,9 +4,7 @@ using Pkg
 urls = [
     "https://github.com/sisl/Vec.jl.git",
     "https://github.com/sisl/AutomotiveDrivingModels.jl.git",
-    "https://github.com/sisl/AutoViz.jl.git",
-    "https://github.com/sisl/BayesNets.jl.git",
-    "https://github.com/sisl/GridInterpolations.jl.git",
+    "https://github.com/sisl/AutoViz.jl.git"
 ]
 
 packages = keys(Pkg.installed())
