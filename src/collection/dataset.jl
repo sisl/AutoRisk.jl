@@ -324,7 +324,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
         cur_batch_idxs = read(proc_file["risk/batch_idxs"])
         if length(batch_idxs) != 0
             last_batch_idx = batch_idxs[end]
-            cur_batch_idxs += last_batch_idx
+            cur_batch_idxs .+= last_batch_idx
         end
         append!(batch_idxs, cur_batch_idxs)
     end
