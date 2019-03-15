@@ -12,6 +12,7 @@ notifications:
 # uncomment the following lines to override the default test script
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - sudo apt-get install libgtk-3-dev
   - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("AutoRisk"; coverage=true)'
 after_success:
 - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
