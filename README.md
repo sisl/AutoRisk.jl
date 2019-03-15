@@ -1,16 +1,21 @@
 # AutoRisk
 
-[![Build Status](https://travis-ci.org/wulfebw/AutoRisk.jl.svg?branch=master)](https://travis-ci.org/wulfebw/AutoRisk.jl)
-
-[![codecov.io](http://codecov.io/github/wulfebw/AutoRisk.jl/coverage.svg?branch=master)](http://codecov.io/github/wulfebw/AutoRisk.jl?branch=master)
+[![Build Status](https://travis-ci.org/sisl/AutoRisk.jl.svg?branch=master)](https://travis-ci.org/sisl/AutoRisk.jl)
+[![Coverage Status](https://coveralls.io/repos/github/sisl/AutoRisk.jl/badge.svg?branch=master)](https://coveralls.io/github/sisl/AutoRisk.jl?branch=master)
+[![codecov.io](http://codecov.io/github/sisl/AutoRisk.jl/coverage.svg?branch=master)](http://codecov.io/github/sisl/AutoRisk.jl?branch=master)
 
 # quickstart
 
 ## install
 - First install the julia components of AutoRisk
-```julia
-Pkg.clone("https://github.com/sisl/AutoRisk.jl.git")
-Pkg.build("AutoRisk")
+```
+julia
+using Pkg
+Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl"))
+Pkg.add(PackageSpec(url="https://github.com/sisl/Records.jl"))
+Pkg.add(PackageSpec(url="https://github.com/sisl/AutomotiveDrivingModels.jl"))
+Pkg.add(PackageSpec(url="https://github.com/sisl/AutoViz.jl"))
+Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl"))
 
 # check that AutoRisk can be imported
 using AutoRisk

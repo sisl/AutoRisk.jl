@@ -3,6 +3,7 @@ using Pkg
 # unregistered packages
 urls = [
     "https://github.com/sisl/Vec.jl.git",
+    "https://github.com/sisl/Records.jl",
     "https://github.com/sisl/AutomotiveDrivingModels.jl.git",
     "https://github.com/sisl/AutoViz.jl.git"
 ]
